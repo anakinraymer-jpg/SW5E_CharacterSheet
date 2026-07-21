@@ -24,6 +24,7 @@ import {
   applyAsi,
   applyClass,
   classNeedsChoices,
+  pendingArchetypeChoice,
   pendingAsiLevel,
   recalcArchetypeForLevel,
   recalcClassForLevel,
@@ -45,6 +46,7 @@ import AbilityImprovementDialog from "./AbilityImprovementDialog";
 import ClassFeaturesSection from "./ClassFeaturesSection";
 import FeatsSection from "./FeatsSection";
 import FeatChoiceDialog from "./FeatChoiceDialog";
+import ArchetypeChoiceDialog from "./ArchetypeChoiceDialog";
 import { FEATS_CATALOG } from "../data/feats";
 import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
 import type { FeatEntry } from "../types";
@@ -60,6 +62,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [pendingClass, setPendingClass] = useState<ClassEntry | null>(null);
   const [pendingAsi, setPendingAsi] = useState<{ level: number; className: string } | null>(null);
   const [pendingFeat, setPendingFeat] = useState<FeatEntry | null>(null);
+  const [pendingArchetypeClass, setPendingArchetypeClass] = useState<ClassEntry | null>(null);
 
   useEffect(() => {
     setCharacter(initial);
@@ -84,6 +87,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         setPendingAsi({ level: lvl, className: classEntry.name });
       } else if (!lvl && pendingAsi) {
         setPendingAsi(null);
+      }
+
+      if (pendingArchetypeChoice(character, classEntry)) {
+        if (!pendingArchetypeClass || pendingArchetypeClass.name !== classEntry.name) {
+          setPendingArchetypeClass(classEntry);
+        }
+      } else if (pendingArchetypeClass) {
+        setPendingArchetypeClass(null);
       }
     }
     const archetypeEntry = ARCHETYPES_CATALOG.find(
@@ -207,6 +218,17 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     if (!pendingAsi) return;
     setCharacter((prev) => applyAsi(prev, pendingAsi.level, abilities));
     setPendingAsi(null);
+  }
+
+  function handleArchetypeChoiceConfirm(name: string) {
+    if (!pendingArchetypeClass) return;
+    const match = ARCHETYPES_CATALOG.find(
+      (a) => a.name === name && a.className === pendingArchetypeClass.name
+    );
+    if (match) {
+      setCharacter((prev) => applyArchetype(prev, match));
+    }
+    setPendingArchetypeClass(null);
   }
 
   function handleAddFeat(name: string) {
@@ -470,6 +492,16 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           feat={pendingFeat}
           onCancel={() => setPendingFeat(null)}
           onConfirm={handleFeatConfirm}
+        />
+      )}
+
+      {pendingArchetypeClass && (
+        <ArchetypeChoiceDialog
+          classEntry={pendingArchetypeClass}
+          options={ARCHETYPES_CATALOG.filter((a) => a.className === pendingArchetypeClass.name)}
+          level={character.level}
+          onCancel={() => setPendingArchetypeClass(null)}
+          onConfirm={handleArchetypeChoiceConfirm}
         />
       )}
     </div>

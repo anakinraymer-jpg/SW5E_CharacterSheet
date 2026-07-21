@@ -131,6 +131,12 @@ export function recalcArchetypeForLevel(character: Character, archetypeEntry: Ar
 
 function buildArchetypeTraitsText(archetypeEntry: ArchetypeEntry, character: Character): string {
   const level = Math.max(1, Math.min(20, character.level || 1));
+  return archetypeFeaturesText(archetypeEntry, level);
+}
+
+// Preview text for an archetype's features unlocked up to (and including) the given level.
+// Used both for the applied character's feature panel and the archetype choice dialog.
+export function archetypeFeaturesText(archetypeEntry: ArchetypeEntry, level: number): string {
   const lines: string[] = [];
   for (const feature of archetypeEntry.features) {
     if (feature.level <= level) {
@@ -138,6 +144,12 @@ function buildArchetypeTraitsText(archetypeEntry: ArchetypeEntry, character: Cha
     }
   }
   return lines.join("\n\n");
+}
+
+// Whether the character has just reached (or already passed) the class's archetype level
+// without having chosen one yet — used to trigger the archetype choice popup.
+export function pendingArchetypeChoice(character: Character, classEntry: ClassEntry): boolean {
+  return (character.level || 1) >= classEntry.archetypeLevel && !character.archetypeAppliedName;
 }
 
 // --- Ability Score Improvement engine ---

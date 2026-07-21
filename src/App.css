@@ -620,6 +620,31 @@
   gap: 10px;
 }
 
+.archetype-choice-card {
+  display: block;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+.archetype-choice-card:has(input:checked) {
+  border-color: var(--accent);
+}
+
+.archetype-choice-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
 .choice-group {
   display: flex;
   flex-direction: column;
