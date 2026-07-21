@@ -270,27 +270,6 @@ export default function IdentitySection({
         </div>
       )}
 
-      {character.classTraitsText && (
-        <div className="species-traits-box">
-          <div className="species-traits-header">{character.classAppliedName} Features</div>
-          {character.classTraitsText.split("\n\n").map((line, i) => (
-            <p key={i} className="species-trait-line">
-              {line}
-            </p>
-          ))}
-        </div>
-      )}
-
-      {character.archetypeTraitsText && (
-        <div className="species-traits-box">
-          <div className="species-traits-header">{character.archetypeAppliedName} Features</div>
-          {character.archetypeTraitsText.split("\n\n").map((line, i) => (
-            <p key={i} className="species-trait-line">
-              {line}
-            </p>
-          ))}
-        </div>
-      )}
     </section>
   );
 }

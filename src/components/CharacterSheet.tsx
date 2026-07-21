@@ -42,6 +42,12 @@ import BackstorySection from "./BackstorySection";
 import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
 import ClassChoiceDialog from "./ClassChoiceDialog";
 import AbilityImprovementDialog from "./AbilityImprovementDialog";
+import ClassFeaturesSection from "./ClassFeaturesSection";
+import FeatsSection from "./FeatsSection";
+import FeatChoiceDialog from "./FeatChoiceDialog";
+import { FEATS_CATALOG } from "../data/feats";
+import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
+import type { FeatEntry } from "../types";
 
 interface Props {
   initial: Character;
@@ -53,6 +59,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [pendingSpecies, setPendingSpecies] = useState<SpeciesEntry | null>(null);
   const [pendingClass, setPendingClass] = useState<ClassEntry | null>(null);
   const [pendingAsi, setPendingAsi] = useState<{ level: number; className: string } | null>(null);
+  const [pendingFeat, setPendingFeat] = useState<FeatEntry | null>(null);
 
   useEffect(() => {
     setCharacter(initial);
@@ -200,6 +207,26 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     if (!pendingAsi) return;
     setCharacter((prev) => applyAsi(prev, pendingAsi.level, abilities));
     setPendingAsi(null);
+  }
+
+  function handleAddFeat(name: string) {
+    const match = FEATS_CATALOG.find((f) => f.name === name);
+    if (!match) return;
+    if (featNeedsChoices(match)) {
+      setPendingFeat(match);
+    } else {
+      setCharacter((prev) => addFeat(prev, match, { abilityChoice: "", choiceSelections: [] }));
+    }
+  }
+
+  function handleFeatConfirm(selections: FeatSelections) {
+    if (!pendingFeat) return;
+    setCharacter((prev) => addFeat(prev, pendingFeat, selections));
+    setPendingFeat(null);
+  }
+
+  function handleRemoveFeat(id: string) {
+    setCharacter((prev) => removeFeat(prev, id));
   }
 
   const currentClassArchetypes: ArchetypeEntry[] = ARCHETYPES_CATALOG.filter(
@@ -396,6 +423,10 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         </div>
       </div>
 
+      <ClassFeaturesSection character={character} />
+
+      <FeatsSection character={character} onAddFeat={handleAddFeat} onRemoveFeat={handleRemoveFeat} />
+
       <EquipmentSection
         character={character}
         update={update}
@@ -431,6 +462,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           className={pendingAsi.className}
           onCancel={() => setPendingAsi(null)}
           onConfirm={handleAsiConfirm}
+        />
+      )}
+
+      {pendingFeat && (
+        <FeatChoiceDialog
+          feat={pendingFeat}
+          onCancel={() => setPendingFeat(null)}
+          onConfirm={handleFeatConfirm}
         />
       )}
     </div>

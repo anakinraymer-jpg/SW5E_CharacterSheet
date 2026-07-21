@@ -36,7 +36,7 @@ export type SkillName =
 
 export type PowerAlignment = "Light" | "Dark" | "Universal";
 
-export type SpeciesChoiceKind = "skill" | "language" | "instrument" | "tool" | "kit" | "weapon";
+export type SpeciesChoiceKind = "skill" | "language" | "instrument" | "tool" | "kit" | "weapon" | "other";
 
 export interface SpeciesTraitChoice {
   kind: SpeciesChoiceKind;
@@ -123,6 +123,26 @@ export interface ArchetypeEntry {
 
 export interface ClassSelections {
   skillChoice: string[];
+}
+
+export interface FeatEntry {
+  name: string;
+  prerequisite: string | null;
+  text: string;
+  abilityOptions: AbilityKey[]; // [] = no ASI; 1 = fixed auto +1; 2+ = player picks one of these for +1
+  grantsSkill?: SkillName; // fixed skill proficiency (upgrades to expertise if already proficient)
+  grantsSavingThrowForAbilityChoice?: boolean; // Resilient: proficiency in the saving throw of the chosen ability
+  choices?: SpeciesTraitChoice[]; // reused choice structure (tool/instrument/kit/skill/other picks)
+}
+
+export interface CharacterFeat {
+  id: string;
+  name: string;
+  abilityChosen: AbilityKey[]; // 0 or 1 entries: the ability that got +1 for this feat instance
+  skillProficiencyGranted?: SkillName;
+  skillExpertiseGranted?: SkillName;
+  savingThrowGranted?: AbilityKey;
+  choiceSelections: string[][]; // per feat.choices index -> selected options
 }
 
 export interface Power {
@@ -223,6 +243,10 @@ export interface Character {
   classTraitsText: string;
   archetypeAppliedName: string;
   archetypeTraitsText: string;
+
+  // Feats
+  feats: CharacterFeat[];
+  featAbilityBonus: AbilityScores;
 
   // Abilities
   abilities: AbilityScores;
@@ -400,6 +424,8 @@ export function createBlankCharacter(): Character {
     classTraitsText: "",
     archetypeAppliedName: "",
     archetypeTraitsText: "",
+    feats: [],
+    featAbilityBonus: emptyAbilities0(),
     abilities: emptyAbilities(),
     skills: emptySkills(),
     savingThrows: emptySavingThrows(),
