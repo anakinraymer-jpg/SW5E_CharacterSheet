@@ -125,6 +125,37 @@ export interface ClassSelections {
   skillChoice: string[];
 }
 
+export type ClassResourceRefresh = "Short Rest" | "Long Rest";
+
+export interface ClassResourceDef {
+  key: string;
+  label: string;
+  className: string;
+  refresh: ClassResourceRefresh;
+  maxByLevel: number[]; // length 20, index 0 = level 1
+  dieByLevel?: (string | null)[]; // parallel die-size text, e.g. "d4"
+}
+
+export interface ClassResourceState {
+  key: string;
+  current: number;
+  max: number;
+}
+
+export interface ClassSubChoiceOption {
+  name: string;
+  text: string;
+  prerequisite?: string;
+}
+
+export interface ClassSubChoiceDef {
+  key: string;
+  label: string;
+  className: string;
+  countByLevel: number[]; // length 20, index 0 = level 1
+  options: ClassSubChoiceOption[];
+}
+
 export interface FeatEntry {
   name: string;
   prerequisite: string | null;
@@ -244,6 +275,8 @@ export interface Character {
   classTraitsText: string;
   archetypeAppliedName: string;
   archetypeTraitsText: string;
+  classResources: ClassResourceState[];
+  classSubChoicePicks: Record<string, string[]>;
 
   // Feats
   feats: CharacterFeat[];
@@ -425,6 +458,8 @@ export function createBlankCharacter(): Character {
     classTraitsText: "",
     archetypeAppliedName: "",
     archetypeTraitsText: "",
+    classResources: [],
+    classSubChoicePicks: {},
     feats: [],
     featAbilityBonus: emptyAbilities0(),
     abilities: emptyAbilities(),

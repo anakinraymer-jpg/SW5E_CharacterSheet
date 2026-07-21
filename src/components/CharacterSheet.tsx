@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import type {
   AbilityKey,
   ArchetypeEntry,
@@ -47,9 +47,18 @@ import ClassFeaturesSection from "./ClassFeaturesSection";
 import FeatsSection from "./FeatsSection";
 import FeatChoiceDialog from "./FeatChoiceDialog";
 import ArchetypeChoiceDialog from "./ArchetypeChoiceDialog";
+import ClassSubChoiceDialog from "./ClassSubChoiceDialog";
 import { FEATS_CATALOG } from "../data/feats";
 import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
-import type { FeatEntry } from "../types";
+import type { ClassSubChoiceDef, FeatEntry } from "../types";
+import { CLASS_ACCENTS } from "../data/classFeatureChoices";
+import {
+  applySubChoicePicks,
+  pendingSubChoice,
+  recalcClassResources,
+  recalcClassSubChoices,
+  updateClassResource,
+} from "../classFeatureLogic";
 
 interface Props {
   initial: Character;
@@ -63,6 +72,9 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [pendingAsi, setPendingAsi] = useState<{ level: number; className: string } | null>(null);
   const [pendingFeat, setPendingFeat] = useState<FeatEntry | null>(null);
   const [pendingArchetypeClass, setPendingArchetypeClass] = useState<ClassEntry | null>(null);
+  const [pendingSubChoiceDef, setPendingSubChoiceDef] = useState<{ def: ClassSubChoiceDef; needed: number } | null>(
+    null
+  );
 
   useEffect(() => {
     setCharacter(initial);
@@ -102,6 +114,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     );
     if (archetypeEntry) {
       setCharacter((prev) => recalcArchetypeForLevel(prev, archetypeEntry));
+    }
+
+    setCharacter((prev) => recalcClassSubChoices(recalcClassResources(prev)));
+    const pending = pendingSubChoice(character);
+    if (pending && (!pendingSubChoiceDef || pendingSubChoiceDef.def.key !== pending.def.key)) {
+      setPendingSubChoiceDef(pending);
+    } else if (!pending && pendingSubChoiceDef) {
+      setPendingSubChoiceDef(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [character.level, character.classAppliedName, character.archetypeAppliedName, character.asiChoices]);
@@ -229,6 +249,16 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       setCharacter((prev) => applyArchetype(prev, match));
     }
     setPendingArchetypeClass(null);
+  }
+
+  function handleSubChoiceConfirm(names: string[]) {
+    if (!pendingSubChoiceDef) return;
+    setCharacter((prev) => applySubChoicePicks(prev, pendingSubChoiceDef.def.key, names));
+    setPendingSubChoiceDef(null);
+  }
+
+  function handleUpdateResource(key: string, current: number) {
+    setCharacter((prev) => updateClassResource(prev, key, current));
   }
 
   function handleAddFeat(name: string) {
@@ -389,8 +419,13 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     }));
   }
 
+  const accent = CLASS_ACCENTS[character.classAppliedName];
+
   return (
-    <div className="character-sheet-page">
+    <div
+      className="character-sheet-page"
+      style={accent ? ({ "--accent": accent } as CSSProperties) : undefined}
+    >
       <div className="sheet-toolbar">
         <button className="btn btn-secondary" onClick={onBack}>
           &larr; Back to Characters
@@ -445,7 +480,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         </div>
       </div>
 
-      <ClassFeaturesSection character={character} />
+      <ClassFeaturesSection character={character} onUpdateResource={handleUpdateResource} />
 
       <FeatsSection character={character} onAddFeat={handleAddFeat} onRemoveFeat={handleRemoveFeat} />
 
@@ -502,6 +537,16 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           level={character.level}
           onCancel={() => setPendingArchetypeClass(null)}
           onConfirm={handleArchetypeChoiceConfirm}
+        />
+      )}
+
+      {pendingSubChoiceDef && (
+        <ClassSubChoiceDialog
+          def={pendingSubChoiceDef.def}
+          needed={pendingSubChoiceDef.needed}
+          alreadyChosen={character.classSubChoicePicks[pendingSubChoiceDef.def.key] ?? []}
+          onCancel={() => setPendingSubChoiceDef(null)}
+          onConfirm={handleSubChoiceConfirm}
         />
       )}
     </div>
