@@ -1,5 +1,14 @@
 import type { Character, EquipmentItem, ItemLocation, Valuable } from "../types";
 import { carryingCapacity } from "../utils";
+import { GEAR_CATALOG } from "../data/gear";
+import { WEAPON_CATALOG } from "../data/weapons";
+import { ARMOR_CATALOG } from "../data/armor";
+
+const ITEM_LOOKUP = new Map<string, { name: string; weight: number }>([
+  ...GEAR_CATALOG.map((g) => [g.name.toLowerCase(), { name: g.name, weight: g.weight }] as const),
+  ...WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), { name: w.name, weight: w.weight }] as const),
+  ...ARMOR_CATALOG.map((a) => [a.name.toLowerCase(), { name: a.name, weight: a.weight }] as const),
+]);
 
 interface Props {
   character: Character;
@@ -48,6 +57,18 @@ export default function EquipmentSection({
         />
       </div>
 
+      <datalist id="gear-catalog-list">
+        {GEAR_CATALOG.map((g) => (
+          <option key={g.name} value={g.name} />
+        ))}
+        {WEAPON_CATALOG.map((w) => (
+          <option key={w.name} value={w.name} />
+        ))}
+        {ARMOR_CATALOG.map((a) => (
+          <option key={a.name} value={a.name} />
+        ))}
+      </datalist>
+
       <table className="equipment-table">
         <thead>
           <tr>
@@ -65,8 +86,17 @@ export default function EquipmentSection({
               <td>
                 <input
                   type="text"
+                  list="gear-catalog-list"
                   value={item.name}
-                  onChange={(e) => updateItem(item.id, { name: e.target.value })}
+                  onChange={(e) => {
+                    const name = e.target.value;
+                    const known = ITEM_LOOKUP.get(name.toLowerCase());
+                    if (known) {
+                      updateItem(item.id, { name: known.name, weight: known.weight });
+                    } else {
+                      updateItem(item.id, { name });
+                    }
+                  }}
                 />
               </td>
               <td>

@@ -1,4 +1,8 @@
 import type { Character, Power, PowerAlignment } from "../types";
+import { FORCE_POWERS, TECH_POWERS } from "../data/powers";
+
+const FORCE_POWER_LOOKUP = new Map(FORCE_POWERS.map((p) => [p.name.toLowerCase(), p]));
+const TECH_POWER_LOOKUP = new Map(TECH_POWERS.map((p) => [p.name.toLowerCase(), p]));
 
 interface Props {
   character: Character;
@@ -41,6 +45,17 @@ export default function PowersSection({
   return (
     <section className="sheet-section powers-section">
       <h2>Force &amp; Tech Powers</h2>
+
+      <datalist id="force-power-list">
+        {FORCE_POWERS.map((p) => (
+          <option key={p.name} value={p.name} />
+        ))}
+      </datalist>
+      <datalist id="tech-power-list">
+        {TECH_POWERS.map((p) => (
+          <option key={p.name} value={p.name} />
+        ))}
+      </datalist>
 
       <div className="points-grid">
         <div className="field">
@@ -172,8 +187,38 @@ export default function PowersSection({
                   <input
                     type="text"
                     placeholder="Power name"
+                    list={power.type === "Force" ? "force-power-list" : "tech-power-list"}
                     value={power.name}
-                    onChange={(e) => updatePower(power.id, { name: e.target.value })}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      if (power.type === "Force") {
+                        const known = FORCE_POWER_LOOKUP.get(name.toLowerCase());
+                        if (known) {
+                          updatePower(power.id, {
+                            name: known.name,
+                            level: known.level,
+                            alignment: known.alignment,
+                            castingTime: known.castingTime,
+                            range: known.range,
+                            duration: known.duration,
+                          });
+                          return;
+                        }
+                      } else {
+                        const known = TECH_POWER_LOOKUP.get(name.toLowerCase());
+                        if (known) {
+                          updatePower(power.id, {
+                            name: known.name,
+                            level: known.level,
+                            castingTime: known.castingTime,
+                            range: known.range,
+                            duration: known.duration,
+                          });
+                          return;
+                        }
+                      }
+                      updatePower(power.id, { name });
+                    }}
                     className="power-name"
                   />
                   <select

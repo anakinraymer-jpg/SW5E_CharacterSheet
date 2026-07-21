@@ -1,4 +1,12 @@
 import type { CombatFeature, RefreshType, Weapon } from "../types";
+import { WEAPON_CATALOG } from "../data/weapons";
+
+function extractRange(property: string): string {
+  const match = property.match(/\((?:range )?(\d+(?:\/\d+)?)\)/i);
+  return match ? `${match[1]} ft` : "Melee";
+}
+
+const WEAPON_LOOKUP = new Map(WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), w]));
 
 interface Props {
   weapons: Weapon[];
@@ -26,6 +34,11 @@ export default function WeaponsSection({
   return (
     <section className="sheet-section weapons-section">
       <h2>Weapons &amp; Ammunitions</h2>
+      <datalist id="weapon-catalog-list">
+        {WEAPON_CATALOG.map((w) => (
+          <option key={w.name} value={w.name} />
+        ))}
+      </datalist>
       <table className="weapons-table">
         <thead>
           <tr>
@@ -44,8 +57,22 @@ export default function WeaponsSection({
               <td>
                 <input
                   type="text"
+                  list="weapon-catalog-list"
                   value={w.name}
-                  onChange={(e) => updateWeapon(w.id, { name: e.target.value })}
+                  onChange={(e) => {
+                    const name = e.target.value;
+                    const known = WEAPON_LOOKUP.get(name.toLowerCase());
+                    if (known) {
+                      updateWeapon(w.id, {
+                        name: known.name,
+                        damage: known.damage,
+                        weight: known.weight,
+                        range: extractRange(known.property),
+                      });
+                    } else {
+                      updateWeapon(w.id, { name });
+                    }
+                  }}
                 />
               </td>
               <td>

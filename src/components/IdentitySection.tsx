@@ -1,5 +1,5 @@
 import type { Character } from "../types";
-import { CLASSES, SPECIES, BACKGROUNDS, ALIGNMENTS, ALLEGIANCES, SIZES } from "../data/sw5eData";
+import { CLASSES, ARCHETYPES, SPECIES, BACKGROUNDS, ALIGNMENTS, ALLEGIANCES, SIZES } from "../data/sw5eData";
 
 interface Props {
   character: Character;
@@ -66,10 +66,11 @@ export default function IdentitySection({ character, update }: Props) {
           <label htmlFor="archetype">Archetype</label>
           <input
             id="archetype"
-            type="text"
+            list="archetype-list"
             value={character.archetype}
             onChange={(e) => update("archetype", e.target.value)}
           />
+          <Datalist id="archetype-list" options={ARCHETYPES} />
         </div>
 
         <div className="field">
