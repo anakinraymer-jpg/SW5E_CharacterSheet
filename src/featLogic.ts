@@ -50,6 +50,9 @@ export function addFeat(character: Character, feat: FeatEntry, selections: FeatS
   if (feat.grantsSavingThrowForAbilityChoice && abilityChosen.length) {
     savingThrows[abilityChosen[0]] = true;
     savingThrowGranted = abilityChosen[0];
+  } else if (feat.grantsSavingThrow && !savingThrows[feat.grantsSavingThrow]) {
+    savingThrows[feat.grantsSavingThrow] = true;
+    savingThrowGranted = feat.grantsSavingThrow;
   }
 
   feat.choices?.forEach((choiceDef, i) => {

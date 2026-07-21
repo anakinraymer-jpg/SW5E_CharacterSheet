@@ -131,6 +131,7 @@ export interface FeatEntry {
   text: string;
   abilityOptions: AbilityKey[]; // [] = no ASI; 1 = fixed auto +1; 2+ = player picks one of these for +1
   grantsSkill?: SkillName; // fixed skill proficiency (upgrades to expertise if already proficient)
+  grantsSavingThrow?: AbilityKey; // fixed saving throw proficiency (e.g. Titan's Power)
   grantsSavingThrowForAbilityChoice?: boolean; // Resilient: proficiency in the saving throw of the chosen ability
   choices?: SpeciesTraitChoice[]; // reused choice structure (tool/instrument/kit/skill/other picks)
 }
