@@ -65,6 +65,8 @@ export const ALIGNMENTS = [
   "Dark III",
 ];
 
+export const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"];
+
 export const ALLEGIANCES = [
   "Galactic Republic",
   "Jedi Order",

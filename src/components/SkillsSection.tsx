@@ -1,5 +1,5 @@
 import type { AbilityKey, Character, SkillName } from "../types";
-import { SKILL_LIST, SKILL_ABILITY } from "../types";
+import { SKILL_LIST, SKILL_ABILITY, ARMOR_PENALTY_SKILLS } from "../types";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 
 const ABILITY_SHORT: Record<AbilityKey, string> = {
@@ -77,7 +77,15 @@ export default function SkillsSection({
                     onChange={() => toggleSkillExpertise(skill)}
                   />
                 </td>
-                <td>{skill}</td>
+                <td>
+                  {skill}
+                  {ARMOR_PENALTY_SKILLS.includes(skill) && (
+                    <span className="armor-penalty-mark" title="Armor check penalty may apply">
+                      {" "}
+                      *
+                    </span>
+                  )}
+                </td>
                 <td className="ability-short">{ABILITY_SHORT[SKILL_ABILITY[skill]]}</td>
                 <td className="skill-bonus">{formatModifier(skillBonus(skill))}</td>
               </tr>

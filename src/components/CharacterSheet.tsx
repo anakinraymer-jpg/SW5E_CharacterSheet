@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
-import type { AbilityKey, Character, EquipmentItem, Power, SkillName } from "../types";
+import type {
+  AbilityKey,
+  Character,
+  CombatFeature,
+  EquipmentItem,
+  Power,
+  SkillName,
+  Valuable,
+  Weapon,
+} from "../types";
 import { saveCharacter, exportCharacter } from "../storage";
 import IdentitySection from "./IdentitySection";
 import AbilityScores from "./AbilityScores";
 import SkillsSection from "./SkillsSection";
 import CombatSection from "./CombatSection";
+import WeaponsSection from "./WeaponsSection";
 import PowersSection from "./PowersSection";
 import EquipmentSection from "./EquipmentSection";
-import NotesSection from "./NotesSection";
+import BackstorySection from "./BackstorySection";
 
 interface Props {
   initial: Character;
@@ -76,6 +86,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       name: "",
       level: 0,
       type: "Force",
+      alignment: "Universal",
       castingTime: "",
       range: "",
       duration: "",
@@ -106,6 +117,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       quantity: 1,
       weight: 0,
       notes: "",
+      location: "Backpack",
     };
     setCharacter((prev) => ({ ...prev, equipment: [...prev.equipment, newItem] }));
   }
@@ -121,6 +133,84 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     setCharacter((prev) => ({
       ...prev,
       equipment: prev.equipment.filter((i) => i.id !== id),
+    }));
+  }
+
+  function addWeapon() {
+    const newWeapon: Weapon = {
+      id: crypto.randomUUID(),
+      name: "",
+      attackBonus: "",
+      damage: "",
+      range: "",
+      weight: 0,
+      ammo: "",
+    };
+    setCharacter((prev) => ({ ...prev, weapons: [...prev.weapons, newWeapon] }));
+  }
+
+  function updateWeapon(id: string, patch: Partial<Weapon>) {
+    setCharacter((prev) => ({
+      ...prev,
+      weapons: prev.weapons.map((w) => (w.id === id ? { ...w, ...patch } : w)),
+    }));
+  }
+
+  function removeWeapon(id: string) {
+    setCharacter((prev) => ({
+      ...prev,
+      weapons: prev.weapons.filter((w) => w.id !== id),
+    }));
+  }
+
+  function addCombatFeature() {
+    const newFeature: CombatFeature = {
+      id: crypto.randomUUID(),
+      name: "",
+      refresh: "At Will",
+      used: false,
+    };
+    setCharacter((prev) => ({
+      ...prev,
+      combatFeatures: [...prev.combatFeatures, newFeature],
+    }));
+  }
+
+  function updateCombatFeature(id: string, patch: Partial<CombatFeature>) {
+    setCharacter((prev) => ({
+      ...prev,
+      combatFeatures: prev.combatFeatures.map((f) => (f.id === id ? { ...f, ...patch } : f)),
+    }));
+  }
+
+  function removeCombatFeature(id: string) {
+    setCharacter((prev) => ({
+      ...prev,
+      combatFeatures: prev.combatFeatures.filter((f) => f.id !== id),
+    }));
+  }
+
+  function addValuable() {
+    const newValuable: Valuable = {
+      id: crypto.randomUUID(),
+      where: "",
+      howMuch: "",
+      when: "",
+    };
+    setCharacter((prev) => ({ ...prev, valuables: [...prev.valuables, newValuable] }));
+  }
+
+  function updateValuable(id: string, patch: Partial<Valuable>) {
+    setCharacter((prev) => ({
+      ...prev,
+      valuables: prev.valuables.map((v) => (v.id === id ? { ...v, ...patch } : v)),
+    }));
+  }
+
+  function removeValuable(id: string) {
+    setCharacter((prev) => ({
+      ...prev,
+      valuables: prev.valuables.filter((v) => v.id !== id),
     }));
   }
 
@@ -150,6 +240,16 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             toggleSkillExpertise={toggleSkillExpertise}
             toggleSavingThrow={toggleSavingThrow}
           />
+          <WeaponsSection
+            weapons={character.weapons}
+            addWeapon={addWeapon}
+            updateWeapon={updateWeapon}
+            removeWeapon={removeWeapon}
+            combatFeatures={character.combatFeatures}
+            addCombatFeature={addCombatFeature}
+            updateCombatFeature={updateCombatFeature}
+            removeCombatFeature={removeCombatFeature}
+          />
         </div>
 
         <div className="sheet-column">
@@ -169,9 +269,12 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         addItem={addItem}
         updateItem={updateItem}
         removeItem={removeItem}
+        addValuable={addValuable}
+        updateValuable={updateValuable}
+        removeValuable={removeValuable}
       />
 
-      <NotesSection character={character} update={update} />
+      <BackstorySection character={character} update={update} />
     </div>
   );
 }

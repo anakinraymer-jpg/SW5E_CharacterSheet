@@ -1,5 +1,5 @@
 import type { Character } from "../types";
-import { CLASSES, SPECIES, BACKGROUNDS, ALIGNMENTS, ALLEGIANCES } from "../data/sw5eData";
+import { CLASSES, SPECIES, BACKGROUNDS, ALIGNMENTS, ALLEGIANCES, SIZES } from "../data/sw5eData";
 
 interface Props {
   character: Character;
@@ -30,6 +30,16 @@ export default function IdentitySection({ character, update }: Props) {
       </div>
 
       <div className="field-grid">
+        <div className="field">
+          <label htmlFor="player-name">Player's Name</label>
+          <input
+            id="player-name"
+            type="text"
+            value={character.playerName}
+            onChange={(e) => update("playerName", e.target.value)}
+          />
+        </div>
+
         <div className="field">
           <label htmlFor="species">Species</label>
           <input
@@ -71,6 +81,28 @@ export default function IdentitySection({ character, update }: Props) {
             max={20}
             value={character.level}
             onChange={(e) => update("level", Number(e.target.value) || 1)}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="xp">Experience Points</label>
+          <input
+            id="xp"
+            type="number"
+            min={0}
+            value={character.experiencePoints}
+            onChange={(e) => update("experiencePoints", Number(e.target.value) || 0)}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="xp-next">XP Next Level</label>
+          <input
+            id="xp-next"
+            type="number"
+            min={0}
+            value={character.xpNextLevel}
+            onChange={(e) => update("xpNextLevel", Number(e.target.value) || 0)}
           />
         </div>
 
@@ -118,6 +150,16 @@ export default function IdentitySection({ character, update }: Props) {
         </div>
 
         <div className="field">
+          <label htmlFor="place-of-birth">Place of Birth</label>
+          <input
+            id="place-of-birth"
+            type="text"
+            value={character.placeOfBirth}
+            onChange={(e) => update("placeOfBirth", e.target.value)}
+          />
+        </div>
+
+        <div className="field">
           <label htmlFor="age">Age</label>
           <input
             id="age"
@@ -138,6 +180,12 @@ export default function IdentitySection({ character, update }: Props) {
         </div>
 
         <div className="field">
+          <label htmlFor="size">Size</label>
+          <input id="size" list="size-list" value={character.size} onChange={(e) => update("size", e.target.value)} />
+          <Datalist id="size-list" options={SIZES} />
+        </div>
+
+        <div className="field">
           <label htmlFor="height">Height</label>
           <input
             id="height"
@@ -154,6 +202,36 @@ export default function IdentitySection({ character, update }: Props) {
             type="text"
             value={character.weight}
             onChange={(e) => update("weight", e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="hair">Hair</label>
+          <input
+            id="hair"
+            type="text"
+            value={character.hair}
+            onChange={(e) => update("hair", e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="eyes">Eyes</label>
+          <input
+            id="eyes"
+            type="text"
+            value={character.eyes}
+            onChange={(e) => update("eyes", e.target.value)}
+          />
+        </div>
+
+        <div className="field">
+          <label htmlFor="skin">Skin</label>
+          <input
+            id="skin"
+            type="text"
+            value={character.skin}
+            onChange={(e) => update("skin", e.target.value)}
           />
         </div>
       </div>

@@ -348,3 +348,186 @@
   color: var(--accent);
   border-bottom: none;
 }
+
+/* Shared helpers */
+
+.field-wide {
+  grid-column: 1 / -1;
+}
+
+.section-hint {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin-bottom: 10px;
+}
+
+.inspiration-label {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px;
+}
+
+.inspiration-label input {
+  width: auto;
+}
+
+.armor-penalty-mark {
+  color: var(--danger);
+}
+
+/* Death saves */
+
+.death-saves {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.death-saves-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.death-save-pips {
+  display: flex;
+  gap: 6px;
+}
+
+.pip {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-input);
+  padding: 0;
+}
+
+.pip-filled {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Weapons */
+
+.weapons-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+}
+
+.weapons-table th,
+.weapons-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.attack-input,
+.range-input,
+.ammo-input {
+  width: 70px;
+}
+
+/* Combat features */
+
+.combat-features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.combat-feature-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feature-name {
+  flex: 1;
+}
+
+.feature-used-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.feature-used-toggle input {
+  width: auto;
+}
+
+/* Carrying capacity */
+
+.carrying-capacity {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.capacity-box {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+}
+
+.capacity-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.capacity-value {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Valuables */
+
+.valuables-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.valuables-table th,
+.valuables-table td {
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+/* Powers */
+
+.power-level-header {
+  margin: 12px 0 6px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  opacity: 0.75;
+  border-bottom: none;
+}
+
+.alignment-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-bottom: 12px;
+}
+
+/* Backstory */
+
+.backstory-section .field-grid {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+}

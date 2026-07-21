@@ -34,11 +34,14 @@ export type SkillName =
   | "Performance"
   | "Persuasion";
 
+export type PowerAlignment = "Light" | "Dark" | "Universal";
+
 export interface Power {
   id: string;
   name: string;
-  level: number;
+  level: number; // 0 = at-will, 1-9
   type: "Force" | "Tech";
+  alignment: PowerAlignment;
   castingTime: string;
   range: string;
   duration: string;
@@ -46,12 +49,46 @@ export interface Power {
   prepared: boolean;
 }
 
+export type ItemLocation = "Donned" | "Backpack" | "Pouch" | "Storage";
+
 export interface EquipmentItem {
   id: string;
   name: string;
   quantity: number;
   weight: number;
   notes: string;
+  location: ItemLocation;
+}
+
+export interface Weapon {
+  id: string;
+  name: string;
+  attackBonus: string;
+  damage: string;
+  range: string;
+  weight: number;
+  ammo: string;
+}
+
+export type RefreshType = "Short Rest" | "Long Rest" | "At Will";
+
+export interface CombatFeature {
+  id: string;
+  name: string;
+  refresh: RefreshType;
+  used: boolean;
+}
+
+export interface Valuable {
+  id: string;
+  where: string;
+  howMuch: string;
+  when: string;
+}
+
+export interface DeathSaves {
+  successes: number; // 0-3
+  failures: number; // 0-3
 }
 
 export interface Character {
@@ -61,6 +98,7 @@ export interface Character {
 
   // Identity
   name: string;
+  playerName: string;
   species: string;
   characterClass: string;
   archetype: string;
@@ -69,10 +107,17 @@ export interface Character {
   alignment: string;
   allegiance: string;
   homeworld: string;
+  placeOfBirth: string;
+  experiencePoints: number;
+  xpNextLevel: number;
   age: string;
   gender: string;
   height: string;
   weight: string;
+  size: string;
+  hair: string;
+  eyes: string;
+  skin: string;
 
   // Abilities
   abilities: AbilityScores;
@@ -86,23 +131,47 @@ export interface Character {
   currentHp: number;
   tempHp: number;
   defense: number;
+  armorNotes: string;
+  resistances: string;
   hitDiceTotal: string;
   hitDiceRemaining: string;
-  speed: number;
+  deathSaves: DeathSaves;
+  speedBase: number;
+  speedHour: number;
+  speedDay: number;
+  specialMovement: string;
+  vision: string;
+  inspiration: boolean;
   initiativeBonus: number;
+  weapons: Weapon[];
+  combatFeatures: CombatFeature[];
 
   // Force / Tech
   forcePoints: { current: number; max: number };
   techPoints: { current: number; max: number };
   forceDie: string;
+  techAttackModifier: number;
+  techSaveDC: number;
+  forceAttackModifier: number;
+  forceSaveDC: number;
   powers: Power[];
 
   // Equipment
   credits: number;
   equipment: EquipmentItem[];
+  gemsAndTreasure: string;
+  valuables: Valuable[];
 
   // Features / Notes
+  proficiencies: string;
+  languages: string;
   featsAndFeatures: string;
+  appearance: string;
+  personalityTraits: string;
+  ideals: string;
+  bonds: string;
+  flaws: string;
+  backgroundFeature: string;
   backstory: string;
   notes: string;
 }
@@ -158,6 +227,9 @@ export const SKILL_ABILITY: Record<SkillName, AbilityKey> = {
   Persuasion: "cha",
 };
 
+// Skills that suffer an armor check penalty (stealth in light/med/heavy armor with str requirement not met, etc.)
+export const ARMOR_PENALTY_SKILLS: SkillName[] = ["Stealth"];
+
 export const emptySkills = (): Record<SkillName, SkillState> => {
   const skills = {} as Record<SkillName, SkillState>;
   for (const s of SKILL_LIST) {
@@ -182,6 +254,7 @@ export function createBlankCharacter(): Character {
     createdAt: now,
     updatedAt: now,
     name: "New Character",
+    playerName: "",
     species: "",
     characterClass: "",
     archetype: "",
@@ -190,10 +263,17 @@ export function createBlankCharacter(): Character {
     alignment: "",
     allegiance: "",
     homeworld: "",
+    placeOfBirth: "",
+    experiencePoints: 0,
+    xpNextLevel: 300,
     age: "",
     gender: "",
     height: "",
     weight: "",
+    size: "Medium",
+    hair: "",
+    eyes: "",
+    skin: "",
     abilities: emptyAbilities(),
     skills: emptySkills(),
     savingThrows: emptySavingThrows(),
@@ -201,17 +281,41 @@ export function createBlankCharacter(): Character {
     currentHp: 10,
     tempHp: 0,
     defense: 10,
+    armorNotes: "",
+    resistances: "",
     hitDiceTotal: "1d8",
     hitDiceRemaining: "1d8",
-    speed: 30,
+    deathSaves: { successes: 0, failures: 0 },
+    speedBase: 30,
+    speedHour: 3,
+    speedDay: 24,
+    specialMovement: "",
+    vision: "",
+    inspiration: false,
     initiativeBonus: 0,
+    weapons: [],
+    combatFeatures: [],
     forcePoints: { current: 0, max: 0 },
     techPoints: { current: 0, max: 0 },
     forceDie: "d6",
+    techAttackModifier: 0,
+    techSaveDC: 8,
+    forceAttackModifier: 0,
+    forceSaveDC: 8,
     powers: [],
     credits: 0,
     equipment: [],
+    gemsAndTreasure: "",
+    valuables: [],
+    proficiencies: "",
+    languages: "",
     featsAndFeatures: "",
+    appearance: "",
+    personalityTraits: "",
+    ideals: "",
+    bonds: "",
+    flaws: "",
+    backgroundFeature: "",
     backstory: "",
     notes: "",
   };
