@@ -3,11 +3,36 @@ import { carryingCapacity } from "../utils";
 import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
 import { ARMOR_CATALOG } from "../data/armor";
+import HoverInfo from "./HoverInfo";
 
 const ITEM_LOOKUP = new Map<string, { name: string; weight: number }>([
   ...GEAR_CATALOG.map((g) => [g.name.toLowerCase(), { name: g.name, weight: g.weight }] as const),
   ...WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), { name: w.name, weight: w.weight }] as const),
   ...ARMOR_CATALOG.map((a) => [a.name.toLowerCase(), { name: a.name, weight: a.weight }] as const),
+]);
+
+const ITEM_INFO_LINES = new Map<string, string[]>([
+  ...GEAR_CATALOG.map(
+    (g): [string, string[]] => [g.name.toLowerCase(), [g.category, `Cost: ${g.cost} cr`, `Weight: ${g.weight} kg`]]
+  ),
+  ...WEAPON_CATALOG.map(
+    (w): [string, string[]] => [
+      w.name.toLowerCase(),
+      [w.type, `Damage: ${w.damage}`, w.property, `Cost: ${w.cost} cr · Weight: ${w.weight} kg`].filter(Boolean),
+    ]
+  ),
+  ...ARMOR_CATALOG.map(
+    (a): [string, string[]] => [
+      a.name.toLowerCase(),
+      [
+        `${a.type} Armor`,
+        `AC: ${a.ac}`,
+        a.property,
+        `Stealth: ${a.stealth}`,
+        `Cost: ${a.cost} cr · Weight: ${a.weight} kg`,
+      ].filter(Boolean),
+    ]
+  ),
 ]);
 
 interface Props {
@@ -69,6 +94,7 @@ export default function EquipmentSection({
         ))}
       </datalist>
 
+      <div className="table-scroll">
       <table className="equipment-table">
         <thead>
           <tr>
@@ -81,9 +107,9 @@ export default function EquipmentSection({
           </tr>
         </thead>
         <tbody>
-          {character.equipment.map((item) => (
-            <tr key={item.id}>
-              <td>
+          {character.equipment.map((item) => {
+            const infoLines = ITEM_INFO_LINES.get(item.name.toLowerCase());
+            const nameInput = (
                 <input
                   type="text"
                   list="gear-catalog-list"
@@ -98,6 +124,17 @@ export default function EquipmentSection({
                     }
                   }}
                 />
+            );
+            return (
+            <tr key={item.id}>
+              <td>
+                {infoLines ? (
+                  <HoverInfo title={item.name} lines={infoLines}>
+                    {nameInput}
+                  </HoverInfo>
+                ) : (
+                  nameInput
+                )}
               </td>
               <td>
                 <input
@@ -152,7 +189,8 @@ export default function EquipmentSection({
                 </button>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
         <tfoot>
           <tr>
@@ -167,6 +205,7 @@ export default function EquipmentSection({
           </tr>
         </tfoot>
       </table>
+      </div>
 
       <button className="btn btn-secondary" onClick={addItem}>
         + Add Item
@@ -203,6 +242,7 @@ export default function EquipmentSection({
 
       <h3>Valuables</h3>
       <p className="section-hint">Loaned, deposited, or received values or goods.</p>
+      <div className="table-scroll">
       <table className="valuables-table">
         <thead>
           <tr>
@@ -248,6 +288,7 @@ export default function EquipmentSection({
           ))}
         </tbody>
       </table>
+      </div>
       <button className="btn btn-secondary" onClick={addValuable}>
         + Add Valuable
       </button>

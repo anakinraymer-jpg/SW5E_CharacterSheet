@@ -1,18 +1,22 @@
-:root {
-  --text: #d8d4c8;
-  --text-h: #f4c95d;
-  --bg: #14151a;
-  --bg-panel: #1c1e26;
-  --bg-input: #23252f;
-  --border: #3a3d4a;
-  --accent: #f4c95d;
-  --accent-dim: rgba(244, 201, 93, 0.15);
-  --danger: #d9534f;
-  --success: #4caf6a;
-  --shadow: rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Exo+2:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
-  --sans: 'Segoe UI', system-ui, Roboto, sans-serif;
-  --heading: 'Segoe UI Semibold', 'Segoe UI', system-ui, sans-serif;
+:root {
+  --text: #cfe8f2;
+  --text-h: #7ff0ff;
+  --bg: #060a10;
+  --bg-panel: #0c1720;
+  --bg-input: #0f1e29;
+  --border: #1f4a5c;
+  --accent: #4fe0ff;
+  --accent-2: #ffb454;
+  --accent-dim: rgba(79, 224, 255, 0.14);
+  --accent-glow: rgba(79, 224, 255, 0.55);
+  --danger: #ff5c6c;
+  --success: #4de6a8;
+  --shadow: rgba(0, 0, 0, 0.55) 0 10px 25px -5px, rgba(79, 224, 255, 0.06) 0 0 40px -8px;
+
+  --sans: 'Exo 2', 'Segoe UI', system-ui, Roboto, sans-serif;
+  --heading: 'Orbitron', 'Segoe UI Semibold', system-ui, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
   font: 16px/145% var(--sans);
@@ -27,15 +31,17 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    --text: #2b2b2b;
-    --text-h: #7a5200;
-    --bg: #f3efe6;
+    --text: #123642;
+    --text-h: #086a80;
+    --bg: #eef6f8;
     --bg-panel: #ffffff;
-    --bg-input: #f7f5ef;
-    --border: #d8d3c4;
-    --accent: #b3800a;
-    --accent-dim: rgba(179, 128, 10, 0.12);
-    --shadow: rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+    --bg-input: #f2f9fb;
+    --border: #b9dee6;
+    --accent: #0aa8c7;
+    --accent-2: #c77800;
+    --accent-dim: rgba(10, 168, 199, 0.1);
+    --accent-glow: rgba(10, 168, 199, 0.35);
+    --shadow: rgba(10, 60, 70, 0.12) 0 10px 20px -5px, rgba(10, 168, 199, 0.08) 0 0 30px -8px;
   }
 }
 
@@ -45,6 +51,35 @@
 
 body {
   margin: 0;
+  position: relative;
+  background:
+    radial-gradient(ellipse 900px 500px at 20% -10%, rgba(79, 224, 255, 0.08), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 20%, rgba(255, 180, 84, 0.05), transparent 55%),
+    var(--bg);
+}
+
+/* Faint holographic scanline texture over the whole app */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(79, 224, 255, 0.035) 0px,
+    rgba(79, 224, 255, 0.035) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: screen;
+  opacity: 0.5;
+}
+
+@media (prefers-color-scheme: light) {
+  body::before {
+    opacity: 0.15;
+  }
 }
 
 #root {
@@ -58,27 +93,51 @@ h3 {
   font-weight: 600;
   color: var(--text-h);
   letter-spacing: 0.02em;
+  text-shadow: 0 0 12px var(--accent-glow);
 }
 
 h1 {
-  font-size: 2.2rem;
-  margin: 0 0 4px;
+  font-size: 2.1rem;
+  line-height: 1.35;
+  margin: 0 0 6px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  font-weight: 900;
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.5rem;
+  }
 }
 
 h2 {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   margin: 0 0 12px;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 6px;
+  padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+h2::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  box-shadow: 0 0 8px 2px var(--accent-glow);
+  transform: rotate(45deg);
+  flex: none;
 }
 
 h3 {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   margin: 16px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 p {
@@ -99,15 +158,23 @@ textarea {
   background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: 4px;
-  padding: 6px 8px;
+  padding: 7px 9px;
   width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--accent);
 }
 
 input:focus,
 select:focus,
 textarea:focus {
-  outline: 1px solid var(--accent);
+  outline: none;
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim), 0 0 12px -2px var(--accent-glow);
 }
 
 textarea {
@@ -117,4 +184,33 @@ textarea {
 
 button {
   cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+::selection {
+  background: var(--accent);
+  color: #041017;
+}
+
+/* Scrollbars, holo-tinted */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent);
 }

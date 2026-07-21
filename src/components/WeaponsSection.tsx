@@ -39,6 +39,7 @@ export default function WeaponsSection({
           <option key={w.name} value={w.name} />
         ))}
       </datalist>
+      <div className="table-scroll">
       <table className="weapons-table">
         <thead>
           <tr>
@@ -129,6 +130,7 @@ export default function WeaponsSection({
           ))}
         </tbody>
       </table>
+      </div>
       <button className="btn btn-secondary" onClick={addWeapon}>
         + Add Weapon
       </button>

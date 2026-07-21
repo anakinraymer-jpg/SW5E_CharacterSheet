@@ -1,9 +1,49 @@
 import type { Character } from "../types";
 import { CLASS_RESOURCES_BY_CLASS, CLASS_SUB_CHOICES_BY_CLASS } from "../data/classFeatureChoices";
+import HoverInfo from "./HoverInfo";
 
 interface Props {
   character: Character;
   onUpdateResource: (key: string, current: number) => void;
+}
+
+interface ParsedFeature {
+  title: string;
+  meta: string;
+  body: string;
+}
+
+function parseFeatureLine(line: string): ParsedFeature | null {
+  const match = line.match(/^(.+?) \(([^)]+)\)\.\s*([\s\S]*)$/);
+  if (!match) return null;
+  return { title: match[1].trim(), meta: match[2].trim(), body: match[3].trim() };
+}
+
+function FeatureChips({ text }: { text: string }) {
+  const lines = text.split("\n\n").filter(Boolean);
+  const notes: string[] = [];
+  const features: ParsedFeature[] = [];
+  for (const line of lines) {
+    const parsed = parseFeatureLine(line);
+    if (parsed) features.push(parsed);
+    else notes.push(line);
+  }
+  return (
+    <>
+      {notes.map((n, i) => (
+        <p key={i} className="species-trait-line">
+          {n}
+        </p>
+      ))}
+      <div className="chip-row">
+        {features.map((f, i) => (
+          <HoverInfo key={i} title={f.title} lines={[f.meta, f.body]}>
+            <span className="info-chip">{f.title}</span>
+          </HoverInfo>
+        ))}
+      </div>
+    </>
+  );
 }
 
 export default function ClassFeaturesSection({ character, onUpdateResource }: Props) {
@@ -21,8 +61,8 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
     <section className="sheet-section class-features-section">
       <h2>Class Features</h2>
       <p className="section-hint">
-        Features unlocked by your class and archetype at your current level. Level up to reveal
-        more.
+        Features unlocked by your class and archetype at your current level. Hover a title for
+        details. Level up to reveal more.
       </p>
 
       {resources.length > 0 && (
@@ -62,41 +102,34 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
       {hasChosenSubChoices && (
         <div className="species-traits-box">
           <div className="species-traits-header">{character.classAppliedName} Choices</div>
-          {subChoiceDefs.map((def) => {
-            const chosen = character.classSubChoicePicks[def.key] ?? [];
-            if (chosen.length === 0) return null;
-            return chosen.map((name) => {
-              const option = def.options.find((o) => o.name === name);
-              if (!option) return null;
-              return (
-                <p key={`${def.key}-${name}`} className="species-trait-line">
-                  <strong>{option.name}</strong> ({def.label}). {option.text}
-                </p>
-              );
-            });
-          })}
+          <div className="chip-row">
+            {subChoiceDefs.map((def) => {
+              const chosen = character.classSubChoicePicks[def.key] ?? [];
+              return chosen.map((name) => {
+                const option = def.options.find((o) => o.name === name);
+                if (!option) return null;
+                return (
+                  <HoverInfo key={`${def.key}-${name}`} title={option.name} lines={[def.label, option.text]}>
+                    <span className="info-chip">{option.name}</span>
+                  </HoverInfo>
+                );
+              });
+            })}
+          </div>
         </div>
       )}
 
       {character.classTraitsText && (
         <div className="species-traits-box">
           <div className="species-traits-header">{character.classAppliedName} Features</div>
-          {character.classTraitsText.split("\n\n").map((line, i) => (
-            <p key={i} className="species-trait-line">
-              {line}
-            </p>
-          ))}
+          <FeatureChips text={character.classTraitsText} />
         </div>
       )}
 
       {character.archetypeTraitsText && (
         <div className="species-traits-box">
           <div className="species-traits-header">{character.archetypeAppliedName} Features</div>
-          {character.archetypeTraitsText.split("\n\n").map((line, i) => (
-            <p key={i} className="species-trait-line">
-              {line}
-            </p>
-          ))}
+          <FeatureChips text={character.archetypeTraitsText} />
         </div>
       )}
     </section>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Character } from "../types";
 import { FEATS_CATALOG } from "../data/feats";
 import { buildFeatText } from "../featLogic";
+import HoverInfo from "./HoverInfo";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 const FEAT_NAMES = FEATS_CATALOG.map((f) => f.name);
@@ -53,30 +54,22 @@ export default function FeatsSection({ character, onAddFeat, onRemoveFeat }: Pro
 
       {character.feats.length === 0 && <p className="section-hint">No feats added yet.</p>}
 
-      {character.feats.map((cf) => {
-        const feat = FEATS_BY_NAME.get(cf.name);
-        if (!feat) return null;
-        return (
-          <div className="species-traits-box" key={cf.id}>
-            <div
-              className="species-traits-header"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
-            >
-              <span>{feat.name}</span>
-              <button className="btn btn-danger btn-small" onClick={() => onRemoveFeat(cf.id)}>
-                Remove
-              </button>
-            </div>
-            {buildFeatText(feat, cf)
-              .split("\n\n")
-              .map((line, i) => (
-                <p key={i} className="species-trait-line">
-                  {line}
-                </p>
-              ))}
-          </div>
-        );
-      })}
+      <div className="chip-row">
+        {character.feats.map((cf) => {
+          const feat = FEATS_BY_NAME.get(cf.name);
+          if (!feat) return null;
+          return (
+            <HoverInfo key={cf.id} title={feat.name} lines={buildFeatText(feat, cf).split("\n\n")}>
+              <span className="info-chip">
+                {feat.name}
+                <button className="btn btn-danger btn-small" onClick={() => onRemoveFeat(cf.id)}>
+                  ×
+                </button>
+              </span>
+            </HoverInfo>
+          );
+        })}
+      </div>
     </section>
   );
 }
