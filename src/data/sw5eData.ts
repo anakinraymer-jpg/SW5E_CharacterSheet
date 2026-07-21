@@ -56,39 +56,6 @@ export const ARCHETYPES = [
   "Way of the Sage",
 ];
 
-export const SPECIES = [
-  "Bith",
-  "Bothan",
-  "Cathar",
-  "Cerean",
-  "Chiss",
-  "Devaronian",
-  "Droid, Class I",
-  "Droid, Class II",
-  "Droid, Class III",
-  "Droid, Class IV",
-  "Droid, Class V",
-  "Duros",
-  "Ewok",
-  "Gamorrean",
-  "Gungan",
-  "Human",
-  "Ithorian",
-  "Jawa",
-  "Kel Dor",
-  "Mon Calamari",
-  "Nautolan",
-  "Rodian",
-  "Sith Pureblood",
-  "Togruta",
-  "Trandoshan",
-  "Tusken",
-  "Twi'lek",
-  "Weequay",
-  "Wookiee",
-  "Zabrak",
-];
-
 export const BACKGROUNDS = [
   "Agent",
   "Bounty Hunter",
@@ -123,6 +90,39 @@ export const ALIGNMENTS = [
 ];
 
 export const SIZES = ["Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"];
+
+// Languages compiled from PHB species pages (sw5e.com).
+export const LANGUAGES = [
+  "Galactic Basic",
+  "Binary",
+  "Bith",
+  "Bothese",
+  "Catharese",
+  "Cerean",
+  "Cheunh",
+  "Devaronese",
+  "Dosh",
+  "Durese",
+  "Ewokese",
+  "Gamorrese",
+  "Gungan",
+  "Ithorese",
+  "Jawaese",
+  "Jawa Trade Language",
+  "Kel Dor",
+  "Minnisiat",
+  "Mon Cal",
+  "Nautila",
+  "Rodese",
+  "Shyriiwook",
+  "Sith",
+  "Sriluurian",
+  "Sy Bisti",
+  "Togruti",
+  "Tusken",
+  "Twi'leki",
+  "Zabraki",
+];
 
 export const ALLEGIANCES = [
   "Galactic Republic",

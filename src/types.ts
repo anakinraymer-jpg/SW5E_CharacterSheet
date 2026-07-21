@@ -36,6 +36,53 @@ export type SkillName =
 
 export type PowerAlignment = "Light" | "Dark" | "Universal";
 
+export type SpeciesChoiceKind = "skill" | "language" | "instrument" | "tool" | "kit" | "weapon";
+
+export interface SpeciesTraitChoice {
+  kind: SpeciesChoiceKind;
+  label: string;
+  count: number;
+  options: string[];
+}
+
+export interface SpeciesTrait {
+  name: string;
+  text: string;
+  grantsSkills?: SkillName[];
+  choices?: SpeciesTraitChoice[];
+}
+
+export interface AbilityChoiceIncrease {
+  amount: number;
+  count: number;
+  options: AbilityKey[];
+}
+
+export interface AbilityIncrease {
+  fixed: Partial<Record<AbilityKey, number>>;
+  choices: AbilityChoiceIncrease[];
+  humanVariant?: boolean;
+}
+
+export interface SpeciesEntry {
+  name: string;
+  size: string;
+  speed: number;
+  abilityIncrease: AbilityIncrease;
+  knownLanguages: string[];
+  languageChoice?: { count: number; options?: string[] };
+  traits: SpeciesTrait[];
+}
+
+export interface SpeciesSelections {
+  abilityChoices: AbilityKey[][]; // one array of chosen abilities per AbilityChoiceIncrease
+  humanFixedTwo?: AbilityKey; // Human variant A: the +2 ability
+  humanFixedOnes?: AbilityKey[]; // Human variant A: the two +1 abilities
+  humanFourOnes?: AbilityKey[]; // Human variant B: four +1 abilities
+  languageChoice: string[];
+  traitChoices: Record<string, string[][]>; // trait name -> per-choice selected options
+}
+
 export interface Power {
   id: string;
   name: string;
@@ -119,6 +166,12 @@ export interface Character {
   eyes: string;
   skin: string;
 
+  // Species trait application state
+  speciesAppliedName: string;
+  speciesAbilityBonus: AbilityScores;
+  speciesGrantedSkills: SkillName[];
+  speciesTraitsText: string;
+
   // Abilities
   abilities: AbilityScores;
 
@@ -183,6 +236,15 @@ export const emptyAbilities = (): AbilityScores => ({
   int: 10,
   wis: 10,
   cha: 10,
+});
+
+export const emptyAbilities0 = (): AbilityScores => ({
+  str: 0,
+  dex: 0,
+  con: 0,
+  int: 0,
+  wis: 0,
+  cha: 0,
 });
 
 export const SKILL_LIST: SkillName[] = [
@@ -274,6 +336,10 @@ export function createBlankCharacter(): Character {
     hair: "",
     eyes: "",
     skin: "",
+    speciesAppliedName: "",
+    speciesAbilityBonus: emptyAbilities0(),
+    speciesGrantedSkills: [],
+    speciesTraitsText: "",
     abilities: emptyAbilities(),
     skills: emptySkills(),
     savingThrows: emptySavingThrows(),

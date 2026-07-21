@@ -167,6 +167,35 @@
   gap: 10px 16px;
 }
 
+/* Species traits */
+
+.species-traits-box {
+  margin-top: 16px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.species-traits-header {
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+.species-trait-line {
+  font-size: 0.85rem;
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.species-trait-line:last-child {
+  margin-bottom: 0;
+}
+
 /* Abilities */
 
 .ability-grid {
@@ -524,6 +553,99 @@
   font-size: 0.8rem;
   opacity: 0.8;
   margin-bottom: 12px;
+}
+
+/* Modal */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.modal-box {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  max-width: 600px;
+  width: 100%;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+  margin: 0;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.modal-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.choice-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.choice-group-label {
+  font-weight: 600;
+  color: var(--text-h);
+  font-size: 0.9rem;
+}
+
+.choice-group-hint {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.choice-selects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.choice-selects select {
+  flex: 1;
+  min-width: 160px;
 }
 
 /* Backstory */

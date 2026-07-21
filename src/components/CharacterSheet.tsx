@@ -6,10 +6,14 @@ import type {
   EquipmentItem,
   Power,
   SkillName,
+  SpeciesEntry,
+  SpeciesSelections,
   Valuable,
   Weapon,
 } from "../types";
 import { saveCharacter, exportCharacter } from "../storage";
+import { SPECIES_CATALOG } from "../data/species";
+import { applySpecies, revertSpecies, speciesNeedsChoices } from "../speciesLogic";
 import IdentitySection from "./IdentitySection";
 import AbilityScores from "./AbilityScores";
 import SkillsSection from "./SkillsSection";
@@ -18,6 +22,7 @@ import WeaponsSection from "./WeaponsSection";
 import PowersSection from "./PowersSection";
 import EquipmentSection from "./EquipmentSection";
 import BackstorySection from "./BackstorySection";
+import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
 
 interface Props {
   initial: Character;
@@ -26,6 +31,7 @@ interface Props {
 
 export default function CharacterSheet({ initial, onBack }: Props) {
   const [character, setCharacter] = useState<Character>(initial);
+  const [pendingSpecies, setPendingSpecies] = useState<SpeciesEntry | null>(null);
 
   useEffect(() => {
     setCharacter(initial);
@@ -78,6 +84,34 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       ...prev,
       savingThrows: { ...prev.savingThrows, [key]: !prev.savingThrows[key] },
     }));
+  }
+
+  function handleSpeciesCommit(value: string) {
+    const match = SPECIES_CATALOG.find(
+      (s) => s.name.toLowerCase() === value.trim().toLowerCase()
+    );
+    if (!match) {
+      if (character.speciesAppliedName) {
+        setCharacter((prev) => revertSpecies(prev));
+      }
+      return;
+    }
+    if (match.name === character.speciesAppliedName) return;
+    if (speciesNeedsChoices(match)) {
+      setPendingSpecies(match);
+    } else {
+      setCharacter((prev) => applySpecies(prev, match, emptySelections()));
+    }
+  }
+
+  function emptySelections(): SpeciesSelections {
+    return { abilityChoices: [], languageChoice: [], traitChoices: {} };
+  }
+
+  function handleSpeciesConfirm(selections: SpeciesSelections) {
+    if (!pendingSpecies) return;
+    setCharacter((prev) => applySpecies(prev, pendingSpecies, selections));
+    setPendingSpecies(null);
   }
 
   function addPower() {
@@ -225,7 +259,11 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         </button>
       </div>
 
-      <IdentitySection character={character} update={update} />
+      <IdentitySection
+        character={character}
+        update={update}
+        onSpeciesCommit={handleSpeciesCommit}
+      />
 
       <div className="sheet-columns">
         <div className="sheet-column">
@@ -275,6 +313,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       />
 
       <BackstorySection character={character} update={update} />
+
+      {pendingSpecies && (
+        <SpeciesChoiceDialog
+          species={pendingSpecies}
+          onCancel={() => setPendingSpecies(null)}
+          onConfirm={handleSpeciesConfirm}
+        />
+      )}
     </div>
   );
 }

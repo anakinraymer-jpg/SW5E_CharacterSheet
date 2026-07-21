@@ -1,9 +1,13 @@
 import type { Character } from "../types";
-import { CLASSES, ARCHETYPES, SPECIES, BACKGROUNDS, ALIGNMENTS, ALLEGIANCES, SIZES } from "../data/sw5eData";
+import { CLASSES, ARCHETYPES, BACKGROUNDS, ALIGNMENTS, ALLEGIANCES, SIZES } from "../data/sw5eData";
+import { SPECIES_CATALOG } from "../data/species";
+
+const SPECIES_NAMES = SPECIES_CATALOG.map((s) => s.name);
 
 interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
+  onSpeciesCommit: (value: string) => void;
 }
 
 function Datalist({ id, options }: { id: string; options: string[] }) {
@@ -16,7 +20,7 @@ function Datalist({ id, options }: { id: string; options: string[] }) {
   );
 }
 
-export default function IdentitySection({ character, update }: Props) {
+export default function IdentitySection({ character, update, onSpeciesCommit }: Props) {
   return (
     <section className="sheet-section identity-section">
       <div className="field field-name">
@@ -47,8 +51,9 @@ export default function IdentitySection({ character, update }: Props) {
             list="species-list"
             value={character.species}
             onChange={(e) => update("species", e.target.value)}
+            onBlur={(e) => onSpeciesCommit(e.target.value)}
           />
-          <Datalist id="species-list" options={SPECIES} />
+          <Datalist id="species-list" options={SPECIES_NAMES} />
         </div>
 
         <div className="field">
@@ -236,6 +241,17 @@ export default function IdentitySection({ character, update }: Props) {
           />
         </div>
       </div>
+
+      {character.speciesTraitsText && (
+        <div className="species-traits-box">
+          <div className="species-traits-header">{character.speciesAppliedName} Traits</div>
+          {character.speciesTraitsText.split("\n\n").map((line, i) => (
+            <p key={i} className="species-trait-line">
+              {line}
+            </p>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
