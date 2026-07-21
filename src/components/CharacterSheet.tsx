@@ -17,7 +17,10 @@ import type {
 import { saveCharacter, exportCharacter } from "../storage";
 import { SPECIES_CATALOG } from "../data/species";
 import { CLASSES_CATALOG } from "../data/classes";
-import { ARCHETYPES_CATALOG } from "../data/archetypeDetails";
+import { ARCHETYPES_CATALOG as ARCHETYPES_CATALOG_PHB } from "../data/archetypeDetails";
+import { ARCHETYPES_CATALOG_EC } from "../data/archetypeDetailsEC";
+
+const ARCHETYPES_CATALOG = [...ARCHETYPES_CATALOG_PHB, ...ARCHETYPES_CATALOG_EC];
 import { applySpecies, revertSpecies, speciesNeedsChoices } from "../speciesLogic";
 import {
   applyArchetype,

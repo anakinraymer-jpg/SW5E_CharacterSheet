@@ -100,7 +100,7 @@ function buildClassTraitsText(classEntry: ClassEntry, character: Character): str
   );
   lines.push(`Armor: ${classEntry.armorProficiency}. Weapons: ${classEntry.weaponProficiency}. Tools: ${classEntry.toolProficiency}.`);
   if (row?.extra) lines.push(`Level ${level} resources — ${row.extra}`);
-  lines.push(`Archetype (chosen at ${classEntry.archetypeLevel}rd level): ${classEntry.archetypeNames.join(", ")}.`);
+  lines.push(`Archetype (chosen at ${classEntry.archetypeLevel}rd level) — see the Archetype field for the full list of options, including Echoes of the Force archetypes.`);
 
   for (const feature of classEntry.features) {
     if (feature.level <= level) {
