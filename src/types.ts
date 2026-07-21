@@ -83,6 +83,48 @@ export interface SpeciesSelections {
   traitChoices: Record<string, string[][]>; // trait name -> per-choice selected options
 }
 
+export interface ClassLevelRow {
+  level: number;
+  features: string; // raw "Features" column text, "-" if none
+  forcePoints?: number;
+  techPoints?: number;
+  extra?: string; // other per-level resource columns, formatted for display
+}
+
+export interface ClassFeature {
+  name: string;
+  level: number;
+  text: string;
+}
+
+export interface ClassEntry {
+  name: string;
+  hitDie: number;
+  primaryAbility: string;
+  savingThrows: [AbilityKey, AbilityKey];
+  armorProficiency: string;
+  weaponProficiency: string;
+  toolProficiency: string;
+  skillChoice: { count: number; options: string[] };
+  equipmentText: string[];
+  startingFunds: string;
+  archetypeLevel: number;
+  archetypeNames: string[];
+  asiLevels: number[];
+  levels: ClassLevelRow[];
+  features: ClassFeature[];
+}
+
+export interface ArchetypeEntry {
+  name: string;
+  className: string;
+  features: ClassFeature[];
+}
+
+export interface ClassSelections {
+  skillChoice: string[];
+}
+
 export interface Power {
   id: string;
   name: string;
@@ -171,6 +213,16 @@ export interface Character {
   speciesAbilityBonus: AbilityScores;
   speciesGrantedSkills: SkillName[];
   speciesTraitsText: string;
+
+  // Class/archetype trait application state
+  classAppliedName: string;
+  classSavingThrowsApplied: AbilityKey[];
+  classGrantedSkills: SkillName[];
+  classAbilityBonus: AbilityScores;
+  asiChoices: Record<number, AbilityKey[]>;
+  classTraitsText: string;
+  archetypeAppliedName: string;
+  archetypeTraitsText: string;
 
   // Abilities
   abilities: AbilityScores;
@@ -340,6 +392,14 @@ export function createBlankCharacter(): Character {
     speciesAbilityBonus: emptyAbilities0(),
     speciesGrantedSkills: [],
     speciesTraitsText: "",
+    classAppliedName: "",
+    classSavingThrowsApplied: [],
+    classGrantedSkills: [],
+    classAbilityBonus: emptyAbilities0(),
+    asiChoices: {},
+    classTraitsText: "",
+    archetypeAppliedName: "",
+    archetypeTraitsText: "",
     abilities: emptyAbilities(),
     skills: emptySkills(),
     savingThrows: emptySavingThrows(),

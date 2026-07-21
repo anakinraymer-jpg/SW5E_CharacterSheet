@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import type {
   AbilityKey,
+  ArchetypeEntry,
   Character,
+  ClassEntry,
+  ClassSelections,
   CombatFeature,
   EquipmentItem,
   Power,
@@ -13,7 +16,21 @@ import type {
 } from "../types";
 import { saveCharacter, exportCharacter } from "../storage";
 import { SPECIES_CATALOG } from "../data/species";
+import { CLASSES_CATALOG } from "../data/classes";
+import { ARCHETYPES_CATALOG } from "../data/archetypeDetails";
 import { applySpecies, revertSpecies, speciesNeedsChoices } from "../speciesLogic";
+import {
+  applyArchetype,
+  applyAsi,
+  applyClass,
+  classNeedsChoices,
+  pendingAsiLevel,
+  recalcArchetypeForLevel,
+  recalcClassForLevel,
+  revertArchetype,
+  revertAsisAboveLevel,
+  revertClass,
+} from "../classLogic";
 import IdentitySection from "./IdentitySection";
 import AbilityScores from "./AbilityScores";
 import SkillsSection from "./SkillsSection";
@@ -23,6 +40,8 @@ import PowersSection from "./PowersSection";
 import EquipmentSection from "./EquipmentSection";
 import BackstorySection from "./BackstorySection";
 import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
+import ClassChoiceDialog from "./ClassChoiceDialog";
+import AbilityImprovementDialog from "./AbilityImprovementDialog";
 
 interface Props {
   initial: Character;
@@ -32,6 +51,8 @@ interface Props {
 export default function CharacterSheet({ initial, onBack }: Props) {
   const [character, setCharacter] = useState<Character>(initial);
   const [pendingSpecies, setPendingSpecies] = useState<SpeciesEntry | null>(null);
+  const [pendingClass, setPendingClass] = useState<ClassEntry | null>(null);
+  const [pendingAsi, setPendingAsi] = useState<{ level: number; className: string } | null>(null);
 
   useEffect(() => {
     setCharacter(initial);
@@ -41,6 +62,31 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     saveCharacter(character);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [character]);
+
+  // Reactive level engine: recompute class/archetype resources & feature text,
+  // revert any ASI above the new level, and surface a pending ASI prompt.
+  useEffect(() => {
+    const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
+    if (classEntry) {
+      setCharacter((prev) => {
+        const reverted = revertAsisAboveLevel(prev, prev.level);
+        return recalcClassForLevel(reverted, classEntry);
+      });
+      const lvl = pendingAsiLevel(character, classEntry);
+      if (lvl && (!pendingAsi || pendingAsi.level !== lvl)) {
+        setPendingAsi({ level: lvl, className: classEntry.name });
+      } else if (!lvl && pendingAsi) {
+        setPendingAsi(null);
+      }
+    }
+    const archetypeEntry = ARCHETYPES_CATALOG.find(
+      (a) => a.name === character.archetypeAppliedName
+    );
+    if (archetypeEntry) {
+      setCharacter((prev) => recalcArchetypeForLevel(prev, archetypeEntry));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [character.level, character.classAppliedName, character.archetypeAppliedName, character.asiChoices]);
 
   function update<K extends keyof Character>(key: K, value: Character[K]) {
     setCharacter((prev) => ({ ...prev, [key]: value }));
@@ -113,6 +159,52 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     setCharacter((prev) => applySpecies(prev, pendingSpecies, selections));
     setPendingSpecies(null);
   }
+
+  function handleClassCommit(value: string) {
+    const match = CLASSES_CATALOG.find((c) => c.name.toLowerCase() === value.trim().toLowerCase());
+    if (!match) {
+      if (character.classAppliedName) {
+        setCharacter((prev) => revertClass(prev));
+      }
+      return;
+    }
+    if (match.name === character.classAppliedName) return;
+    if (classNeedsChoices(match)) {
+      setPendingClass(match);
+    } else {
+      setCharacter((prev) => applyClass(prev, match, { skillChoice: [] }));
+    }
+  }
+
+  function handleClassConfirm(selections: ClassSelections) {
+    if (!pendingClass) return;
+    setCharacter((prev) => applyClass(prev, pendingClass, selections));
+    setPendingClass(null);
+  }
+
+  function handleArchetypeCommit(value: string) {
+    const match = ARCHETYPES_CATALOG.find(
+      (a) => a.name.toLowerCase() === value.trim().toLowerCase() && a.className === character.classAppliedName
+    );
+    if (!match) {
+      if (character.archetypeAppliedName) {
+        setCharacter((prev) => revertArchetype(prev));
+      }
+      return;
+    }
+    if (match.name === character.archetypeAppliedName) return;
+    setCharacter((prev) => applyArchetype(prev, match));
+  }
+
+  function handleAsiConfirm(abilities: AbilityKey[]) {
+    if (!pendingAsi) return;
+    setCharacter((prev) => applyAsi(prev, pendingAsi.level, abilities));
+    setPendingAsi(null);
+  }
+
+  const currentClassArchetypes: ArchetypeEntry[] = ARCHETYPES_CATALOG.filter(
+    (a) => a.className === character.classAppliedName
+  );
 
   function addPower() {
     const newPower: Power = {
@@ -263,6 +355,9 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         character={character}
         update={update}
         onSpeciesCommit={handleSpeciesCommit}
+        onClassCommit={handleClassCommit}
+        onArchetypeCommit={handleArchetypeCommit}
+        archetypeOptions={currentClassArchetypes.map((a) => a.name)}
       />
 
       <div className="sheet-columns">
@@ -319,6 +414,23 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           species={pendingSpecies}
           onCancel={() => setPendingSpecies(null)}
           onConfirm={handleSpeciesConfirm}
+        />
+      )}
+
+      {pendingClass && (
+        <ClassChoiceDialog
+          classEntry={pendingClass}
+          onCancel={() => setPendingClass(null)}
+          onConfirm={handleClassConfirm}
+        />
+      )}
+
+      {pendingAsi && (
+        <AbilityImprovementDialog
+          level={pendingAsi.level}
+          className={pendingAsi.className}
+          onCancel={() => setPendingAsi(null)}
+          onConfirm={handleAsiConfirm}
         />
       )}
     </div>

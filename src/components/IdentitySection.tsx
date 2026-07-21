@@ -1,13 +1,18 @@
 import type { Character } from "../types";
-import { CLASSES, ARCHETYPES, BACKGROUNDS, ALIGNMENTS, ALLEGIANCES, SIZES } from "../data/sw5eData";
+import { ARCHETYPES, BACKGROUNDS, ALIGNMENTS, ALLEGIANCES, SIZES } from "../data/sw5eData";
 import { SPECIES_CATALOG } from "../data/species";
+import { CLASSES_CATALOG } from "../data/classes";
 
 const SPECIES_NAMES = SPECIES_CATALOG.map((s) => s.name);
+const CLASS_NAMES = CLASSES_CATALOG.map((c) => c.name);
 
 interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
   onSpeciesCommit: (value: string) => void;
+  onClassCommit: (value: string) => void;
+  onArchetypeCommit: (value: string) => void;
+  archetypeOptions: string[];
 }
 
 function Datalist({ id, options }: { id: string; options: string[] }) {
@@ -20,7 +25,14 @@ function Datalist({ id, options }: { id: string; options: string[] }) {
   );
 }
 
-export default function IdentitySection({ character, update, onSpeciesCommit }: Props) {
+export default function IdentitySection({
+  character,
+  update,
+  onSpeciesCommit,
+  onClassCommit,
+  onArchetypeCommit,
+  archetypeOptions,
+}: Props) {
   return (
     <section className="sheet-section identity-section">
       <div className="field field-name">
@@ -63,8 +75,9 @@ export default function IdentitySection({ character, update, onSpeciesCommit }: 
             list="class-list"
             value={character.characterClass}
             onChange={(e) => update("characterClass", e.target.value)}
+            onBlur={(e) => onClassCommit(e.target.value)}
           />
-          <Datalist id="class-list" options={CLASSES} />
+          <Datalist id="class-list" options={CLASS_NAMES} />
         </div>
 
         <div className="field">
@@ -74,8 +87,12 @@ export default function IdentitySection({ character, update, onSpeciesCommit }: 
             list="archetype-list"
             value={character.archetype}
             onChange={(e) => update("archetype", e.target.value)}
+            onBlur={(e) => onArchetypeCommit(e.target.value)}
           />
-          <Datalist id="archetype-list" options={ARCHETYPES} />
+          <Datalist
+            id="archetype-list"
+            options={archetypeOptions.length > 0 ? archetypeOptions : ARCHETYPES}
+          />
         </div>
 
         <div className="field">
@@ -246,6 +263,28 @@ export default function IdentitySection({ character, update, onSpeciesCommit }: 
         <div className="species-traits-box">
           <div className="species-traits-header">{character.speciesAppliedName} Traits</div>
           {character.speciesTraitsText.split("\n\n").map((line, i) => (
+            <p key={i} className="species-trait-line">
+              {line}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {character.classTraitsText && (
+        <div className="species-traits-box">
+          <div className="species-traits-header">{character.classAppliedName} Features</div>
+          {character.classTraitsText.split("\n\n").map((line, i) => (
+            <p key={i} className="species-trait-line">
+              {line}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {character.archetypeTraitsText && (
+        <div className="species-traits-box">
+          <div className="species-traits-header">{character.archetypeAppliedName} Features</div>
+          {character.archetypeTraitsText.split("\n\n").map((line, i) => (
             <p key={i} className="species-trait-line">
               {line}
             </p>
