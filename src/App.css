@@ -185,6 +185,26 @@
   border-right: 2px solid var(--accent);
 }
 
+.sheet-stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  align-items: start;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 1180px) {
+  .sheet-stat-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 500px) {
+  .sheet-stat-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .sheet-columns-wrap {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

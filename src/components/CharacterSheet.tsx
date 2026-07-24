@@ -56,6 +56,7 @@ import HealthBar from "./HealthBar";
 import { DefenseBox, InitiativeBox, ProficiencyBonusBox, SpeedBaseBox } from "./StatBoxes";
 import {
   DEFAULT_LAYOUT,
+  STAT_SECTIONS,
   WIDE_SECTIONS,
   getStoredLayout,
   saveLayout,
@@ -446,6 +447,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
   function removeFromLayout(current: SheetLayout, id: SectionId): SheetLayout {
     return {
+      statRow: current.statRow.filter((x) => x !== id),
       columns: current.columns.map((col) => col.filter((x) => x !== id)) as SheetLayout["columns"],
       wide: current.wide.filter((x) => x !== id),
     };
@@ -453,11 +455,13 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
   // Pointer Events (not the HTML5 Drag and Drop API) so reordering works with touch as well
   // as mouse — native HTML5 drag-and-drop isn't supported by touch input on mobile browsers.
-  // Narrow sections can move between/within the 3 columns; wide sections only reorder among
-  // themselves, since a full-width table doesn't make sense squeezed into a narrow column.
+  // Stat sections only reorder within the stat row; narrow sections can move between/within
+  // the 3 columns; wide sections only reorder among themselves, since a full-width table
+  // doesn't make sense squeezed into a narrow column.
   useEffect(() => {
     if (!draggedId) return;
     const dragging = draggedId;
+    const isStat = STAT_SECTIONS.includes(dragging);
     const isWide = WIDE_SECTIONS.includes(dragging);
 
     function handlePointerMove(e: globalThis.PointerEvent) {
@@ -468,6 +472,19 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
       setLayout((prev) => {
         const without = removeFromLayout(prev, dragging);
+
+        if (isStat) {
+          const overStatRow = target?.closest<HTMLElement>(".sheet-stat-row");
+          if (!overStatRow) return prev;
+          let insertAt = without.statRow.length;
+          if (overId) {
+            const idx = without.statRow.indexOf(overId);
+            if (idx !== -1) insertAt = idx;
+          }
+          const nextStatRow = [...without.statRow];
+          nextStatRow.splice(insertAt, 0, dragging);
+          return { ...without, statRow: nextStatRow };
+        }
 
         if (isWide) {
           const overWideStack = target?.closest<HTMLElement>(".sheet-wide-stack");
@@ -527,6 +544,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
   function handleResetLayout() {
     const fresh: SheetLayout = {
+      statRow: [...DEFAULT_LAYOUT.statRow],
       columns: [[...DEFAULT_LAYOUT.columns[0]], [...DEFAULT_LAYOUT.columns[1]], [...DEFAULT_LAYOUT.columns[2]]],
       wide: [...DEFAULT_LAYOUT.wide],
     };
@@ -645,6 +663,20 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       />
 
       <HealthBar character={character} update={update} />
+
+      <div className="sheet-stat-row">
+        {layout.statRow.map((id) => (
+          <SectionBlock
+            key={id}
+            id={id}
+            editMode={editLayout}
+            isDragging={draggedId === id}
+            onHandlePointerDown={handleSectionHandlePointerDown}
+          >
+            {renderSectionContent(id)}
+          </SectionBlock>
+        ))}
+      </div>
 
       <div className="sheet-columns-wrap">
         {layout.columns.map((col, i) => (
