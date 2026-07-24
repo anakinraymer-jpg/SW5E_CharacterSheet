@@ -303,8 +303,6 @@ export interface Character {
   speedDay: number;
   specialMovement: string;
   vision: string;
-  inspiration: boolean;
-  initiativeBonus: number;
   weapons: Weapon[];
   combatFeatures: CombatFeature[];
 
@@ -474,8 +472,6 @@ export function createBlankCharacter(): Character {
     speedDay: 24,
     specialMovement: "",
     vision: "",
-    inspiration: false,
-    initiativeBonus: 0,
     weapons: [],
     combatFeatures: [],
     forcePoints: { current: 0, max: 0 },

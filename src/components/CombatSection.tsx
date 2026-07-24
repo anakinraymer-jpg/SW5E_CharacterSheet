@@ -1,11 +1,6 @@
 import type { Character } from "../types";
 import { SKILL_ABILITY } from "../types";
-import {
-  abilityModifier,
-  formatModifier,
-  passivePerception,
-  proficiencyBonus,
-} from "../utils";
+import { abilityModifier, passivePerception, proficiencyBonus } from "../utils";
 
 interface Props {
   character: Character;
@@ -36,7 +31,6 @@ function DeathSavePips({
 
 export default function CombatSection({ character, update }: Props) {
   const pb = proficiencyBonus(character.level);
-  const dexMod = abilityModifier(character.abilities.dex);
 
   const perceptionState = character.skills.Perception;
   const wisMod = abilityModifier(character.abilities[SKILL_ABILITY.Perception]);
@@ -49,64 +43,12 @@ export default function CombatSection({ character, update }: Props) {
       <h2>Combat</h2>
       <div className="combat-grid">
         <div className="field">
-          <label htmlFor="defense">Defense</label>
-          <input
-            id="defense"
-            type="number"
-            value={character.defense}
-            onChange={(e) => update("defense", Number(e.target.value) || 0)}
-          />
-        </div>
-
-        <div className="field">
-          <label>Initiative</label>
-          <div className="readonly-box">
-            {formatModifier(dexMod + character.initiativeBonus)}
-          </div>
-        </div>
-
-        <div className="field">
-          <label htmlFor="init-bonus">Init. Bonus</label>
-          <input
-            id="init-bonus"
-            type="number"
-            value={character.initiativeBonus}
-            onChange={(e) => update("initiativeBonus", Number(e.target.value) || 0)}
-          />
-        </div>
-
-        <div className="field">
-          <label>Proficiency Bonus</label>
-          <div className="readonly-box">{formatModifier(pb)}</div>
-        </div>
-
-        <div className="field">
           <label>Passive Perception</label>
           <div className="readonly-box">{passivePerception(perceptionBonus)}</div>
-        </div>
-
-        <div className="field">
-          <label className="inspiration-label">
-            <input
-              type="checkbox"
-              checked={character.inspiration}
-              onChange={(e) => update("inspiration", e.target.checked)}
-            />
-            Inspiration
-          </label>
         </div>
       </div>
 
       <div className="combat-grid">
-        <div className="field">
-          <label htmlFor="speed-base">Speed (base)</label>
-          <input
-            id="speed-base"
-            type="number"
-            value={character.speedBase}
-            onChange={(e) => update("speedBase", Number(e.target.value) || 0)}
-          />
-        </div>
         <div className="field">
           <label htmlFor="speed-hour">Speed (hour)</label>
           <input

@@ -268,6 +268,79 @@
   touch-action: none;
 }
 
+/* Health bar */
+
+.health-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(165deg, var(--bg-panel), var(--bg-input) 140%);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+}
+
+.health-bar-track {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.health-bar-fill {
+  height: 100%;
+  background: var(--success);
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.health-wounded .health-bar-fill {
+  background: var(--accent-2);
+}
+
+.health-critical .health-bar-fill {
+  background: var(--danger);
+}
+
+.health-bar-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.health-bar-temp {
+  color: var(--accent);
+}
+
+.health-bar-controls {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Small single-value boxes (Defense, Initiative, Proficiency Bonus, Speed) */
+
+.stat-box-section {
+  padding: 14px 16px;
+}
+
+.stat-box-section .field {
+  margin-bottom: 0;
+}
+
 /* Identity */
 
 .field {
@@ -552,16 +625,6 @@
   font-size: 0.8rem;
   opacity: 0.6;
   margin-bottom: 10px;
-}
-
-.inspiration-label {
-  flex-direction: row !important;
-  align-items: center;
-  gap: 6px;
-}
-
-.inspiration-label input {
-  width: auto;
 }
 
 .armor-penalty-mark {

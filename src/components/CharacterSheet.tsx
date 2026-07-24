@@ -52,6 +52,8 @@ import FeatChoiceDialog from "./FeatChoiceDialog";
 import ArchetypeChoiceDialog from "./ArchetypeChoiceDialog";
 import ClassSubChoiceDialog from "./ClassSubChoiceDialog";
 import SectionBlock from "./SectionBlock";
+import HealthBar from "./HealthBar";
+import { DefenseBox, InitiativeBox, ProficiencyBonusBox, SpeedBaseBox } from "./StatBoxes";
 import {
   DEFAULT_LAYOUT,
   WIDE_SECTIONS,
@@ -540,6 +542,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
   function renderSectionContent(id: SectionId) {
     switch (id) {
+      case "defense":
+        return <DefenseBox character={character} update={update} />;
+      case "initiative":
+        return <InitiativeBox character={character} update={update} />;
+      case "proficiencyBonus":
+        return <ProficiencyBonusBox character={character} update={update} />;
+      case "speedBase":
+        return <SpeedBaseBox character={character} update={update} />;
       case "abilities":
         return <AbilityScores character={character} updateAbility={updateAbility} />;
       case "combat":
@@ -633,6 +643,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         onArchetypeCommit={handleArchetypeCommit}
         archetypeOptions={currentClassArchetypes.map((a) => a.name)}
       />
+
+      <HealthBar character={character} update={update} />
 
       <div className="sheet-columns-wrap">
         {layout.columns.map((col, i) => (
