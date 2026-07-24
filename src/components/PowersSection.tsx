@@ -1,5 +1,6 @@
 import type { Character, Power, PowerAlignment } from "../types";
 import { FORCE_POWERS, TECH_POWERS } from "../data/powers";
+import HoverInfo from "./HoverInfo";
 
 const FORCE_POWER_LOOKUP = new Map(FORCE_POWERS.map((p) => [p.name.toLowerCase(), p]));
 const TECH_POWER_LOOKUP = new Map(TECH_POWERS.map((p) => [p.name.toLowerCase(), p]));
@@ -183,7 +184,16 @@ export default function PowersSection({
             <div key={power.id}>
               {showHeader && <h3 className="power-level-header">{levelLabel(power.level)}</h3>}
               <div className="power-card">
-                <div className="power-card-row">
+                <HoverInfo
+                  className="power-name-wrap"
+                  title={power.name || "Power"}
+                  lines={[
+                    power.castingTime ? `Casting Time: ${power.castingTime}` : "",
+                    power.range ? `Range: ${power.range}` : "",
+                    power.duration ? `Duration: ${power.duration}` : "",
+                    power.description,
+                  ].filter(Boolean)}
+                >
                   <input
                     type="text"
                     placeholder="Power name"
@@ -221,6 +231,8 @@ export default function PowersSection({
                     }}
                     className="power-name"
                   />
+                </HoverInfo>
+                <div className="power-card-row">
                   <select
                     value={power.type}
                     onChange={(e) =>
@@ -268,32 +280,6 @@ export default function PowersSection({
                     Remove
                   </button>
                 </div>
-                <div className="power-card-row">
-                  <input
-                    type="text"
-                    placeholder="Casting time"
-                    value={power.castingTime}
-                    onChange={(e) => updatePower(power.id, { castingTime: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Range"
-                    value={power.range}
-                    onChange={(e) => updatePower(power.id, { range: e.target.value })}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Duration"
-                    value={power.duration}
-                    onChange={(e) => updatePower(power.id, { duration: e.target.value })}
-                  />
-                </div>
-                <textarea
-                  placeholder="Description"
-                  value={power.description}
-                  onChange={(e) => updatePower(power.id, { description: e.target.value })}
-                  rows={2}
-                />
               </div>
             </div>
           );

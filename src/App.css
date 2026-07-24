@@ -602,10 +602,16 @@
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.power-name-wrap {
+  display: block;
+  width: 100%;
 }
 
 .power-name {
-  flex: 2;
+  font-weight: 600;
 }
 
 .power-level {
