@@ -131,13 +131,23 @@
 
 .sheet-toolbar {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
+  gap: 8px;
   margin-bottom: 16px;
 }
 
 .sheet-toolbar-right {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+@media (max-width: 500px) {
+  .sheet-toolbar .btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
 }
 
 .sheet-section {
@@ -232,11 +242,6 @@
   opacity: 0.35;
 }
 
-.sheet-block.drag-over {
-  outline-style: solid;
-  box-shadow: 0 0 16px -2px var(--accent-glow);
-}
-
 .drag-handle {
   display: flex;
   align-items: center;
@@ -248,6 +253,7 @@
   margin-bottom: 6px;
   cursor: grab;
   user-select: none;
+  touch-action: none;
 }
 
 /* Identity */

@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import type {
   AbilityKey,
   ArchetypeEntry,
@@ -83,7 +83,6 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [editLayout, setEditLayout] = useState(false);
   const [sectionOrder, setSectionOrder] = useState<SectionId[]>(() => getStoredOrder());
   const [draggedId, setDraggedId] = useState<SectionId | null>(null);
-  const [dragOverId, setDragOverId] = useState<SectionId | null>(null);
 
   useEffect(() => {
     setCharacter(initial);
@@ -431,32 +430,50 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     }));
   }
 
-  function handleSectionDragStart(id: SectionId) {
+  function handleSectionHandlePointerDown(id: SectionId, e: ReactPointerEvent) {
+    e.preventDefault();
     setDraggedId(id);
   }
 
-  function handleSectionDragEnter(id: SectionId) {
-    if (!draggedId || draggedId === id) return;
-    setDragOverId(id);
-    setSectionOrder((prev) => {
-      if (prev.indexOf(draggedId) === prev.indexOf(id)) return prev;
-      const next = [...prev];
-      const from = next.indexOf(draggedId);
-      const to = next.indexOf(id);
-      next.splice(from, 1);
-      next.splice(to, 0, draggedId);
-      return next;
-    });
-  }
+  // Pointer Events (not the HTML5 Drag and Drop API) so reordering works with touch as well
+  // as mouse — native HTML5 drag-and-drop isn't supported by touch input on mobile browsers.
+  useEffect(() => {
+    if (!draggedId) return;
+    const dragging = draggedId;
 
-  function handleSectionDragEnd() {
-    setDraggedId(null);
-    setDragOverId(null);
-    setSectionOrder((current) => {
-      saveOrder(current);
-      return current;
-    });
-  }
+    function handlePointerMove(e: globalThis.PointerEvent) {
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      const block = target?.closest<HTMLElement>(".sheet-block[data-section-id]");
+      const overId = block?.dataset.sectionId as SectionId | undefined;
+      if (!overId || overId === dragging) return;
+      setSectionOrder((prev) => {
+        const from = prev.indexOf(dragging);
+        const to = prev.indexOf(overId);
+        if (from === -1 || to === -1 || from === to) return prev;
+        const next = [...prev];
+        next.splice(from, 1);
+        next.splice(to, 0, dragging);
+        return next;
+      });
+    }
+
+    function handlePointerUp() {
+      setDraggedId(null);
+      setSectionOrder((current) => {
+        saveOrder(current);
+        return current;
+      });
+    }
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
+    };
+  }, [draggedId]);
 
   function handleResetLayout() {
     setSectionOrder(DEFAULT_SECTION_ORDER);
@@ -515,10 +532,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             span={SECTION_SPAN[id]}
             editMode={editLayout}
             isDragging={draggedId === id}
-            isDragOver={dragOverId === id}
-            onDragStart={handleSectionDragStart}
-            onDragEnter={handleSectionDragEnter}
-            onDragEnd={handleSectionDragEnd}
+            onHandlePointerDown={handleSectionHandlePointerDown}
           >
             {id === "abilities" && (
               <AbilityScores character={character} updateAbility={updateAbility} />

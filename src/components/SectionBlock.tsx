@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { PointerEvent, ReactNode } from "react";
 import type { SectionId } from "../layout";
 
 interface Props {
@@ -6,10 +6,7 @@ interface Props {
   span: 1 | 3;
   editMode: boolean;
   isDragging: boolean;
-  isDragOver: boolean;
-  onDragStart: (id: SectionId) => void;
-  onDragEnter: (id: SectionId) => void;
-  onDragEnd: () => void;
+  onHandlePointerDown: (id: SectionId, e: PointerEvent) => void;
   children: ReactNode;
 }
 
@@ -18,30 +15,21 @@ export default function SectionBlock({
   span,
   editMode,
   isDragging,
-  isDragOver,
-  onDragStart,
-  onDragEnter,
-  onDragEnd,
+  onHandlePointerDown,
   children,
 }: Props) {
   return (
     <div
-      className={[
-        "sheet-block",
-        `span-${span}`,
-        editMode ? "edit-mode" : "",
-        isDragging ? "dragging" : "",
-        isDragOver ? "drag-over" : "",
-      ]
+      className={["sheet-block", `span-${span}`, editMode ? "edit-mode" : "", isDragging ? "dragging" : ""]
         .filter(Boolean)
         .join(" ")}
-      draggable={editMode}
-      onDragStart={() => onDragStart(id)}
-      onDragEnter={() => onDragEnter(id)}
-      onDragOver={(e) => e.preventDefault()}
-      onDragEnd={onDragEnd}
+      data-section-id={id}
     >
-      {editMode && <div className="drag-handle">&#8942;&#8942; Drag to reorder</div>}
+      {editMode && (
+        <div className="drag-handle" onPointerDown={(e) => onHandlePointerDown(id, e)}>
+          &#8942;&#8942; Drag to reorder
+        </div>
+      )}
       {children}
     </div>
   );
