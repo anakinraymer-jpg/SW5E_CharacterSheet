@@ -9,6 +9,7 @@ import {
 } from "./storage";
 import CharacterList from "./components/CharacterList";
 import CharacterSheet from "./components/CharacterSheet";
+import ThemeToggle from "./components/ThemeToggle";
 import "./App.css";
 
 function App() {
@@ -52,18 +53,21 @@ function App() {
 
   const openCharacter = characters.find((c) => c.id === openId) ?? null;
 
-  if (openCharacter) {
-    return <CharacterSheet initial={openCharacter} onBack={handleBack} />;
-  }
-
   return (
-    <CharacterList
-      characters={characters}
-      onOpen={setOpenId}
-      onCreate={handleCreate}
-      onDelete={handleDelete}
-      onImport={handleImport}
-    />
+    <>
+      <ThemeToggle />
+      {openCharacter ? (
+        <CharacterSheet initial={openCharacter} onBack={handleBack} />
+      ) : (
+        <CharacterList
+          characters={characters}
+          onOpen={setOpenId}
+          onCreate={handleCreate}
+          onDelete={handleDelete}
+          onImport={handleImport}
+        />
+      )}
+    </>
   );
 }
 

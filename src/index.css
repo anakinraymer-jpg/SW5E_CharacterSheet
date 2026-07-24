@@ -20,7 +20,7 @@
   --mono: ui-monospace, Consolas, monospace;
 
   font: 16px/145% var(--sans);
-  color-scheme: dark light;
+  color-scheme: dark;
   color: var(--text);
   background: var(--bg);
   font-synthesis: none;
@@ -29,20 +29,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    --text: #123642;
-    --text-h: #086a80;
-    --bg: #eef6f8;
-    --bg-panel: #ffffff;
-    --bg-input: #f2f9fb;
-    --border: #b9dee6;
-    --accent: #0aa8c7;
-    --accent-2: #c77800;
-    --accent-dim: rgba(10, 168, 199, 0.1);
-    --accent-glow: rgba(10, 168, 199, 0.35);
-    --shadow: rgba(10, 60, 70, 0.12) 0 10px 20px -5px, rgba(10, 168, 199, 0.08) 0 0 30px -8px;
-  }
+:root[data-theme="light"] {
+  --text: #123642;
+  --text-h: #086a80;
+  --bg: #eef6f8;
+  --bg-panel: #ffffff;
+  --bg-input: #f2f9fb;
+  --border: #b9dee6;
+  --accent: #0aa8c7;
+  --accent-2: #c77800;
+  --accent-dim: rgba(10, 168, 199, 0.1);
+  --accent-glow: rgba(10, 168, 199, 0.35);
+  --shadow: rgba(10, 60, 70, 0.12) 0 10px 20px -5px, rgba(10, 168, 199, 0.08) 0 0 30px -8px;
+  color-scheme: light;
 }
 
 * {
@@ -76,10 +75,29 @@ body::before {
   opacity: 0.5;
 }
 
-@media (prefers-color-scheme: light) {
-  body::before {
-    opacity: 0.15;
-  }
+:root[data-theme="light"] body::before {
+  opacity: 0.15;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10000;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel);
+  color: var(--text);
+  font: 500 13px/1 var(--sans);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  border-color: var(--accent);
 }
 
 #root {
