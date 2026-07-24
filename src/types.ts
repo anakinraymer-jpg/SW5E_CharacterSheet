@@ -257,11 +257,7 @@ export interface Character {
   age: string;
   gender: string;
   height: string;
-  weight: string;
   size: string;
-  hair: string;
-  eyes: string;
-  skin: string;
 
   // Species trait application state
   speciesAppliedName: string;
@@ -444,11 +440,7 @@ export function createBlankCharacter(): Character {
     age: "",
     gender: "",
     height: "",
-    weight: "",
     size: "Medium",
-    hair: "",
-    eyes: "",
-    skin: "",
     speciesAppliedName: "",
     speciesAbilityBonus: emptyAbilities0(),
     speciesGrantedSkills: [],

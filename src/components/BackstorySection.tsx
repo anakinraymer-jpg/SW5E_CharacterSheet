@@ -45,22 +45,6 @@ export default function BackstorySection({ character, update }: Props) {
             <label htmlFor="height">Height</label>
             <input id="height" type="text" value={character.height} onChange={(e) => update("height", e.target.value)} />
           </div>
-          <div className="field">
-            <label htmlFor="weight">Weight</label>
-            <input id="weight" type="text" value={character.weight} onChange={(e) => update("weight", e.target.value)} />
-          </div>
-          <div className="field">
-            <label htmlFor="hair">Hair</label>
-            <input id="hair" type="text" value={character.hair} onChange={(e) => update("hair", e.target.value)} />
-          </div>
-          <div className="field">
-            <label htmlFor="eyes">Eyes</label>
-            <input id="eyes" type="text" value={character.eyes} onChange={(e) => update("eyes", e.target.value)} />
-          </div>
-          <div className="field">
-            <label htmlFor="skin">Skin</label>
-            <input id="skin" type="text" value={character.skin} onChange={(e) => update("skin", e.target.value)} />
-          </div>
         </div>
 
         <div className="field">
