@@ -3,8 +3,8 @@
 //
 // Deliberately NOT modeled here (too large / require their own catalogs, consistent with the
 // scope-cuts already made for archetype sub-features and feats): Class/Multiclass/Splashclass
-// Improvements, Engineer's Infuse Item modifications, and the nested per-skill mechanics of the
-// Operative's Skill's Exploit.
+// Improvements, and Engineer's Infuse Item modifications (each of the 4 Engineering Disciplines
+// has its own ~30-entry modification list; see archetypeDetails.ts / archetypeDetailsEC.ts).
 
 import type { ClassResourceDef, ClassSubChoiceDef, ClassSubChoiceOption } from "../types";
 
@@ -426,7 +426,38 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Guerrilla's Exploit", text: "You only need 3 hours of sleep for a long rest's benefits, an interrupted long rest just needs completing, and you have advantage on saves against exhaustion." },
       { name: "Learner's Exploit", text: "Gain proficiency in a skill and a tool, or two tools. Can be taken multiple times, choosing new proficiencies each time." },
       { name: "Mentor's Exploit", text: "Once per turn, share a forced saving throw with a friendly creature within 60 feet, taking disadvantage yourself to give them advantage.", prerequisite: "13th level" },
-      { name: "Skill's Exploit", text: "You learn an exploit letting you use a proficient skill on the Attack action (Aim, Angle, Battle Cry, Charm, Confuse Beast, Distract, Emulate Predator, Feint, Hacktivate, Instruct, and more). Usable twice combined, more at 5th/9th/13th/17th level; regains on long rest. Can be taken multiple times." },
+      { name: "Skill's Exploit", text: "You learn an exploit letting you use a proficient skill on the Attack action (see the Skill's Exploit list below). Usable twice combined, more at 5th/9th/13th/17th level; regains on long rest. Can be taken multiple times." },
+      { name: "Technologist's Exploit", text: "You learn and can cast one 1st-level tech power once per long rest (Intelligence, wristpad required). Can be taken multiple times, choosing a different power each time." },
+      { name: "Weaponmaster's Exploit", text: "You gain proficiency in three blasters or vibroweapons that lack the heavy and strength properties. Can be taken multiple times, choosing different weapons each time." },
+    ],
+  },
+  {
+    key: "operative-skill-exploits",
+    label: "Skill's Exploit",
+    className: "Operative",
+    // Simplified: modeled with its own count (roughly matching the "usable twice, +1 at
+    // 5th/9th/13th/17th" resource pool from the Skill's Exploit option above) rather than
+    // gating on how many times that option was actually picked in Operative Exploits.
+    countByLevel: [0, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
+    options: [
+      { name: "Aim", text: "(Stealth) Attack action: Stealth check contested by a hidden target's Perception; on success +10 to your first attack roll against it before your next turn. On failure you're no longer hidden from it." },
+      { name: "Angle", text: "(Perception) Attack action: Perception check contested by a humanoid's Sleight of Hand within 30 feet; on success its next attack and save before your next turn have disadvantage. On failure, can't use on that target for 1 hour." },
+      { name: "Battle Cry", text: "(Intimidation) Attack action: Intimidation check contested by a humanoid's Insight within 30 feet who can see/hear you; on success it's frightened until your next turn (and must Dash away if already frightened of you). On failure, can't use on that target for 1 hour." },
+      { name: "Charm", text: "(Persuasion) Attack action: Persuasion check contested by a humanoid's Insight within 30 feet who can see/hear you; on success it's charmed until your next turn with disadvantage on its next attack. On failure, can't use on that target for 1 hour." },
+      { name: "Confuse Beast", text: "(Animal Handling) Attack action: Animal Handling check contested by a beast's Insight; on success it can't take actions/reactions until your next turn. On failure, can't use on that target for 1 hour." },
+      { name: "Distract", text: "(Performance) Attack action: Performance check contested by a beast/humanoid's Insight within 30 feet who can see/hear you; on success the next attack against it before its next turn has advantage. On failure, can't use on that target for 1 hour." },
+      { name: "Emulate Predator", text: "(Nature) Attack action: Nature check contested by a beast/plant's Insight within 30 feet; on success it must Dash away from you. On failure, can't use on that target for 1 hour." },
+      { name: "Feint", text: "(Deception) Attack action: Deception check contested by a target's Insight within 30 feet; on success the next attack against it (by someone else) before your next turn has advantage, and its next save against another creature's effect has disadvantage. On failure, can't deceive that target this way for 1 hour." },
+      { name: "Hacktivate", text: "(Technology) Attack action: Technology check contested by a droid's Technology within 30 feet; on success advantage on your next attack against it this turn, plus Intelligence-modifier bonus damage on a hit. On failure, can't use on that target for 1 hour." },
+      { name: "Instruct", text: "(Investigation) Attack action: Investigation check contested by a target's Deception; on success, react to a friendly creature's hit against it for bonus damage equal to your Investigation bonus. On failure, can't use on that target for 1 hour." },
+      { name: "Intuit", text: "(Insight) Attack action: Insight check contested by a humanoid's Deception within 30 feet; on success it can't have advantage against you until your next turn; on failure it instead can't have disadvantage against you until your next turn." },
+      { name: "Pocket Sand", text: "(Sleight of Hand) Attack action: Sleight of Hand check contested by a beast/humanoid's Perception within 15 feet; on success it's blinded until the end of your turn. On failure, can't use on that target for 1 hour." },
+      { name: "Precision Strike", text: "(Medicine) Attack action: Medicine check contested by a humanoid's Athletics or Acrobatics (its choice) within your reach; on success it's incapacitated until the end of its next turn. On failure, can't use on that target for 1 hour." },
+      { name: "Snare", text: "(Survival) Attack action: Survival check contested by a target's Perception within 30 feet; on success, if it moves toward you before your next turn it gains a slowed level and you can react to knock it prone. On failure, can't use on that target for 1 hour." },
+      { name: "Spin", text: "(Piloting) Attack action: Piloting check contested by a piloted construct's Piloting within 30 feet; on success it has disadvantage attacking you and you have advantage on Dexterity saves against it until your next turn (reversed on a failure)." },
+      { name: "Study", text: "(Lore) Attack action: Lore check contested by a target's Deception; on success advantage on your next check/attack/save against it before your next turn, or reaction disadvantage on its next roll against you (reversed on a failure)." },
+      { name: "Tumble", text: "(Acrobatics) Attack action: move 10 feet; if you start/end within a creature's reach, Acrobatics check contested by its Athletics or Acrobatics (its choice); on success no opportunity attack plus advantage on your next attack against it this turn. On failure you fall prone." },
+      { name: "Wrestle", text: "(Athletics) Attack action: Athletics check contested by a same-size-or-smaller target's Athletics or Acrobatics (its choice) within 5 feet with a free hand; on success it's grappled and restrained. On failure, can't use on that target for 1 hour." },
     ],
   },
   maneuverChoice("Scholar", [1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24]),

@@ -256,8 +256,11 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
   function handleSubChoiceConfirm(names: string[]) {
     if (!pendingSubChoiceDef) return;
-    setCharacter((prev) => applySubChoicePicks(prev, pendingSubChoiceDef.def.key, names));
-    setPendingSubChoiceDef(null);
+    const applied = applySubChoicePicks(character, pendingSubChoiceDef.def.key, names);
+    setCharacter(applied);
+    // Chain straight to the next pending sub-choice (if any) rather than waiting for a
+    // level/class change to re-trigger the reactive effect.
+    setPendingSubChoiceDef(pendingSubChoice(applied));
   }
 
   function handleUpdateResource(key: string, current: number) {
