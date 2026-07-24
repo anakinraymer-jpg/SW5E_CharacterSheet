@@ -13,6 +13,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["str", "con"],
     armorProficiency: "Light armor, medium armor",
     weaponProficiency: "All vibroweapons, simple blasters",
+    armorProficiencies: ["Light Armor", "Medium Armor"],
+    weaponProficiencies: [{ label: "All Vibroweapons" }, { label: "Simple Blasters" }],
     toolProficiency: "None",
     skillChoice: { count: 2, options: ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"] },
     equipmentText: [
@@ -70,6 +72,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["wis", "cha"],
     armorProficiency: "None",
     weaponProficiency: "Simple lightweapons, simple vibroweapons",
+    armorProficiencies: [],
+    weaponProficiencies: [{ label: "Simple Lightweapons" }, { label: "Simple Vibroweapons" }],
     toolProficiency: "None",
     skillChoice: { count: 2, options: ["Deception", "Insight", "Intimidation", "Investigation", "Lore", "Medicine", "Persuasion"] },
     equipmentText: [
@@ -120,6 +124,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["con", "int"],
     armorProficiency: "Light armor",
     weaponProficiency: "Simple blasters, simple vibroweapons",
+    armorProficiencies: ["Light Armor"],
+    weaponProficiencies: [{ label: "Simple Blasters" }, { label: "Simple Vibroweapons" }],
     toolProficiency: "Tinker's implements, one of your choice",
     skillChoice: { count: 3, options: ["Investigation", "Lore", "Medicine", "Nature", "Piloting", "Technology"] },
     equipmentText: [
@@ -170,6 +176,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["str", "con"],
     armorProficiency: "All armor",
     weaponProficiency: "All blasters, all vibroweapons",
+    armorProficiencies: ["Light Armor", "Medium Armor", "Heavy Armor"],
+    weaponProficiencies: [{ label: "All Blasters" }, { label: "All Vibroweapons" }],
     toolProficiency: "None",
     skillChoice: { count: 2, options: ["Acrobatics", "Animal Handling", "Athletics", "Lore", "Insight", "Intimidation", "Perception", "Survival"] },
     equipmentText: [
@@ -225,6 +233,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["con", "cha"],
     armorProficiency: "Light armor, medium armor",
     weaponProficiency: "All lightweapons, all vibroweapons",
+    armorProficiencies: ["Light Armor", "Medium Armor"],
+    weaponProficiencies: [{ label: "All Lightweapons" }, { label: "All Vibroweapons" }],
     toolProficiency: "None",
     skillChoice: { count: 2, options: ["Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Lore", "Perception", "Persuasion", "Piloting"] },
     equipmentText: [
@@ -279,6 +289,12 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["str", "dex"],
     armorProficiency: "None",
     weaponProficiency: "Simple blasters, simple vibroweapons, martial vibroweapons that lack the dexterity, heavy, special, and two-handed properties",
+    armorProficiencies: [],
+    weaponProficiencies: [
+      { label: "Simple Blasters" },
+      { label: "Simple Vibroweapons" },
+      { label: "Martial Vibroweapons", note: "Only those lacking the dexterity, heavy, special, and two-handed properties." },
+    ],
     toolProficiency: "None",
     skillChoice: { count: 2, options: ["Acrobatics", "Athletics", "Insight", "Lore", "Perception", "Stealth"] },
     equipmentText: [
@@ -341,6 +357,13 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["dex", "int"],
     armorProficiency: "Light armor",
     weaponProficiency: "Simple blasters, simple vibroweapons, martial blasters that lack the auto, special, strength, and two-handed properties, martial vibroweapons with the finesse property",
+    armorProficiencies: ["Light Armor"],
+    weaponProficiencies: [
+      { label: "Simple Blasters" },
+      { label: "Simple Vibroweapons" },
+      { label: "Martial Blasters", note: "Only those lacking the auto, special, strength, and two-handed properties." },
+      { label: "Martial Vibroweapons", note: "Only those with the finesse property." },
+    ],
     toolProficiency: "One specialist's kit of your choice",
     skillChoice: { count: 4, options: ["Athletics", "Acrobatics", "Sleight of Hand", "Stealth", "Lore", "Piloting", "Investigation", "Nature", "Technology", "Animal Handling", "Insight", "Medicine", "Perception", "Survival", "Deception", "Intimidation", "Performance", "Persuasion"] },
     equipmentText: [
@@ -400,6 +423,12 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["int", "wis"],
     armorProficiency: "Light armor",
     weaponProficiency: "Simple blasters, simple vibroweapons, martial vibroweapons with the finesse property",
+    armorProficiencies: ["Light Armor"],
+    weaponProficiencies: [
+      { label: "Simple Blasters" },
+      { label: "Simple Vibroweapons" },
+      { label: "Martial Vibroweapons", note: "Only those with the finesse property." },
+    ],
     toolProficiency: "Any one",
     skillChoice: { count: 3, options: ["Deception", "Insight", "Intimidation", "Investigation", "Lore", "Medicine", "Nature", "Persuasion", "Survival"] },
     equipmentText: [
@@ -455,6 +484,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["str", "dex"],
     armorProficiency: "Light armor, medium armor",
     weaponProficiency: "All blasters, all vibroweapons",
+    armorProficiencies: ["Light Armor", "Medium Armor"],
+    weaponProficiencies: [{ label: "All Blasters" }, { label: "All Vibroweapons" }],
     toolProficiency: "None",
     skillChoice: { count: 3, options: ["Animal Handling", "Athletics", "Insight", "Investigation", "Perception", "Piloting", "Stealth", "Survival", "Technology"] },
     equipmentText: [
@@ -513,6 +544,13 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     savingThrows: ["dex", "cha"],
     armorProficiency: "Light armor",
     weaponProficiency: "Simple lightweapons, simple vibroweapons, martial lightweapons with the finesse property, martial vibroweapons with the finesse property",
+    armorProficiencies: ["Light Armor"],
+    weaponProficiencies: [
+      { label: "Simple Lightweapons" },
+      { label: "Simple Vibroweapons" },
+      { label: "Martial Lightweapons", note: "Only those with the finesse property." },
+      { label: "Martial Vibroweapons", note: "Only those with the finesse property." },
+    ],
     toolProficiency: "One specialist's kit of your choice",
     skillChoice: { count: 3, options: ["Acrobatics", "Animal Handling", "Insight", "Intimidation", "Perception", "Persuasion", "Piloting", "Stealth", "Technology"] },
     equipmentText: [

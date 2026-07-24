@@ -1,5 +1,6 @@
 import type { Character } from "../types";
 import { CLASS_RESOURCES_BY_CLASS, CLASS_SUB_CHOICES_BY_CLASS } from "../data/classFeatureChoices";
+import { CLASSES_CATALOG } from "../data/classes";
 import HoverInfo from "./HoverInfo";
 
 interface Props {
@@ -46,8 +47,49 @@ function FeatureChips({ text }: { text: string }) {
   );
 }
 
+function ProficiencyNodes({
+  label,
+  armor,
+  weapons,
+}: {
+  label: string;
+  armor: string[];
+  weapons: { label: string; note?: string }[];
+}) {
+  if (armor.length === 0 && weapons.length === 0) return null;
+  return (
+    <div className="species-traits-box">
+      <div className="species-traits-header">{label} Proficiencies</div>
+      <div className="prof-node-row">
+        {armor.map((a) => (
+          <span key={a} className="prof-node">
+            <span className="prof-node-dot" />
+            {a}
+          </span>
+        ))}
+        {weapons.map((w) =>
+          w.note ? (
+            <HoverInfo key={w.label} title={w.label} lines={[w.note]}>
+              <span className="prof-node is-partial">
+                <span className="prof-node-dot" />
+                {w.label}
+              </span>
+            </HoverInfo>
+          ) : (
+            <span key={w.label} className="prof-node">
+              <span className="prof-node-dot" />
+              {w.label}
+            </span>
+          )
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ClassFeaturesSection({ character, onUpdateResource }: Props) {
   const resources = CLASS_RESOURCES_BY_CLASS.get(character.classAppliedName) ?? [];
+  const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
   const subChoiceDefs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
   const hasChosenSubChoices = subChoiceDefs.some(
     (def) => (character.classSubChoicePicks[def.key] ?? []).length > 0
@@ -117,6 +159,14 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
             })}
           </div>
         </div>
+      )}
+
+      {classEntry && (
+        <ProficiencyNodes
+          label={character.classAppliedName}
+          armor={classEntry.armorProficiencies}
+          weapons={classEntry.weaponProficiencies}
+        />
       )}
 
       {character.classTraitsText && (

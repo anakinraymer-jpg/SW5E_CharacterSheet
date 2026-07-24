@@ -104,6 +104,8 @@ export interface ClassEntry {
   savingThrows: [AbilityKey, AbilityKey];
   armorProficiency: string;
   weaponProficiency: string;
+  armorProficiencies: string[];
+  weaponProficiencies: { label: string; note?: string }[];
   toolProficiency: string;
   skillChoice: { count: number; options: string[] };
   equipmentText: string[];

@@ -888,6 +888,51 @@
   border-radius: 2px;
 }
 
+/* Proficiency "light nodes" — small status-light badges for armor/weapon proficiencies */
+
+.prof-node-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.prof-node {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 12px 5px 10px;
+  font-size: 0.76rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  cursor: default;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease;
+}
+
+.prof-node:hover,
+.prof-node:focus-within {
+  border-color: var(--accent);
+  color: var(--text-h);
+  box-shadow: 0 0 12px -3px var(--accent-glow);
+}
+
+.prof-node-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 6px 1px var(--accent-glow);
+  flex-shrink: 0;
+}
+
+.prof-node.is-partial .prof-node-dot {
+  background: var(--accent-2);
+  box-shadow: 0 0 6px 1px var(--accent-2);
+}
+
 /* Backstory */
 
 .backstory-section .field-grid {
