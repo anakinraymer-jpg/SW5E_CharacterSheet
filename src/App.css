@@ -581,6 +581,16 @@
   gap: 6px;
 }
 
+.power-type-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.power-type-toggle .btn {
+  flex: 1;
+}
+
 .powers-list {
   display: flex;
   flex-direction: column;
@@ -610,8 +620,22 @@
   width: 100%;
 }
 
+.power-name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .power-name {
   font-weight: 600;
+  flex: 1;
+}
+
+.power-alignment-suffix {
+  flex: none;
+  font-size: 0.8rem;
+  opacity: 0.7;
+  white-space: nowrap;
 }
 
 .power-level {

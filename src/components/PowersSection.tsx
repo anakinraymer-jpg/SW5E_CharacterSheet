@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Character, Power, PowerAlignment } from "../types";
 import { FORCE_POWERS, TECH_POWERS } from "../data/powers";
 import HoverInfo from "./HoverInfo";
@@ -8,12 +9,10 @@ const TECH_POWER_LOOKUP = new Map(TECH_POWERS.map((p) => [p.name.toLowerCase(), 
 interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
-  addPower: () => void;
+  addPower: (type: Power["type"]) => void;
   updatePower: (id: string, patch: Partial<Power>) => void;
   removePower: (id: string) => void;
 }
-
-const ALIGNMENTS: PowerAlignment[] = ["Light", "Dark", "Universal"];
 
 function levelLabel(level: number): string {
   if (level <= 0) return "At-Will";
@@ -37,10 +36,14 @@ export default function PowersSection({
   updatePower,
   removePower,
 }: Props) {
+  const [activeType, setActiveType] = useState<Power["type"]>("Force");
+
   const techCounts = countByAlignment(character.powers, "Tech");
   const forceCounts = countByAlignment(character.powers, "Force");
 
-  const sortedPowers = [...character.powers].sort((a, b) => a.level - b.level);
+  const sortedPowers = [...character.powers]
+    .filter((p) => p.type === activeType)
+    .sort((a, b) => a.level - b.level);
   let lastLevel: number | null = null;
 
   return (
@@ -176,84 +179,92 @@ export default function PowersSection({
         </div>
       </div>
 
+      <div className="power-type-toggle">
+        <button
+          type="button"
+          className={`btn ${activeType === "Force" ? "btn-primary" : "btn-secondary"}`}
+          onClick={() => setActiveType("Force")}
+        >
+          Force
+        </button>
+        <button
+          type="button"
+          className={`btn ${activeType === "Tech" ? "btn-primary" : "btn-secondary"}`}
+          onClick={() => setActiveType("Tech")}
+        >
+          Tech
+        </button>
+      </div>
+
       <div className="powers-list">
         {sortedPowers.map((power) => {
           const showHeader = power.level !== lastLevel;
           lastLevel = power.level;
+          const known =
+            power.type === "Force"
+              ? FORCE_POWER_LOOKUP.get(power.name.toLowerCase())
+              : TECH_POWER_LOOKUP.get(power.name.toLowerCase());
+          const tooltipLines = [
+            `Level: ${levelLabel(power.level)}`,
+            power.type === "Force" ? `Alignment: ${power.alignment}` : "",
+            power.castingTime ? `Casting Time: ${power.castingTime}` : "",
+            power.range ? `Range: ${power.range}` : "",
+            power.duration ? `Duration: ${power.duration}` : "",
+            known ? `Concentration: ${known.concentration ? "Yes" : "No"}` : "",
+            known && "prerequisite" in known && known.prerequisite !== "-"
+              ? `Prerequisite: ${known.prerequisite}`
+              : "",
+            power.description,
+          ].filter(Boolean);
           return (
             <div key={power.id}>
               {showHeader && <h3 className="power-level-header">{levelLabel(power.level)}</h3>}
               <div className="power-card">
-                <HoverInfo
-                  className="power-name-wrap"
-                  title={power.name || "Power"}
-                  lines={[
-                    power.castingTime ? `Casting Time: ${power.castingTime}` : "",
-                    power.range ? `Range: ${power.range}` : "",
-                    power.duration ? `Duration: ${power.duration}` : "",
-                    power.description,
-                  ].filter(Boolean)}
-                >
-                  <input
-                    type="text"
-                    placeholder="Power name"
-                    list={power.type === "Force" ? "force-power-list" : "tech-power-list"}
-                    value={power.name}
-                    onChange={(e) => {
-                      const name = e.target.value;
-                      if (power.type === "Force") {
-                        const known = FORCE_POWER_LOOKUP.get(name.toLowerCase());
-                        if (known) {
-                          updatePower(power.id, {
-                            name: known.name,
-                            level: known.level,
-                            alignment: known.alignment,
-                            castingTime: known.castingTime,
-                            range: known.range,
-                            duration: known.duration,
-                          });
-                          return;
+                <HoverInfo className="power-name-wrap" title={power.name || "Power"} lines={tooltipLines}>
+                  <div className="power-name-line">
+                    <input
+                      type="text"
+                      placeholder="Power name"
+                      list={power.type === "Force" ? "force-power-list" : "tech-power-list"}
+                      value={power.name}
+                      onChange={(e) => {
+                        const name = e.target.value;
+                        if (power.type === "Force") {
+                          const knownPower = FORCE_POWER_LOOKUP.get(name.toLowerCase());
+                          if (knownPower) {
+                            updatePower(power.id, {
+                              name: knownPower.name,
+                              level: knownPower.level,
+                              alignment: knownPower.alignment,
+                              castingTime: knownPower.castingTime,
+                              range: knownPower.range,
+                              duration: knownPower.duration,
+                            });
+                            return;
+                          }
+                        } else {
+                          const knownPower = TECH_POWER_LOOKUP.get(name.toLowerCase());
+                          if (knownPower) {
+                            updatePower(power.id, {
+                              name: knownPower.name,
+                              level: knownPower.level,
+                              castingTime: knownPower.castingTime,
+                              range: knownPower.range,
+                              duration: knownPower.duration,
+                            });
+                            return;
+                          }
                         }
-                      } else {
-                        const known = TECH_POWER_LOOKUP.get(name.toLowerCase());
-                        if (known) {
-                          updatePower(power.id, {
-                            name: known.name,
-                            level: known.level,
-                            castingTime: known.castingTime,
-                            range: known.range,
-                            duration: known.duration,
-                          });
-                          return;
-                        }
-                      }
-                      updatePower(power.id, { name });
-                    }}
-                    className="power-name"
-                  />
+                        updatePower(power.id, { name });
+                      }}
+                      className="power-name"
+                    />
+                    {power.type === "Force" && power.name && (
+                      <span className="power-alignment-suffix">({power.alignment})</span>
+                    )}
+                  </div>
                 </HoverInfo>
                 <div className="power-card-row">
-                  <select
-                    value={power.type}
-                    onChange={(e) =>
-                      updatePower(power.id, { type: e.target.value as Power["type"] })
-                    }
-                  >
-                    <option value="Force">Force</option>
-                    <option value="Tech">Tech</option>
-                  </select>
-                  <select
-                    value={power.alignment}
-                    onChange={(e) =>
-                      updatePower(power.id, { alignment: e.target.value as PowerAlignment })
-                    }
-                  >
-                    {ALIGNMENTS.map((a) => (
-                      <option key={a} value={a}>
-                        {a}
-                      </option>
-                    ))}
-                  </select>
                   <input
                     type="number"
                     min={0}
@@ -286,8 +297,8 @@ export default function PowersSection({
         })}
       </div>
 
-      <button className="btn btn-secondary" onClick={addPower}>
-        + Add Power
+      <button className="btn btn-secondary" onClick={() => addPower(activeType)}>
+        + Add {activeType} Power
       </button>
     </section>
   );

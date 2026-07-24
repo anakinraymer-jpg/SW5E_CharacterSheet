@@ -306,12 +306,12 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     (a) => a.className === character.classAppliedName
   );
 
-  function addPower() {
+  function addPower(type: Power["type"]) {
     const newPower: Power = {
       id: crypto.randomUUID(),
       name: "",
       level: 0,
-      type: "Force",
+      type,
       alignment: "Universal",
       castingTime: "",
       range: "",
