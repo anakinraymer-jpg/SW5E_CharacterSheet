@@ -1,11 +1,11 @@
-// Class resource pools and named sub-choice catalogs, sourced from sw5e.com class pages
-// and the shared Customization Options > Fighting Styles page.
+// Class resource pools and named sub-choice catalogs, sourced from sw5e.com class pages,
+// the Maneuvers list, and the shared Customization Options > Fighting Styles page.
 //
 // Deliberately NOT modeled here (too large / require their own catalogs, consistent with the
-// scope-cuts already made for archetype sub-features and feats): Combat Superiority Maneuvers
-// (Fighter/Scholar), Fighting Masteries, Lightsaber Forms, Weapon Focuses/Supremacies, Class/
-// Multiclass/Splashclass Improvements, Engineer's Infuse Item modifications, and the nested
-// per-skill mechanics of the Operative's Skill's Exploit.
+// scope-cuts already made for archetype sub-features and feats): Fighting Masteries, Lightsaber
+// Forms, Weapon Focuses/Supremacies, Class/Multiclass/Splashclass Improvements, Engineer's
+// Infuse Item modifications, and the nested per-skill mechanics of the Operative's Skill's
+// Exploit.
 
 import type { ClassResourceDef, ClassSubChoiceDef, ClassSubChoiceOption } from "../types";
 
@@ -46,6 +46,134 @@ export const FIGHTING_STYLES: ClassSubChoiceOption[] = [
 
 function fightingStyleChoice(className: string, countByLevel: number[]): ClassSubChoiceDef {
   return { key: `${className.toLowerCase()}-fighting-style`, label: "Fighting Style", className, countByLevel, options: FIGHTING_STYLES };
+}
+
+// Combat Superiority maneuvers, shared by Fighter (Combat Superiority) and Scholar
+// (Academic Superiority). PHB + Echoes of the Force (EC).
+export const MANEUVERS: ClassSubChoiceOption[] = [
+  { name: "Administer Aid", text: "[Mental] As an action, you can expend a superiority die to tend to a creature you can touch. The creature regains a number of hit points equal to the number rolled + your maneuver ability modifier.", prerequisite: "Proficiency in Medicine" },
+  { name: "Administer Aid (Improved)", text: "[Mental] You can use your Administer Aid maneuver as an action or bonus action.", prerequisite: "Administer Aid maneuver" },
+  { name: "Administer Aid (Greater)", text: "[Mental] You can use your Administer Aid maneuver as an action, bonus action, or reaction on your turn.", prerequisite: "Administer Aid (Improved) maneuver" },
+  { name: "Adrenaline Hit", text: "[Mental] Expend an action and a superiority die to inject a creature you touch with regenerative medication: it regains hit points equal to the roll, and until the start of your next turn, damage it takes is reduced by your maneuver ability modifier.", prerequisite: "Proficiency in Medicine" },
+  { name: "Assist", text: "[General] When you make a Medicine check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined." },
+  { name: "Automatic Startup Sequence", text: "[Mental] When a creature saves against a tech power you cast, you may expend a superiority die, subtracting the roll from their total.", prerequisite: "The ability to cast tech powers" },
+  { name: "Body Over Bother", text: "[Physical] When forced to make a Strength, Dexterity, or Constitution save, expend a superiority die to change the saving throw ability to your maneuver ability modifier." },
+  { name: "Call the Guards", text: "[Mental] Reaction when attacked: expend a superiority die and command a willing ally within 5 feet of the attacker to intercede; the attack targets the ally instead. If it misses, the ally can immediately attack, adding the superiority die.", prerequisite: "Proficiency in Persuasion" },
+  { name: "Call to Arms", text: "[Mental] If surprised at the start of combat and not incapacitated, expend one superiority die to act normally.", prerequisite: "Proficiency in Persuasion" },
+  { name: "Call to Arms (Improved)", text: "[Mental] When you use Call to Arms, roll the superiority die and extend the benefit to that many allies who can see or hear you.", prerequisite: "Call to Arms maneuver" },
+  { name: "Calling Card", text: "[Physical] Bonus action: expend a superiority die to throw a sonic charge at a target within 30 feet; it and creatures within 5 feet make Dexterity saves, taking sonic damage equal to the roll on a failure." },
+  { name: "Charge", text: "[Mental] Bonus action: expend a superiority die so chosen creatures within 10 feet who can see/hear you can move an extra 5 feet per point rolled and ignore unenhanced difficult terrain until your next turn.", prerequisite: "Proficiency in Persuasion" },
+  { name: "Charging Attack", text: "[Physical] After moving 10+ feet toward your target before a melee hit, expend a superiority die for extra damage equal to the roll and force a Strength save; on a failure the target is knocked prone." },
+  { name: "Charming Presence", text: "[Mental] Action: Charisma (Persuasion) check plus a superiority die against a humanoid within 60 feet, contested by its Wisdom (Insight); on success it's charmed until the end of your next turn.", prerequisite: "Proficiency in Persuasion" },
+  { name: "Commander's Strike", text: "[Physical] Forgo one Attack-action attack and use a bonus action to direct a friendly creature who can see/hear you and expend a superiority die; it can immediately attack with its reaction, adding the die to damage." },
+  { name: "Commander's Strike (Improved)", text: "[Physical] Using Commander's Strike no longer requires forgoing an attack.", prerequisite: "Commander's Strike maneuver" },
+  { name: "Commander's Strike (Greater)", text: "[Physical] Using Commander's Strike, you can choose to forgo an attack or use your bonus action, rather than both.", prerequisite: "Commander's Strike (Improved) maneuver" },
+  { name: "Conceal", text: "[General] When you make a Stealth check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Stealth" },
+  { name: "Crippling Blow", text: "[Physical] On a weapon hit, expend a superiority die for extra damage equal to the roll; the target gains 1 slowed level until the end of its next turn." },
+  { name: "Deceive", text: "[General] When you make a Deception check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Deception" },
+  { name: "Disarming Blow", text: "[Physical] On a weapon hit, expend a superiority die for extra damage equal to the roll and force a Strength save; on a failure the target drops an item of your choice." },
+  { name: "Distracting Blow", text: "[Mental] On a weapon hit, expend a superiority die for extra damage equal to the roll; the next attack against the target by someone else before your next turn has advantage." },
+  { name: "Effective Flanking", text: "[Mental] Bonus action: force a target within 30 feet to make a Wisdom save; on a failure roll a superiority die and add it to the first attack roll against the creature before your next turn." },
+  { name: "Effective Flanking (Improved)", text: "[Mental] Using Effective Flanking, add the die to both the attack and damage roll of that first attack.", prerequisite: "Effective Flanking maneuver" },
+  { name: "Effective Flanking (Greater)", text: "[Mental] Using Effective Flanking, add your maneuver ability modifier (not the die) to both the attack and damage roll of that first attack.", prerequisite: "Effective Flanking (Improved) maneuver" },
+  { name: "Empathize", text: "[General] When you make an Insight check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Insight" },
+  { name: "Encouraging Pace", text: "[Mental] Bonus action: expend and roll a superiority die; a number of friendly creatures equal to your maneuver ability modifier can immediately react to move 5 feet per point rolled." },
+  { name: "Encouraging Speech", text: "[Mental] Expend a superiority die and spend a minute rallying allies: grant temporary hit points (roll + maneuver ability modifier) to two allies, growing to three at 5th level, four at 9th, five at 13th, six at 17th.", prerequisite: "Proficiency in Persuasion" },
+  { name: "Enhancement Injection", text: "[Mental] Action: expend a superiority die to inject a creature you touch, granting temporary hit points (roll + maneuver ability modifier) for 1 minute; while active it adds your maneuver ability modifier to Strength/Constitution checks and saves.", prerequisite: "Proficiency in Medicine" },
+  { name: "Evasive Footwork", text: "[General] While moving, expend a superiority die and add the roll to your AC until you stop moving." },
+  { name: "Exploit Weakness", text: "[Physical] On a weapon hit, expend a superiority die to deal additional true damage equal to the roll." },
+  { name: "Fast Access Programs", text: "[Mental] Casting a 1st-level+ tech power with a casting time of 1 action, expend a superiority die to change its casting time to 1 bonus action.", prerequisite: "The ability to cast tech powers" },
+  { name: "Feinting Attack", text: "[General] Bonus action: expend a superiority die to feint against a creature within 5 feet, gaining advantage on your next attack roll against it this turn; on a hit add the die to damage." },
+  { name: "Firewall", text: "[Mental] Reaction: when you or an ally within 60 feet saves against a tech power, expend a superiority die and add the roll to the save.", prerequisite: "The ability to cast tech powers" },
+  { name: "Flex", text: "[General] When you make an Athletics check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Athletics" },
+  { name: "Flourish", text: "[General] When you make a Sleight of Hand check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Sleight of Hand" },
+  { name: "Force Resonance", text: "[Mental] After a force attack damages a target, expend a superiority die to also deal force damage (roll + forcecasting modifier) to a second creature within 30 feet of the first.", prerequisite: "The ability to cast force powers" },
+  { name: "Fortune and Glory", text: "[Mental] Instead of a weapon attack against a target within 30 feet, expend a superiority die and make a Sleight of Hand check (using your forcecasting ability, plus the die) to plant/conceal/lift/steal an item.", prerequisite: "The ability to cast force powers" },
+  { name: "Goading Attack", text: "[Mental] On a weapon hit, expend a superiority die for extra damage equal to the roll and force a Wisdom save; on a failure the target has disadvantage attacking anyone but you until your next turn." },
+  { name: "Hacked Communications", text: "[Mental] Action: expend a superiority die; each creature you choose within 60 feet with a comm device makes a Constitution save or takes sonic damage (roll + maneuver ability modifier) and has its device disabled until rebooted.", prerequisite: "Proficiency in Technology" },
+  { name: "Handle Animal", text: "[General] When you make an Animal Handling check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Animal Handling" },
+  { name: "Heads Up", text: "[Mental] Reaction: when a friendly creature who can see/hear you saves, expend a superiority die and add the roll to the save." },
+  { name: "Incite", text: "[Mental] Action: expend a superiority die to bolster an ally within 30 feet who can see/hear you; they add your maneuver ability modifier to every damage roll until your next turn.", prerequisite: "Proficiency in Persuasion" },
+  { name: "Inner Strength", text: "[General] Action: expend and roll a superiority die, gaining temporary hit points equal to the roll + your maneuver ability modifier." },
+  { name: "Intimidating Presence", text: "[Mental] Action: Charisma (Intimidation) check plus a superiority die against a humanoid within 60 feet, contested by its Wisdom (Insight); on success it's frightened of you until the end of your next turn.", prerequisite: "Proficiency in Intimidation" },
+  { name: "Investigate", text: "[General] When you make an Investigation check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Investigation" },
+  { name: "Lunging Attack", text: "[Physical] On a melee attack, expend a superiority die to increase your reach by 5 feet for the attack; on a hit add the die to damage." },
+  { name: "Maneuvering Attack", text: "[General] On a weapon hit, expend a superiority die for extra damage equal to the roll; a friendly creature who can see/hear you can react to move half its speed without provoking opportunity attacks from your target." },
+  { name: "Menacing Attack", text: "[Mental] On a weapon hit, expend a superiority die for extra damage equal to the roll and force a Wisdom save; on a failure the target is frightened of you until the end of your next turn." },
+  { name: "Mind Over Matter", text: "[Mental] When forced to make an Intelligence, Wisdom, or Charisma save, expend a superiority die to change the saving throw ability to your maneuver ability modifier." },
+  { name: "Naturalize", text: "[General] When you make a Nature check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Nature" },
+  { name: "Neuroblock", text: "[Mental] On an attack roll, expend a superiority die and add it to the roll; on a hit the creature's next attack has disadvantage and it can't regain hit points until your next turn.", prerequisite: "Proficiency in Medicine" },
+  { name: "No Escape", text: "[Physical] When you or an ally you can see makes an opportunity attack, expend a superiority die; on a hit add the roll to damage and the target gains 4 slowed levels until the start of its next turn." },
+  { name: "One Step Ahead", text: "[Physical] Rolling initiative without being surprised, expend a superiority die and add the roll to the check." },
+  { name: "One With Shadows", text: "[General] In dim light or darkness, action: expend a superiority die to become invisible until you move or take a hostile action.", prerequisite: "Proficiency in Stealth" },
+  { name: "One with the Force", text: "[Mental] Once per turn, on a Constitution save to maintain concentration on a force power, expend a superiority die and add the roll to the save.", prerequisite: "The ability to cast force powers" },
+  { name: "Overcapacity Powers", text: "[Mental] Casting a 1st-level+ tech power, expend a superiority die to cast it at a higher level (roll added to casting level, capped at your Maximum Power Level).", prerequisite: "The ability to cast tech powers" },
+  { name: "Overwhelming Wit", text: "[Mental] Once per round, when a creature succeeds a Wisdom/Charisma save against your force power or class feature, expend a superiority die to make a proficient forcecasting check, substituting it for the save DC.", prerequisite: "The ability to cast force powers" },
+  { name: "Parry", text: "[Physical] Reaction: when damaged by a melee attack, expend a superiority die to reduce the damage by the roll + your maneuver ability modifier." },
+  { name: "Parry (Improved)", text: "[General] Parry becomes a general maneuver for you.", prerequisite: "Parry maneuver" },
+  { name: "Penetrating Shot", text: "[Physical] On a ranged hit, expend a superiority die; up to two creatures within 15 feet behind the target that would also be hit take damage equal to the roll." },
+  { name: "Perceive", text: "[General] When you make a Perception check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Perception" },
+  { name: "Perform", text: "[General] When you make a Performance check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Performance" },
+  { name: "Persuade", text: "[General] When you make a Persuasion check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Persuasion" },
+  { name: "Pilot", text: "[General] When you make a Piloting check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Piloting" },
+  { name: "Precise Movements", text: "[General] When you or a friendly creature who can see/hear you moves, expend a superiority die: their speed increases by 5 feet per point rolled and they can move through hostile creatures' spaces as difficult terrain." },
+  { name: "Precision Attack", text: "[General] On a weapon attack roll, expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined." },
+  { name: "Program", text: "[General] When you make a Technology check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Technology" },
+  { name: "Pure Sabacc", text: "[Physical] On a critical hit, expend and roll a superiority die: on a 4+ deal maximum weapon damage (including the die), on a 3 or lower deal minimum instead." },
+  { name: "Pushing Attack", text: "[Physical] On a weapon hit against a Large or smaller target, expend a superiority die for extra damage equal to the roll and force a Strength save; on a failure push the target up to 15 feet." },
+  { name: "Rally", text: "[Mental] Bonus action: expend a superiority die to bolster a friendly creature who can see/hear you, granting temporary hit points equal to the roll + your maneuver ability modifier." },
+  { name: "Rampage", text: "[Physical] On reducing a creature to 0 HP, bonus action: expend a superiority die to move half your speed and make a melee attack, adding the roll to the attack roll." },
+  { name: "Rattle", text: "[Physical] On a weapon hit, bonus action: expend and roll a superiority die for extra psychic damage equal to the roll and force a Wisdom save; on a failure the target is frightened of you until the end of your next turn.", prerequisite: "Proficiency in Intimidation" },
+  { name: "Reassure", text: "[Mental] Action: expend a superiority die and call to a charmed, frightened, or stunned creature within 60 feet who can see/hear you; it makes another save, adding the roll.", prerequisite: "Proficiency in Medicine" },
+  { name: "Remove Toxins", text: "[Mental] Action: expend a superiority die to purge toxins from a creature you touch; it regains hit points equal to the roll and you neutralize one poison or disease affecting it.", prerequisite: "Proficiency in Medicine" },
+  { name: "Return Fire", text: "[Physical] Reaction: when a creature misses you with a ranged attack, expend a superiority die to make a ranged attack against it, adding the roll to damage on a hit." },
+  { name: "Riposte", text: "[Physical] Reaction: when a creature misses you with a melee attack, expend a superiority die to make a melee attack against it, adding the roll to damage on a hit." },
+  { name: "Riposte (Improved)", text: "[Physical] When a creature misses an ally within 30 feet who can see/hear you, expend a superiority die (no action) to let that ally react with a melee attack, adding the roll to damage.", prerequisite: "Riposte maneuver" },
+  { name: "Runtime Extension", text: "[Mental] When a tech power you cast with duration 1 minute+ ends, expend a superiority die to extend it by that many rounds.", prerequisite: "The ability to cast tech powers" },
+  { name: "Self-Preservation", text: "[General] Reaction: on a saving throw against a visible effect, expend a superiority die and add it to the result, before or after rolling but before the outcome is determined." },
+  { name: "Short Round", text: "[Mental] Casting a 1st-level+ force power with a casting time of 1 action, expend a superiority die to change its casting time to 1 bonus action.", prerequisite: "The ability to cast force powers" },
+  { name: "Steady the Nerves", text: "[General] Action: expend and roll a superiority die; until the end of your next turn you and allies within 5 feet gain a bonus to saving throws equal to the roll.", prerequisite: "Proficiency in Persuasion" },
+  { name: "Strikeforce", text: "[Physical] On a melee attack, expend a superiority die and add the roll to the attack; on a hit deal additional force damage equal to the roll.", prerequisite: "The ability to cast force powers" },
+  { name: "Study", text: "[General] When you make a Lore check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Lore" },
+  { name: "Subtle Execution", text: "[Mental] Casting a tech power, expend a superiority die to cast it without visual/auditory cues, giving disadvantage on checks to identify you as the caster.", prerequisite: "The ability to cast tech powers" },
+  { name: "Survive", text: "[General] When you make a Survival check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Survival" },
+  { name: "Sweeping Attack", text: "[Physical] On a melee hit, expend a superiority die; a second creature within 5 feet of the target and your reach takes damage equal to the roll if the same attack roll would hit it." },
+  { name: "Sweeping Attack (Improved)", text: "[Physical] Using Sweeping Attack, add your maneuver ability modifier to the second creature's damage as well.", prerequisite: "Sweeping Attack maneuver" },
+  { name: "Targeted Strike", text: "[Mental] Reaction: when an ally who can see/hear you attacks a creature, expend a superiority die and add it to both the attack and damage roll if it hits." },
+  { name: "Tenacity", text: "[Physical] Bonus action: expend and roll a superiority die to move to an unoccupied space up to 5 feet per point rolled; staying hidden if you began and end the move hidden.", prerequisite: "Proficiency in Stealth" },
+  { name: "Threaten", text: "[General] When you make an Intimidation check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Intimidation" },
+  { name: "Trip Attack", text: "[Physical] On a weapon hit against a Large or smaller target, expend a superiority die for extra damage equal to the roll and force a Strength save; on a failure knock the target prone." },
+  { name: "Tumble", text: "[General] When you make an Acrobatics check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Acrobatics" },
+  { name: "Tyrannical Strike", text: "[Mental] On a weapon hit, reaction: expend a superiority die for extra damage equal to the roll and issue a one-word command; on a failed Wisdom save the target must follow it on its next turn.", prerequisite: "Proficiency with Intimidation" },
+  { name: "Unrelenting Grasp", text: "[Physical] On an opportunity attack against a creature within 5 feet, expend a superiority die for extra damage equal to the roll and attempt to grapple as part of the same reaction.", prerequisite: "Proficiency in Athletics" },
+  { name: "Vanity", text: "[General] On reducing a hostile creature to 0 HP, expend and roll a superiority die (no action) to regain hit points equal to the roll + your maneuver ability modifier." },
+  { name: "Weak Point Strike", text: "[Physical] On a weapon hit, expend a superiority die to add the roll to damage and force a Constitution save; on a failure the target is stunned until the end of its next turn.", prerequisite: "Proficiency in Medicine" },
+  { name: "World on Fire", text: "[Physical] On a weapon hit, bonus action: expend and roll a superiority die for extra fire damage equal to the roll; the target sheds dim light and can't turn invisible until your next turn." },
+  { name: "Wrestle and Drag", text: "[Physical] On a Strength (Athletics) check to grapple/shove, expend a superiority die to drag the creature without your speed halved; if it moves 5+ feet, roll the die for kinetic damage.", prerequisite: "Proficiency in Athletics" },
+  { name: "You Call This Archaeology?", text: "[Mental] Reaction: when you or an ally you can see reduces a hostile creature to 0 HP, expend a superiority die to grant temporary hit points (roll + universal forcecasting modifier) to yourself or that ally.", prerequisite: "The ability to cast force powers" },
+  { name: "Agonizing Lethargy", text: "[Mental] Action: expend a superiority die against a creature within 30 feet; on a failed Constitution save it takes 1d6 necrotic damage per attack it makes until your next turn." },
+  { name: "Assess the Situation", text: "[General] Bonus action: expend a superiority die to make a Perception or Investigation check, adding the die." },
+  { name: "Befogging Ichor", text: "[Mental] Bonus action: expend a superiority die against a creature within 30 feet; on a failed Wisdom save it can't take reactions and must move half speed in a random direction on its turn until your next turn." },
+  { name: "Chains of Transfixing", text: "[Mental] Bonus action: expend a superiority die against a creature within 30 feet no more than one size larger; on a failed Strength save it gains 4 slowed levels until your next turn." },
+  { name: "Daring Escape", text: "[General] Expend a superiority die to Disengage as a bonus action; until the end of the turn you have advantage on checks/saves to break grapples, restraints, or slows." },
+  { name: "Dark Transference", text: "[Mental] On an attack hit, expend and roll a superiority die; on a failed Constitution save add the roll to damage and regain one expended Hit Die." },
+  { name: "Deathseek", text: "[Mental] Reaction: when an attack against a hostile creature you can see would miss, expend and roll a superiority die; on a failed Wisdom save the creature takes minimum damage plus the roll." },
+  { name: "Deliberate Movement", text: "[General] Expend a superiority die to Dash as a bonus action and ignore unenhanced difficult terrain until the end of your turn." },
+  { name: "Go Get 'Em", text: "[General] While your companion moves, expend a superiority die to add 5 feet per point rolled to its speed.", prerequisite: "Companion" },
+  { name: "Loyal Bond", text: "[General] When you're hit, expend a superiority die to have your companion react and move to you; if it ends within 5 feet, it takes the damage instead, reduced by the roll.", prerequisite: "Companion" },
+  { name: "Pin Down", text: "[General] When your companion grapples or knocks a creature prone, expend a superiority die and add the roll to its Strength (Athletics) check.", prerequisite: "Companion" },
+  { name: "Primal Endurance", text: "[General] Action: expend a superiority die to add the roll to your companion's AC until the start of your next turn.", prerequisite: "Companion" },
+  { name: "Reverse Curse", text: "[Mental] Reaction: when a creature tries to charm/frighten you or an ally within 15 feet, expend and roll a superiority die; on a failed Wisdom save the effect turns back on the creature for that many rounds or until it takes damage." },
+  { name: "Shadow Puppetry", text: "[Mental] Reaction: when a creature within 30 feet is reduced to 0 HP, expend a superiority die to let it move 5 feet per point rolled and make one weapon attack, adding the die." },
+  { name: "Sic 'Em", text: "[General] Action: expend a superiority die to command your companion to move 10 feet and attack, adding the die to damage on a hit.", prerequisite: "Companion" },
+  { name: "Spine-Chilling Howls", text: "[General] Action: expend a superiority die to command your companion to frighten a target; on a failed Wisdom save it's frightened of you and your companion for 1 minute (repeatable save each turn).", prerequisite: "Companion" },
+  { name: "Water of Life", text: "[Mental] Reaction: when an ally within 30 feet takes damage, expend and roll a superiority die; the ally regains hit points equal to the roll + your maneuver modifier." },
+  { name: "Wild Senses", text: "[General] On a Wisdom (Perception) or (Survival) check, expend a superiority die and add the roll, before or after rolling but before the outcome is determined.", prerequisite: "Companion" },
+  { name: "Wracking Torment", text: "[Mental] Reaction: when a hostile creature within 30 feet would take damage from an effect you or an ally controls, expend a superiority die; until the end of the turn it loses resistance to that damage type." },
+];
+
+function maneuverChoice(className: string, countByLevel: number[]): ClassSubChoiceDef {
+  return { key: `${className.toLowerCase()}-maneuvers`, label: "Maneuvers", className, countByLevel, options: MANEUVERS };
 }
 
 export const CLASS_RESOURCES: ClassResourceDef[] = [
@@ -108,6 +236,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     ],
   },
   fightingStyleChoice("Fighter", [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
+  maneuverChoice("Fighter", [0, 1, 2, 2, 4, 4, 5, 5, 6, 6, 7, 7, 9, 9, 10, 10, 11, 11, 12, 12]),
   {
     key: "fighter-strategies",
     label: "Fighter Strategies",
@@ -213,6 +342,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Skill's Exploit", text: "You learn an exploit letting you use a proficient skill on the Attack action (Aim, Angle, Battle Cry, Charm, Confuse Beast, Distract, Emulate Predator, Feint, Hacktivate, Instruct, and more). Usable twice combined, more at 5th/9th/13th/17th level; regains on long rest. Can be taken multiple times." },
     ],
   },
+  maneuverChoice("Scholar", [1, 2, 4, 5, 6, 7, 9, 10, 11, 12, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24]),
   {
     key: "scholar-discoveries",
     label: "Discoveries",
