@@ -135,6 +135,11 @@
   margin-bottom: 16px;
 }
 
+.sheet-toolbar-right {
+  display: flex;
+  gap: 8px;
+}
+
 .sheet-section {
   background: linear-gradient(165deg, var(--bg-panel), var(--bg-input) 140%);
   border: 1px solid var(--border);
@@ -170,30 +175,79 @@
   border-right: 2px solid var(--accent);
 }
 
-.sheet-columns {
+.sheet-blocks {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   align-items: start;
 }
 
-.sheet-column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.sheet-block {
   min-width: 0;
 }
 
+.sheet-block > .sheet-section:last-child {
+  margin-bottom: 0;
+}
+
+.sheet-block.span-1 {
+  grid-column: span 1;
+}
+
+.sheet-block.span-3 {
+  grid-column: span 3;
+}
+
 @media (max-width: 1180px) {
-  .sheet-columns {
+  .sheet-blocks {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .sheet-block.span-3 {
+    grid-column: span 2;
   }
 }
 
 @media (max-width: 760px) {
-  .sheet-columns {
+  .sheet-blocks {
     grid-template-columns: 1fr;
   }
+  .sheet-block.span-1,
+  .sheet-block.span-3 {
+    grid-column: span 1;
+  }
+}
+
+.sheet-block.edit-mode {
+  cursor: grab;
+  outline: 1px dashed var(--accent);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+
+.sheet-block.edit-mode:active {
+  cursor: grabbing;
+}
+
+.sheet-block.dragging {
+  opacity: 0.35;
+}
+
+.sheet-block.drag-over {
+  outline-style: solid;
+  box-shadow: 0 0 16px -2px var(--accent-glow);
+}
+
+.drag-handle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: 6px;
+  cursor: grab;
+  user-select: none;
 }
 
 /* Identity */

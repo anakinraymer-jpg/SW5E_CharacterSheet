@@ -51,6 +51,8 @@ import FeatsSection from "./FeatsSection";
 import FeatChoiceDialog from "./FeatChoiceDialog";
 import ArchetypeChoiceDialog from "./ArchetypeChoiceDialog";
 import ClassSubChoiceDialog from "./ClassSubChoiceDialog";
+import SectionBlock from "./SectionBlock";
+import { DEFAULT_SECTION_ORDER, SECTION_SPAN, getStoredOrder, saveOrder, type SectionId } from "../layout";
 import { FEATS_CATALOG } from "../data/feats";
 import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
 import type { ClassSubChoiceDef, FeatEntry } from "../types";
@@ -78,6 +80,10 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [pendingSubChoiceDef, setPendingSubChoiceDef] = useState<{ def: ClassSubChoiceDef; needed: number } | null>(
     null
   );
+  const [editLayout, setEditLayout] = useState(false);
+  const [sectionOrder, setSectionOrder] = useState<SectionId[]>(() => getStoredOrder());
+  const [draggedId, setDraggedId] = useState<SectionId | null>(null);
+  const [dragOverId, setDragOverId] = useState<SectionId | null>(null);
 
   useEffect(() => {
     setCharacter(initial);
@@ -425,7 +431,45 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     }));
   }
 
+  function handleSectionDragStart(id: SectionId) {
+    setDraggedId(id);
+  }
+
+  function handleSectionDragEnter(id: SectionId) {
+    if (!draggedId || draggedId === id) return;
+    setDragOverId(id);
+    setSectionOrder((prev) => {
+      if (prev.indexOf(draggedId) === prev.indexOf(id)) return prev;
+      const next = [...prev];
+      const from = next.indexOf(draggedId);
+      const to = next.indexOf(id);
+      next.splice(from, 1);
+      next.splice(to, 0, draggedId);
+      return next;
+    });
+  }
+
+  function handleSectionDragEnd() {
+    setDraggedId(null);
+    setDragOverId(null);
+    setSectionOrder((current) => {
+      saveOrder(current);
+      return current;
+    });
+  }
+
+  function handleResetLayout() {
+    setSectionOrder(DEFAULT_SECTION_ORDER);
+    saveOrder(DEFAULT_SECTION_ORDER);
+  }
+
   const accent = CLASS_ACCENTS[character.classAppliedName];
+
+  // ClassFeaturesSection renders nothing until a class/archetype is applied — skip its
+  // block entirely rather than showing an empty draggable box in edit mode.
+  const visibleSectionOrder = sectionOrder.filter(
+    (id) => id !== "classFeatures" || Boolean(character.classTraitsText || character.archetypeTraitsText)
+  );
 
   return (
     <div
@@ -436,9 +480,22 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         <button className="btn btn-secondary" onClick={onBack}>
           &larr; Back to Characters
         </button>
-        <button className="btn btn-secondary" onClick={() => exportCharacter(character)}>
-          Export JSON
-        </button>
+        <div className="sheet-toolbar-right">
+          {editLayout && (
+            <button className="btn btn-secondary" onClick={handleResetLayout}>
+              Reset Layout
+            </button>
+          )}
+          <button
+            className={`btn ${editLayout ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => setEditLayout((v) => !v)}
+          >
+            {editLayout ? "Done Editing" : "Edit Layout"}
+          </button>
+          <button className="btn btn-secondary" onClick={() => exportCharacter(character)}>
+            Export JSON
+          </button>
+        </div>
       </div>
 
       <IdentitySection
@@ -450,58 +507,74 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         archetypeOptions={currentClassArchetypes.map((a) => a.name)}
       />
 
-      <div className="sheet-columns">
-        <div className="sheet-column">
-          <AbilityScores character={character} updateAbility={updateAbility} />
-          <CombatSection character={character} update={update} />
-        </div>
-
-        <div className="sheet-column">
-          <SkillsSection
-            character={character}
-            toggleSkillProficiency={toggleSkillProficiency}
-            toggleSkillExpertise={toggleSkillExpertise}
-            toggleSavingThrow={toggleSavingThrow}
-          />
-          <WeaponsSection
-            weapons={character.weapons}
-            addWeapon={addWeapon}
-            updateWeapon={updateWeapon}
-            removeWeapon={removeWeapon}
-            combatFeatures={character.combatFeatures}
-            addCombatFeature={addCombatFeature}
-            updateCombatFeature={updateCombatFeature}
-            removeCombatFeature={removeCombatFeature}
-          />
-        </div>
-
-        <div className="sheet-column">
-          <PowersSection
-            character={character}
-            update={update}
-            addPower={addPower}
-            updatePower={updatePower}
-            removePower={removePower}
-          />
-        </div>
+      <div className="sheet-blocks">
+        {visibleSectionOrder.map((id) => (
+          <SectionBlock
+            key={id}
+            id={id}
+            span={SECTION_SPAN[id]}
+            editMode={editLayout}
+            isDragging={draggedId === id}
+            isDragOver={dragOverId === id}
+            onDragStart={handleSectionDragStart}
+            onDragEnter={handleSectionDragEnter}
+            onDragEnd={handleSectionDragEnd}
+          >
+            {id === "abilities" && (
+              <AbilityScores character={character} updateAbility={updateAbility} />
+            )}
+            {id === "combat" && <CombatSection character={character} update={update} />}
+            {id === "skills" && (
+              <SkillsSection
+                character={character}
+                toggleSkillProficiency={toggleSkillProficiency}
+                toggleSkillExpertise={toggleSkillExpertise}
+                toggleSavingThrow={toggleSavingThrow}
+              />
+            )}
+            {id === "weapons" && (
+              <WeaponsSection
+                weapons={character.weapons}
+                addWeapon={addWeapon}
+                updateWeapon={updateWeapon}
+                removeWeapon={removeWeapon}
+                combatFeatures={character.combatFeatures}
+                addCombatFeature={addCombatFeature}
+                updateCombatFeature={updateCombatFeature}
+                removeCombatFeature={removeCombatFeature}
+              />
+            )}
+            {id === "powers" && (
+              <PowersSection
+                character={character}
+                update={update}
+                addPower={addPower}
+                updatePower={updatePower}
+                removePower={removePower}
+              />
+            )}
+            {id === "classFeatures" && (
+              <ClassFeaturesSection character={character} onUpdateResource={handleUpdateResource} />
+            )}
+            {id === "feats" && (
+              <FeatsSection character={character} onAddFeat={handleAddFeat} onRemoveFeat={handleRemoveFeat} />
+            )}
+            {id === "equipment" && (
+              <EquipmentSection
+                character={character}
+                update={update}
+                addItem={addItem}
+                updateItem={updateItem}
+                removeItem={removeItem}
+                addValuable={addValuable}
+                updateValuable={updateValuable}
+                removeValuable={removeValuable}
+              />
+            )}
+            {id === "backstory" && <BackstorySection character={character} update={update} />}
+          </SectionBlock>
+        ))}
       </div>
-
-      <ClassFeaturesSection character={character} onUpdateResource={handleUpdateResource} />
-
-      <FeatsSection character={character} onAddFeat={handleAddFeat} onRemoveFeat={handleRemoveFeat} />
-
-      <EquipmentSection
-        character={character}
-        update={update}
-        addItem={addItem}
-        updateItem={updateItem}
-        removeItem={removeItem}
-        addValuable={addValuable}
-        updateValuable={updateValuable}
-        removeValuable={removeValuable}
-      />
-
-      <BackstorySection character={character} update={update} />
 
       {pendingSpecies && (
         <SpeciesChoiceDialog
