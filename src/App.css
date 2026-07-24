@@ -188,20 +188,14 @@
 .sheet-stat-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 8px;
   align-items: start;
   margin-bottom: 16px;
 }
 
-@media (max-width: 1180px) {
-  .sheet-stat-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 500px) {
   .sheet-stat-row {
-    grid-template-columns: 1fr;
+    gap: 6px;
   }
 }
 
@@ -354,11 +348,24 @@
 /* Small single-value boxes (Defense, Initiative, Proficiency Bonus, Speed) */
 
 .stat-box-section {
-  padding: 14px 16px;
+  padding: 8px 10px;
+  text-align: center;
 }
 
 .stat-box-section .field {
   margin-bottom: 0;
+  gap: 2px;
+}
+
+.stat-box-section .field label {
+  font-size: 0.65rem;
+}
+
+.stat-box-section input,
+.stat-box-section .readonly-box {
+  padding: 4px 6px;
+  font-size: 0.85rem;
+  text-align: center;
 }
 
 /* Identity */
