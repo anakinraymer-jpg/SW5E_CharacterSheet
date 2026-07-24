@@ -2,9 +2,9 @@
 // the Maneuvers list, and the shared Customization Options > Fighting Styles page.
 //
 // Deliberately NOT modeled here (too large / require their own catalogs, consistent with the
-// scope-cuts already made for archetype sub-features and feats): Weapon Focuses/Supremacies,
-// Class/Multiclass/Splashclass Improvements, Engineer's Infuse Item modifications, and the
-// nested per-skill mechanics of the Operative's Skill's Exploit.
+// scope-cuts already made for archetype sub-features and feats): Class/Multiclass/Splashclass
+// Improvements, Engineer's Infuse Item modifications, and the nested per-skill mechanics of the
+// Operative's Skill's Exploit.
 
 import type { ClassResourceDef, ClassSubChoiceDef, ClassSubChoiceOption } from "../types";
 
@@ -105,6 +105,30 @@ export const LIGHTSABER_FORMS: ClassSubChoiceOption[] = [
   { name: "Vaapad Form", text: "Once before the start of your next turn, forgo advantage on a melee attack to make an additional melee attack against the same target (no action required), also without advantage." },
   { name: "Vonil Form", text: "After hitting with the Attack action, direct a friendly creature within 5 feet of the target who can see/hear you to immediately react with a weapon attack against the same target." },
   { name: "Ysannanite Form", text: "As part of the bonus action to adopt this form, if you took the Attack action, engage in Double- or Two-Weapon Fighting. Until the end of your next turn, ranged attacks within 5 feet of a hostile creature don't have disadvantage." },
+];
+
+// Weapon Focuses / Weapon Supremacies (Wretched Hives), referenced by the Weapon Focused and
+// Weapon Supremacist feats.
+export const WEAPON_FOCUSES: ClassSubChoiceOption[] = [
+  { name: "Blade Focus", text: "Wielding a proficient blade weapon: +1 to damage rolls. On a critical hit, the target's next attack roll before your next turn has disadvantage. Forgo Attack-action attacks to parry, gaining +1 AC per attack forgone until your next turn." },
+  { name: "Carbine Focus", text: "Wielding a proficient carbine weapon: +1 to damage rolls. On a critical hit, the target's next attack roll before your next turn has disadvantage. Forgo attacks to startle (1 ammo each): target makes a Dexterity save or is shocked until your next turn." },
+  { name: "Crushing Weapon Focus", text: "Wielding a proficient crushing weapon: +1 to damage rolls. On a critical hit, add the governing ability modifier twice to damage. Forgo attacks to shatter the ground into difficult terrain, dealing ability-modifier damage on a failed Dexterity save." },
+  { name: "Heavy Weapon Focus", text: "Wielding a proficient heavy weapon: +1 to damage rolls. On a critical hit, add the governing ability modifier twice to damage. Forgo attacks (spending half reload, min 2 ammo) to suppress a 10-foot cube, frightening creatures that fail a Wisdom save." },
+  { name: "Polearm Focus", text: "Wielding a proficient polearm: +1 to damage rolls. On a critical hit, roll one additional weapon damage die. Forgo an attack to choke up, gaining +5 feet reach until your next turn." },
+  { name: "Rifle Focus", text: "Wielding a proficient rifle: +1 to damage rolls. On a critical hit, roll one additional weapon damage die. Forgo attacks to scramble, moving up to 10 feet per attack without provoking." },
+  { name: "Sidearm Focus", text: "Wielding a proficient sidearm: +1 to damage rolls. On a critical hit, the target's next incoming attack roll before your next turn has advantage. Forgo attacks (2 ammo each) to daze a creature with a head, incapacitating it until it takes damage or its next turn ends, on a failed Constitution save." },
+  { name: "Trip Weapon Focus", text: "Wielding a proficient trip weapon: +1 to damage rolls. On a critical hit, the target's next incoming attack roll before your next turn has advantage. Forgo attacks to interrupt, denying a nearby creature's shield AC bonus until the end of its next turn." },
+];
+
+export const WEAPON_SUPREMACIES: ClassSubChoiceOption[] = [
+  { name: "Blade Supremacy", text: "Wielding a proficient blade weapon: +1 to attack rolls. On advantage-hit (or forced disadvantage-fail) against a target your size or smaller, it saves or gains a slowed level. Critical hit range +1. Parry (forgo attacks for +1 AC each) becomes a bonus action if already known." },
+  { name: "Carbine Supremacy", text: "Wielding a proficient carbine weapon: +1 to attack rolls. On advantage-hit (or forced disadvantage-fail) against a target your size or smaller, it saves or gains a slowed level. Can be wielded one-handed treating Strength requirement as if one step higher. Startle becomes a bonus action if already known." },
+  { name: "Crushing Weapon Supremacy", text: "Wielding a proficient crushing weapon: +1 to attack rolls. On advantage-hit (or forced disadvantage-fail) against a target your size or smaller, it saves or is pushed 5 feet. Reaction melee attacks have advantage once per round. Shatter becomes a bonus action if already known." },
+  { name: "Heavy Weapon Supremacy", text: "Wielding a proficient heavy weapon: +1 to attack rolls. On advantage-hit (or forced disadvantage-fail) against a target your size or smaller, it saves or is pushed 5 feet. Rolling a 1 on a save against these weapons now also maxes damage on a 2. Suppress becomes a bonus action if already known." },
+  { name: "Polearm Supremacy", text: "Wielding a proficient polearm: +1 to attack rolls. On advantage-hit (or forced disadvantage-fail) against a target your size or smaller, advantage on the damage roll. Treat low shove/trip saves as half your level. Choke up becomes a bonus action if already known." },
+  { name: "Rifle Supremacy", text: "Wielding a proficient rifle: +1 to attack rolls. On advantage-hit (or forced disadvantage-fail) against a target your size or smaller, advantage on the damage roll. Ranged attacks within 30 feet reduce partial cover one step. Scramble becomes a bonus action if already known." },
+  { name: "Sidearm Supremacy", text: "Wielding a proficient sidearm: +1 to attack rolls. On advantage-hit (or forced disadvantage-fail) against a target your size or smaller, it saves or drops an item. Reload with reaction or object interaction. Daze becomes a bonus action if already known." },
+  { name: "Trip Weapon Supremacy", text: "Wielding a proficient trip weapon: +1 to attack rolls. On advantage-hit (or forced disadvantage-fail) against a target your size or smaller, it saves or drops the weapon (you can catch it). Advantage on Athletics checks/attacks to trip. Interrupt becomes a bonus action if already known." },
 ];
 
 function fightingStyleChoice(className: string, countByLevel: number[]): ClassSubChoiceDef {

@@ -6,7 +6,7 @@ import type { AbilityKey, FeatEntry, SpeciesTraitChoice } from "../types";
 import { SKILL_LIST } from "../types";
 import { GEAR_CATALOG } from "./gear";
 import { LANGUAGES } from "./sw5eData";
-import { FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS } from "./classFeatureChoices";
+import { FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS, WEAPON_FOCUSES, WEAPON_SUPREMACIES } from "./classFeatureChoices";
 
 const ALL_ABILITIES: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
 const ALL_SKILLS = [...SKILL_LIST];
@@ -18,6 +18,8 @@ const DAMAGE_TYPES = ["Acid", "Cold", "Fire", "Force", "Lightning", "Necrotic"];
 const FIGHTING_STYLE_NAMES = FIGHTING_STYLES.map((s) => s.name);
 const FIGHTING_MASTERY_NAMES = FIGHTING_MASTERIES.map((m) => m.name);
 const LIGHTSABER_FORM_NAMES = LIGHTSABER_FORMS.map((f) => f.name);
+const WEAPON_FOCUS_NAMES = WEAPON_FOCUSES.map((f) => f.name);
+const WEAPON_SUPREMACY_NAMES = WEAPON_SUPREMACIES.map((f) => f.name);
 
 function skillChoice(count = 1): SpeciesTraitChoice {
   return { kind: "skill", label: "Skill", count, options: ALL_SKILLS };
@@ -510,12 +512,14 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Weapon Focused",
     prerequisite: "4th level",
     abilityOptions: [],
+    choices: [otherChoice("Weapon Focus", WEAPON_FOCUS_NAMES)],
     text: "You adopt a particular type of weapon as your focus. Choose one of the weapon focus options, detailed later in this chapter. You can take this feat multiple times.",
   },
   {
     name: "Weapon Supremacist",
     prerequisite: "4th level",
     abilityOptions: [],
+    choices: [otherChoice("Weapon Supremacy", WEAPON_SUPREMACY_NAMES)],
     text: "You've mastered a particular type of weapon. Choose one of the weapon supremacist options, detailed later in this chapter. You can take this feat multiple times.",
   },
 
