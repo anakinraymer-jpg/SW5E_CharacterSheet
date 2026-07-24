@@ -6,6 +6,7 @@ import type { AbilityKey, FeatEntry, SpeciesTraitChoice } from "../types";
 import { SKILL_LIST } from "../types";
 import { GEAR_CATALOG } from "./gear";
 import { LANGUAGES } from "./sw5eData";
+import { FIGHTING_STYLES, FIGHTING_MASTERIES } from "./classFeatureChoices";
 
 const ALL_ABILITIES: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
 const ALL_SKILLS = [...SKILL_LIST];
@@ -14,6 +15,8 @@ const TOOLS = GEAR_CATALOG.filter((g) => g.category === "Tool").map((g) => g.nam
 const KITS = GEAR_CATALOG.filter((g) => g.category === "Kit").map((g) => g.name);
 const TOOLS_AND_KITS = [...TOOLS, ...KITS];
 const DAMAGE_TYPES = ["Acid", "Cold", "Fire", "Force", "Lightning", "Necrotic"];
+const FIGHTING_STYLE_NAMES = FIGHTING_STYLES.map((s) => s.name);
+const FIGHTING_MASTERY_NAMES = FIGHTING_MASTERIES.map((m) => m.name);
 
 function skillChoice(count = 1): SpeciesTraitChoice {
   return { kind: "skill", label: "Skill", count, options: ALL_SKILLS };
@@ -171,12 +174,14 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Fighting Master",
     prerequisite: "4th level",
     abilityOptions: [],
+    choices: [otherChoice("Fighting Mastery", FIGHTING_MASTERY_NAMES)],
     text: "You've mastered a particular style of fighting. Choose one of the fighting mastery options, detailed later in this chapter. You can take this feat multiple times.",
   },
   {
     name: "Fighting Stylist",
     prerequisite: "4th level",
     abilityOptions: ["str", "dex", "con"],
+    choices: [otherChoice("Fighting Style", FIGHTING_STYLE_NAMES)],
     text: "You adopt a particular style of fighting as your specialty, gaining the following benefits:\n- Increase your Strength, Dexterity, or Constitution score by 1, to a maximum of 20.\n- Choose one of the fighting style options, detailed later in this chapter.\n\nYou can take this feat multiple times.",
   },
   {
