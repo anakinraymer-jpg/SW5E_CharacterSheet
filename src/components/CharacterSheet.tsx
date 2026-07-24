@@ -52,7 +52,14 @@ import FeatChoiceDialog from "./FeatChoiceDialog";
 import ArchetypeChoiceDialog from "./ArchetypeChoiceDialog";
 import ClassSubChoiceDialog from "./ClassSubChoiceDialog";
 import SectionBlock from "./SectionBlock";
-import { DEFAULT_SECTION_ORDER, SECTION_SPAN, getStoredOrder, saveOrder, type SectionId } from "../layout";
+import {
+  DEFAULT_LAYOUT,
+  WIDE_SECTIONS,
+  getStoredLayout,
+  saveLayout,
+  type SectionId,
+  type SheetLayout,
+} from "../layout";
 import { FEATS_CATALOG } from "../data/feats";
 import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
 import type { ClassSubChoiceDef, FeatEntry } from "../types";
@@ -81,7 +88,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     null
   );
   const [editLayout, setEditLayout] = useState(false);
-  const [sectionOrder, setSectionOrder] = useState<SectionId[]>(() => getStoredOrder());
+  const [layout, setLayout] = useState<SheetLayout>(() => getStoredLayout());
   const [draggedId, setDraggedId] = useState<SectionId | null>(null);
 
   useEffect(() => {
@@ -435,32 +442,73 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     setDraggedId(id);
   }
 
+  function removeFromLayout(current: SheetLayout, id: SectionId): SheetLayout {
+    return {
+      columns: current.columns.map((col) => col.filter((x) => x !== id)) as SheetLayout["columns"],
+      wide: current.wide.filter((x) => x !== id),
+    };
+  }
+
   // Pointer Events (not the HTML5 Drag and Drop API) so reordering works with touch as well
   // as mouse — native HTML5 drag-and-drop isn't supported by touch input on mobile browsers.
+  // Narrow sections can move between/within the 3 columns; wide sections only reorder among
+  // themselves, since a full-width table doesn't make sense squeezed into a narrow column.
   useEffect(() => {
     if (!draggedId) return;
     const dragging = draggedId;
+    const isWide = WIDE_SECTIONS.includes(dragging);
 
     function handlePointerMove(e: globalThis.PointerEvent) {
       const target = document.elementFromPoint(e.clientX, e.clientY);
-      const block = target?.closest<HTMLElement>(".sheet-block[data-section-id]");
-      const overId = block?.dataset.sectionId as SectionId | undefined;
-      if (!overId || overId === dragging) return;
-      setSectionOrder((prev) => {
-        const from = prev.indexOf(dragging);
-        const to = prev.indexOf(overId);
-        if (from === -1 || to === -1 || from === to) return prev;
-        const next = [...prev];
-        next.splice(from, 1);
-        next.splice(to, 0, dragging);
-        return next;
+      const overBlock = target?.closest<HTMLElement>(".sheet-block[data-section-id]");
+      const overId = overBlock?.dataset.sectionId as SectionId | undefined;
+      if (overId === dragging) return;
+
+      setLayout((prev) => {
+        const without = removeFromLayout(prev, dragging);
+
+        if (isWide) {
+          const overWideStack = target?.closest<HTMLElement>(".sheet-wide-stack");
+          if (!overWideStack) return prev;
+          let insertAt = without.wide.length;
+          if (overId) {
+            const idx = without.wide.indexOf(overId);
+            if (idx !== -1) insertAt = idx;
+          }
+          const nextWide = [...without.wide];
+          nextWide.splice(insertAt, 0, dragging);
+          return { ...without, wide: nextWide };
+        }
+
+        let columnIndex = -1;
+        if (overId) {
+          columnIndex = without.columns.findIndex((col) => col.includes(overId));
+        } else {
+          const overColumn = target?.closest<HTMLElement>(".sheet-column[data-column-index]");
+          if (overColumn) columnIndex = Number(overColumn.dataset.columnIndex);
+        }
+        if (columnIndex < 0) return prev;
+
+        const targetColumn = without.columns[columnIndex];
+        let insertAt = targetColumn.length;
+        if (overId) {
+          const idx = targetColumn.indexOf(overId);
+          if (idx !== -1) insertAt = idx;
+        }
+        const nextColumns = without.columns.map((col, i) => {
+          if (i !== columnIndex) return col;
+          const next = [...col];
+          next.splice(insertAt, 0, dragging);
+          return next;
+        }) as SheetLayout["columns"];
+        return { ...without, columns: nextColumns };
       });
     }
 
     function handlePointerUp() {
       setDraggedId(null);
-      setSectionOrder((current) => {
-        saveOrder(current);
+      setLayout((current) => {
+        saveLayout(current);
         return current;
       });
     }
@@ -476,17 +524,79 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   }, [draggedId]);
 
   function handleResetLayout() {
-    setSectionOrder(DEFAULT_SECTION_ORDER);
-    saveOrder(DEFAULT_SECTION_ORDER);
+    const fresh: SheetLayout = {
+      columns: [[...DEFAULT_LAYOUT.columns[0]], [...DEFAULT_LAYOUT.columns[1]], [...DEFAULT_LAYOUT.columns[2]]],
+      wide: [...DEFAULT_LAYOUT.wide],
+    };
+    setLayout(fresh);
+    saveLayout(fresh);
   }
 
   const accent = CLASS_ACCENTS[character.classAppliedName];
 
   // ClassFeaturesSection renders nothing until a class/archetype is applied — skip its
   // block entirely rather than showing an empty draggable box in edit mode.
-  const visibleSectionOrder = sectionOrder.filter(
-    (id) => id !== "classFeatures" || Boolean(character.classTraitsText || character.archetypeTraitsText)
-  );
+  const hasClassFeaturesContent = Boolean(character.classTraitsText || character.archetypeTraitsText);
+
+  function renderSectionContent(id: SectionId) {
+    switch (id) {
+      case "abilities":
+        return <AbilityScores character={character} updateAbility={updateAbility} />;
+      case "combat":
+        return <CombatSection character={character} update={update} />;
+      case "skills":
+        return (
+          <SkillsSection
+            character={character}
+            toggleSkillProficiency={toggleSkillProficiency}
+            toggleSkillExpertise={toggleSkillExpertise}
+            toggleSavingThrow={toggleSavingThrow}
+          />
+        );
+      case "weapons":
+        return (
+          <WeaponsSection
+            weapons={character.weapons}
+            addWeapon={addWeapon}
+            updateWeapon={updateWeapon}
+            removeWeapon={removeWeapon}
+            combatFeatures={character.combatFeatures}
+            addCombatFeature={addCombatFeature}
+            updateCombatFeature={updateCombatFeature}
+            removeCombatFeature={removeCombatFeature}
+          />
+        );
+      case "powers":
+        return (
+          <PowersSection
+            character={character}
+            update={update}
+            addPower={addPower}
+            updatePower={updatePower}
+            removePower={removePower}
+          />
+        );
+      case "classFeatures":
+        return <ClassFeaturesSection character={character} onUpdateResource={handleUpdateResource} />;
+      case "feats":
+        return <FeatsSection character={character} onAddFeat={handleAddFeat} onRemoveFeat={handleRemoveFeat} />;
+      case "equipment":
+        return (
+          <EquipmentSection
+            character={character}
+            update={update}
+            addItem={addItem}
+            updateItem={updateItem}
+            removeItem={removeItem}
+            addValuable={addValuable}
+            updateValuable={updateValuable}
+            removeValuable={removeValuable}
+          />
+        );
+      case "backstory":
+        return <BackstorySection character={character} update={update} />;
+    }
+  }
 
   return (
     <div
@@ -524,70 +634,42 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         archetypeOptions={currentClassArchetypes.map((a) => a.name)}
       />
 
-      <div className="sheet-blocks">
-        {visibleSectionOrder.map((id) => (
-          <SectionBlock
-            key={id}
-            id={id}
-            span={SECTION_SPAN[id]}
-            editMode={editLayout}
-            isDragging={draggedId === id}
-            onHandlePointerDown={handleSectionHandlePointerDown}
+      <div className="sheet-columns-wrap">
+        {layout.columns.map((col, i) => (
+          <div
+            key={i}
+            className={`sheet-column${editLayout ? " edit-mode" : ""}`}
+            data-column-index={i}
           >
-            {id === "abilities" && (
-              <AbilityScores character={character} updateAbility={updateAbility} />
-            )}
-            {id === "combat" && <CombatSection character={character} update={update} />}
-            {id === "skills" && (
-              <SkillsSection
-                character={character}
-                toggleSkillProficiency={toggleSkillProficiency}
-                toggleSkillExpertise={toggleSkillExpertise}
-                toggleSavingThrow={toggleSavingThrow}
-              />
-            )}
-            {id === "weapons" && (
-              <WeaponsSection
-                weapons={character.weapons}
-                addWeapon={addWeapon}
-                updateWeapon={updateWeapon}
-                removeWeapon={removeWeapon}
-                combatFeatures={character.combatFeatures}
-                addCombatFeature={addCombatFeature}
-                updateCombatFeature={updateCombatFeature}
-                removeCombatFeature={removeCombatFeature}
-              />
-            )}
-            {id === "powers" && (
-              <PowersSection
-                character={character}
-                update={update}
-                addPower={addPower}
-                updatePower={updatePower}
-                removePower={removePower}
-              />
-            )}
-            {id === "classFeatures" && (
-              <ClassFeaturesSection character={character} onUpdateResource={handleUpdateResource} />
-            )}
-            {id === "feats" && (
-              <FeatsSection character={character} onAddFeat={handleAddFeat} onRemoveFeat={handleRemoveFeat} />
-            )}
-            {id === "equipment" && (
-              <EquipmentSection
-                character={character}
-                update={update}
-                addItem={addItem}
-                updateItem={updateItem}
-                removeItem={removeItem}
-                addValuable={addValuable}
-                updateValuable={updateValuable}
-                removeValuable={removeValuable}
-              />
-            )}
-            {id === "backstory" && <BackstorySection character={character} update={update} />}
-          </SectionBlock>
+            {col.map((id) => (
+              <SectionBlock
+                key={id}
+                id={id}
+                editMode={editLayout}
+                isDragging={draggedId === id}
+                onHandlePointerDown={handleSectionHandlePointerDown}
+              >
+                {renderSectionContent(id)}
+              </SectionBlock>
+            ))}
+          </div>
         ))}
+      </div>
+
+      <div className="sheet-wide-stack">
+        {layout.wide
+          .filter((id) => id !== "classFeatures" || hasClassFeaturesContent)
+          .map((id) => (
+            <SectionBlock
+              key={id}
+              id={id}
+              editMode={editLayout}
+              isDragging={draggedId === id}
+              onHandlePointerDown={handleSectionHandlePointerDown}
+            >
+              {renderSectionContent(id)}
+            </SectionBlock>
+          ))}
       </div>
 
       {pendingSpecies && (

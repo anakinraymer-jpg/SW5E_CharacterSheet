@@ -9,48 +9,86 @@ export type SectionId =
   | "equipment"
   | "backstory";
 
-export const DEFAULT_SECTION_ORDER: SectionId[] = [
-  "abilities",
-  "combat",
-  "skills",
-  "weapons",
-  "powers",
-  "classFeatures",
-  "feats",
-  "equipment",
-  "backstory",
-];
+// Narrow sections stack inside one of the 3 columns and can be dragged between columns.
+// Wide sections always span the full width and only reorder among themselves.
+export const NARROW_SECTIONS: SectionId[] = ["abilities", "combat", "skills", "weapons", "powers"];
+export const WIDE_SECTIONS: SectionId[] = ["classFeatures", "feats", "equipment", "backstory"];
 
-// Grid column span for each section in the 3-column sheet-blocks grid.
-export const SECTION_SPAN: Record<SectionId, 1 | 3> = {
-  abilities: 1,
-  combat: 1,
-  skills: 1,
-  weapons: 1,
-  powers: 1,
-  classFeatures: 3,
-  feats: 3,
-  equipment: 3,
-  backstory: 3,
+const ALL_SECTIONS = new Set<SectionId>([...NARROW_SECTIONS, ...WIDE_SECTIONS]);
+
+export interface SheetLayout {
+  columns: [SectionId[], SectionId[], SectionId[]];
+  wide: SectionId[];
+}
+
+export const DEFAULT_LAYOUT: SheetLayout = {
+  columns: [["abilities", "combat"], ["skills", "weapons"], ["powers"]],
+  wide: ["classFeatures", "feats", "equipment", "backstory"],
 };
+
+function cloneLayout(layout: SheetLayout): SheetLayout {
+  return {
+    columns: [[...layout.columns[0]], [...layout.columns[1]], [...layout.columns[2]]],
+    wide: [...layout.wide],
+  };
+}
+
+// Validates persisted layout data: drops unknown ids, dedupes, and appends any section
+// missing from the saved layout (e.g. a new section shipped after the user's save) using
+// its default placement, so a stale save never silently hides content.
+function sanitizeLayout(raw: unknown): SheetLayout {
+  const seen = new Set<SectionId>();
+  const columns: [SectionId[], SectionId[], SectionId[]] = [[], [], []];
+  const wide: SectionId[] = [];
+
+  if (raw && typeof raw === "object") {
+    const obj = raw as { columns?: unknown; wide?: unknown };
+    if (Array.isArray(obj.columns)) {
+      obj.columns.slice(0, 3).forEach((col, i) => {
+        if (!Array.isArray(col)) return;
+        for (const id of col) {
+          if (NARROW_SECTIONS.includes(id) && !seen.has(id)) {
+            columns[i].push(id);
+            seen.add(id);
+          }
+        }
+      });
+    }
+    if (Array.isArray(obj.wide)) {
+      for (const id of obj.wide) {
+        if (WIDE_SECTIONS.includes(id) && !seen.has(id)) {
+          wide.push(id);
+          seen.add(id);
+        }
+      }
+    }
+  }
+
+  for (const id of NARROW_SECTIONS) {
+    if (!seen.has(id)) columns[0].push(id);
+  }
+  for (const id of WIDE_SECTIONS) {
+    if (!seen.has(id)) wide.push(id);
+  }
+  return { columns, wide };
+}
 
 const STORAGE_KEY = "sw5e-layout";
 
-export function getStoredOrder(): SectionId[] {
+export function getStoredLayout(): SheetLayout {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_SECTION_ORDER;
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return DEFAULT_SECTION_ORDER;
-    const known = new Set<string>(DEFAULT_SECTION_ORDER);
-    const filtered = parsed.filter((id): id is SectionId => known.has(id));
-    const missing = DEFAULT_SECTION_ORDER.filter((id) => !filtered.includes(id));
-    return [...filtered, ...missing];
+    if (!raw) return cloneLayout(DEFAULT_LAYOUT);
+    return sanitizeLayout(JSON.parse(raw));
   } catch {
-    return DEFAULT_SECTION_ORDER;
+    return cloneLayout(DEFAULT_LAYOUT);
   }
 }
 
-export function saveOrder(order: SectionId[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(order));
+export function saveLayout(layout: SheetLayout) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(layout));
+}
+
+export function isKnownSection(id: string): id is SectionId {
+  return ALL_SECTIONS.has(id as SectionId);
 }

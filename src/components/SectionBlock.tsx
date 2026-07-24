@@ -3,7 +3,6 @@ import type { SectionId } from "../layout";
 
 interface Props {
   id: SectionId;
-  span: 1 | 3;
   editMode: boolean;
   isDragging: boolean;
   onHandlePointerDown: (id: SectionId, e: PointerEvent) => void;
@@ -12,7 +11,6 @@ interface Props {
 
 export default function SectionBlock({
   id,
-  span,
   editMode,
   isDragging,
   onHandlePointerDown,
@@ -20,7 +18,7 @@ export default function SectionBlock({
 }: Props) {
   return (
     <div
-      className={["sheet-block", `span-${span}`, editMode ? "edit-mode" : "", isDragging ? "dragging" : ""]
+      className={["sheet-block", editMode ? "edit-mode" : "", isDragging ? "dragging" : ""]
         .filter(Boolean)
         .join(" ")}
       data-section-id={id}
