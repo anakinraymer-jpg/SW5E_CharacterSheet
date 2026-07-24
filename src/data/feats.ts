@@ -6,7 +6,7 @@ import type { AbilityKey, FeatEntry, SpeciesTraitChoice } from "../types";
 import { SKILL_LIST } from "../types";
 import { GEAR_CATALOG } from "./gear";
 import { LANGUAGES } from "./sw5eData";
-import { FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS, WEAPON_FOCUSES, WEAPON_SUPREMACIES } from "./classFeatureChoices";
+import { FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS, WEAPON_FOCUSES, WEAPON_SUPREMACIES, CLASS_IMPROVEMENTS, MULTICLASS_IMPROVEMENTS, SPLASHCLASS_IMPROVEMENTS } from "./classFeatureChoices";
 
 const ALL_ABILITIES: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
 const ALL_SKILLS = [...SKILL_LIST];
@@ -20,6 +20,9 @@ const FIGHTING_MASTERY_NAMES = FIGHTING_MASTERIES.map((m) => m.name);
 const LIGHTSABER_FORM_NAMES = LIGHTSABER_FORMS.map((f) => f.name);
 const WEAPON_FOCUS_NAMES = WEAPON_FOCUSES.map((f) => f.name);
 const WEAPON_SUPREMACY_NAMES = WEAPON_SUPREMACIES.map((f) => f.name);
+const CLASS_IMPROVEMENT_NAMES = CLASS_IMPROVEMENTS.map((c) => c.name);
+const MULTICLASS_IMPROVEMENT_NAMES = MULTICLASS_IMPROVEMENTS.map((c) => c.name);
+const SPLASHCLASS_IMPROVEMENT_NAMES = SPLASHCLASS_IMPROVEMENTS.map((c) => c.name);
 
 function skillChoice(count = 1): SpeciesTraitChoice {
   return { kind: "skill", label: "Skill", count, options: ALL_SKILLS };
@@ -33,8 +36,8 @@ function toolChoice(label: string, options: string[]): SpeciesTraitChoice {
 function languageChoice(count: number): SpeciesTraitChoice {
   return { kind: "language", label: "Language", count, options: LANGUAGES };
 }
-function otherChoice(label: string, options: string[]): SpeciesTraitChoice {
-  return { kind: "other", label, count: 1, options };
+function otherChoice(label: string, options: string[], count = 1): SpeciesTraitChoice {
+  return { kind: "other", label, count, options };
 }
 
 export const FEATS_CATALOG: FeatEntry[] = [
@@ -559,6 +562,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Class Improvement",
     prerequisite: "4th level",
     abilityOptions: ALL_ABILITIES,
+    choices: [otherChoice("Class Improvement", CLASS_IMPROVEMENT_NAMES)],
     text: "You adopt a particular new application to your class, gaining the following benefits:\n- Increase an ability score of your choice by 1, to a maximum of 20.\n- Choose one of the class improvement options, detailed later in this chapter.\n\nYou can take this feat multiple times.",
   },
   {
@@ -705,6 +709,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Multiclass Improvement",
     prerequisite: "4th level",
     abilityOptions: [],
+    choices: [otherChoice("Multiclass Improvement", MULTICLASS_IMPROVEMENT_NAMES, 2)],
     text: "You've learned to blend the skills of your different classes. Choose two of the multiclass improvement options, detailed later in this chapter. You can take this feat multiple times.",
   },
   {
@@ -736,6 +741,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Splashclass Improvement",
     prerequisite: "4th level",
     abilityOptions: [],
+    choices: [otherChoice("Splashclass Improvement", SPLASHCLASS_IMPROVEMENT_NAMES)],
     text: "You've learned to blend the skills of your different classes. Choose one of the splashclass improvement options, detailed later in this chapter. You can take this feat multiple times.",
   },
   {

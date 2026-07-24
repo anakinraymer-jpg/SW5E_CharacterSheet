@@ -2,9 +2,9 @@
 // the Maneuvers list, and the shared Customization Options > Fighting Styles page.
 //
 // Deliberately NOT modeled here (too large / require their own catalogs, consistent with the
-// scope-cuts already made for archetype sub-features and feats): Class/Multiclass/Splashclass
-// Improvements, and Engineer's Infuse Item modifications (each of the 4 Engineering Disciplines
-// has its own ~30-entry modification list; see archetypeDetails.ts / archetypeDetailsEC.ts).
+// scope-cuts already made for archetype sub-features and feats): Engineer's Infuse Item
+// modifications (each of the 4 Engineering Disciplines has its own ~30-entry modification list;
+// see archetypeDetails.ts / archetypeDetailsEC.ts).
 
 import type { ClassResourceDef, ClassSubChoiceDef, ClassSubChoiceOption } from "../types";
 
@@ -294,6 +294,49 @@ export const CLASS_RESOURCES: ClassResourceDef[] = [
     refresh: "Short Rest",
     maxByLevel: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
   },
+];
+
+// Options for the EC "Class Improvement" / "Multiclass Improvement" / "Splashclass Improvement"
+// feats (see feats.ts). Each entry is keyed by class name; feats.ts derives its own name lists
+// and wires these up as feat-level choices rather than as ClassSubChoiceDefs, since the pick
+// isn't level-gated and applies regardless of which class(es) the character actually has.
+export const CLASS_IMPROVEMENTS: ClassSubChoiceOption[] = [
+  { name: "Berserker", text: "When a creature ends its turn within 15 feet of you, you can use your reaction to move up to half your speed to a space closer to the creature. This movement doesn't provoke opportunity attacks.", prerequisite: "At least 3 levels in berserker" },
+  { name: "Consular", text: "When you complete a long rest, you can choose one of the force powers you know and replace it with another force power, as long as that power is not of a higher level than your Max Power Level.", prerequisite: "At least 3 levels in consular" },
+  { name: "Engineer", text: "When a creature has a Potent Aptitude die from you and casts a power, they can roll the die and add the number rolled to one damage or healing roll of the power. If the power would damage or heal multiple targets, this bonus only applies to one of them. The Potent Aptitude die is then lost.", prerequisite: "At least 3 levels in engineer" },
+  { name: "Fighter", text: "Whenever you complete a long rest, you can replace a fighting style you know with another style available. You can't take a Fighting Style option more than once, even if you later get to choose again.", prerequisite: "At least 3 levels in fighter" },
+  { name: "Guardian", text: "As a bonus action, you can expend a use of your Channel the Force to regain 2 force points. You can use this feature a number of times equal to your proficiency bonus, as shown in the guardian table. You regain all expended uses when you complete a long rest.", prerequisite: "At least 3 levels in guardian" },
+  { name: "Monk", text: "As an action, you can spend 2 focus points and a roll a Martial Arts die. You regain a number of hit points equal to the amount rolled + your Wisdom or Charisma modifier (your choice, a minimum of one).", prerequisite: "At least 3 levels in monk" },
+  { name: "Operative", text: "You can use the bonus action granted by your Cunning Action to carefully aim your next attack. You gain advantage on your next attack roll before the end of your current turn. You can't use this feature if you have moved during this turn, and using this feature reduces your speed to 0 until the end of your current turn.", prerequisite: "At least 3 levels in operative" },
+  { name: "Scholar", text: "When you complete a long rest, you can choose one of the maneuvers you know and replace it with another one.", prerequisite: "At least 3 levels in scholar" },
+  { name: "Scout", text: "As an action, you can reduce your exhaustion level by 1 and give yourself a number of temporary hit points equal to 1d10 + your scout level. Once you've used this feature, you must complete a short or long rest before you can use it again.", prerequisite: "At least 3 levels in scout" },
+  { name: "Sentinel", text: "Once per turn, when you roll a Kinetic Combat die, you can roll the die with advantage.", prerequisite: "At least 3 levels in sentinel" },
+];
+
+export const MULTICLASS_IMPROVEMENTS: ClassSubChoiceOption[] = [
+  { name: "Berserker", text: "You can add half your other chosen class's levels (rounded down) to your berserker levels when determining the number of times you can enter a rage and the bonus to weapon damage rolls while raging.", prerequisite: "At least 3 levels in berserker" },
+  { name: "Consular", text: "You can add half your other chosen class's levels (rounded down) to half your consular levels (rounded down) when determining the force points you regain through your Force Recovery feature, and you gain 1 force point for each of your other chosen class's levels.", prerequisite: "At least 3 levels in consular" },
+  { name: "Engineer", text: "You can add your other chosen class's levels to your engineer levels when determining the size of your Potent Aptitude die and the number of uses of your Potent Aptitude feature, and you gain 1 tech point for every two of your other chosen class's levels.", prerequisite: "At least 3 levels in engineer" },
+  { name: "Fighter", text: "You can add half your other chosen class's levels (rounded down) to your fighter levels when determining the number of hit points you regain from your Second Wind feature, the size of your superiority dice, and the number of superiority dice you have.", prerequisite: "At least 3 levels in fighter" },
+  { name: "Guardian", text: "You can add half your other chosen class's levels (rounded down) to your guardian levels when determining your amount of Focused Strikes dice and your number of uses of Channel the Force.", prerequisite: "At least 3 levels in guardian" },
+  { name: "Monk", text: "You can add your other chosen class's levels to your monk levels when determining the size of your Martial Arts die.", prerequisite: "At least 3 levels in monk" },
+  { name: "Operative", text: "You can add half your other chosen class's levels (rounded down) to your operative levels when determining your amount of Sneak Attack dice.", prerequisite: "At least 3 levels in operative" },
+  { name: "Scholar", text: "You can add your other chosen class's levels to your scholar levels when determining your number of maneuvers known, the size of your superiority dice, and the number of superiority dice you have.", prerequisite: "At least 3 levels in scholar" },
+  { name: "Scout", text: "You can add your other chosen class's levels to your scout levels when determining the size of your Ranger's Quarry die and the duration of your Ranger's Quarry feature.", prerequisite: "At least 3 levels in scout" },
+  { name: "Sentinel", text: "You can add your other chosen class's levels to your sentinel levels when determining the size of your Kinetic Combat die.", prerequisite: "At least 3 levels in sentinel" },
+];
+
+export const SPLASHCLASS_IMPROVEMENTS: ClassSubChoiceOption[] = [
+  { name: "Berserker", text: "On your turn, you can enter a rage as a bonus action if you aren't wearing heavy armor. While raging: advantage on Strength checks/saves; +2 damage on Strength melee attacks; resistance to kinetic and energy damage. Can't cast or concentrate on powers while raging. Lasts 1 minute. Usable once, plus an additional use at 11th level; regain all uses on a long rest.", prerequisite: "No levels in berserker" },
+  { name: "Consular", text: "You gain one Force-Empowered Casting option of your choice from those available to the consular class (an additional option at 11th level), letting you expend force points to modify a power you cast. You can spend a number of force points this way equal to your proficiency bonus, regained on a long rest.", prerequisite: "No levels in consular, the ability to cast force powers" },
+  { name: "Engineer", text: "As a bonus action, choose a creature other than yourself within 60 feet who can hear you; it gains one Potent Aptitude die (a d4) it can add to one ability check, attack roll, or saving throw within 10 minutes. Usable a number of times equal to your proficiency bonus, regained on a long rest.", prerequisite: "No levels in engineer" },
+  { name: "Fighter", text: "You learn one maneuver of your choice from those available to the fighter class (an additional maneuver at 11th level), fueled by superiority dice equal to your proficiency bonus (d4s), regained on a long rest.", prerequisite: "No levels in fighter" },
+  { name: "Guardian", text: "When you hit with a melee weapon attack, you can expend force points to deal additional damage of the weapon's damage type: 1d8 per point spent, up to 2d8 per hit. You can spend a number of force points this way equal to your proficiency bonus, regained on a long rest.", prerequisite: "No levels in guardian, the ability to cast force powers" },
+  { name: "Monk", text: "You can make an unarmed strike, take the Disengage action, or take the Dash action as a bonus action (stacking with an existing bonus-action unarmed strike/Disengage/Dash by granting an additional Dodge or doubled jump distance). Usable a combined number of times equal to your proficiency bonus, regained on a long rest.", prerequisite: "No levels in monk" },
+  { name: "Operative", text: "Once per turn, deal an extra 1d6 damage (matching the weapon's damage type) to a creature you hit with a finesse or ranged weapon attack while you have advantage on the attack roll (or, without advantage, if another non-incapacitated enemy of the target is within 5 feet and you don't have disadvantage). Usable a number of times equal to your proficiency bonus, regained on a long rest.", prerequisite: "No levels in operative" },
+  { name: "Scholar", text: "As a bonus action, analyze a target you can see within 60 feet. For the next minute: against a hostile target, your finesse/blaster attack and damage rolls may use Intelligence instead of Strength/Dexterity; a friendly target can end the effect to add your Intelligence modifier to one attack roll, ability check, or saving throw (once per short/long rest). Usable a number of times equal to half your proficiency bonus (rounded up), regained on a long rest.", prerequisite: "No levels in scholar" },
+  { name: "Scout", text: "Once on each of your turns, mark a creature you can see within 120 feet as your quarry (no action required) for the next hour: once per turn, deal 1d4 additional damage of the weapon's type on a hit; advantage on Wisdom (Perception)/(Survival) checks to find it on the same planet. Only one quarry at a time; usable a number of times equal to half your proficiency bonus (rounded up), regained on a long rest.", prerequisite: "No levels in scout" },
+  { name: "Sentinel", text: "When you hit with a melee weapon attack, spend 1 force point to use a Force-Empowered Self effect (once each per turn, one per hit): Deflection (roll a d4, add to AC against one attack before your next turn); Double Strike (roll a d4, deal that much additional damage of the same type); Slow Time (roll a d4, increase speed by 5x the amount until end of turn). You can spend a number of force points this way equal to your proficiency bonus, regained on a long rest.", prerequisite: "No levels in sentinel, the ability to cast force powers" },
 ];
 
 export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
