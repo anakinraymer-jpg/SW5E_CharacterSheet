@@ -5,6 +5,11 @@ function levelIndex(character: Character): number {
   return Math.max(1, Math.min(20, character.level || 1)) - 1;
 }
 
+function applicableSubChoiceDefs(character: Character): ClassSubChoiceDef[] {
+  const defs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
+  return defs.filter((d) => !d.archetypeName || d.archetypeName === character.archetypeAppliedName);
+}
+
 // Rebuilds classResources from scratch for the character's current class, dropping resources
 // from a previous class. When a resource's max grows (leveling up), current grows by the same
 // delta (newly available uses start unspent); when max shrinks, current is clamped down.
@@ -26,7 +31,7 @@ export function recalcClassResources(character: Character): Character {
 // Truncates classSubChoicePicks to the current level's allowed count per def, and drops
 // picks belonging to a def that no longer applies (e.g. after a class change).
 export function recalcClassSubChoices(character: Character): Character {
-  const defs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
+  const defs = applicableSubChoiceDefs(character);
   const idx = levelIndex(character);
   const validKeys = new Set(defs.map((d) => d.key));
   const picks: Record<string, string[]> = {};
@@ -43,7 +48,7 @@ export function recalcClassSubChoices(character: Character): Character {
 
 // The next sub-choice def (if any) that has fewer picks than the current level allows.
 export function pendingSubChoice(character: Character): { def: ClassSubChoiceDef; needed: number } | null {
-  const defs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
+  const defs = applicableSubChoiceDefs(character);
   const idx = levelIndex(character);
   for (const def of defs) {
     const max = def.countByLevel[idx] ?? 0;

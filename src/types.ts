@@ -152,6 +152,7 @@ export interface ClassSubChoiceDef {
   key: string;
   label: string;
   className: string;
+  archetypeName?: string; // when set, only applies if character.archetypeAppliedName matches
   countByLevel: number[]; // length 20, index 0 = level 1
   options: ClassSubChoiceOption[];
 }
