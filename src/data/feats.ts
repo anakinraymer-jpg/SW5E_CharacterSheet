@@ -6,7 +6,7 @@ import type { AbilityKey, FeatEntry, SpeciesTraitChoice } from "../types";
 import { SKILL_LIST } from "../types";
 import { GEAR_CATALOG } from "./gear";
 import { LANGUAGES } from "./sw5eData";
-import { FIGHTING_STYLES, FIGHTING_MASTERIES } from "./classFeatureChoices";
+import { FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS } from "./classFeatureChoices";
 
 const ALL_ABILITIES: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
 const ALL_SKILLS = [...SKILL_LIST];
@@ -17,6 +17,7 @@ const TOOLS_AND_KITS = [...TOOLS, ...KITS];
 const DAMAGE_TYPES = ["Acid", "Cold", "Fire", "Force", "Lightning", "Necrotic"];
 const FIGHTING_STYLE_NAMES = FIGHTING_STYLES.map((s) => s.name);
 const FIGHTING_MASTERY_NAMES = FIGHTING_MASTERIES.map((m) => m.name);
+const LIGHTSABER_FORM_NAMES = LIGHTSABER_FORMS.map((f) => f.name);
 
 function skillChoice(count = 1): SpeciesTraitChoice {
   return { kind: "skill", label: "Skill", count, options: ALL_SKILLS };
@@ -213,7 +214,8 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Formfighting Dabbler",
     prerequisite: "The ability to cast force powers",
     abilityOptions: ALL_ABILITIES,
-    text: "You've dabbled in the basics of the known forms of lightsaber combat. You gain the following benefits:\n- Increase an ability score of your choice by 1, to a maximum of 20.\n- You learn one lightsaber form, detailed later in this chapter. If you already know at least one lightsaber form, you instead learn three lightsaber forms. If you already know at least three lightsaber forms, you instead learn seven lightsaber forms. If you already know at least ten lightsaber forms, you instead learn the remaining forms.",
+    choices: [otherChoice("Lightsaber Form", LIGHTSABER_FORM_NAMES)],
+    text: "You've dabbled in the basics of the known forms of lightsaber combat. You gain the following benefits:\n- Increase an ability score of your choice by 1, to a maximum of 20.\n- You learn one lightsaber form, detailed later in this chapter. If you already know at least one lightsaber form, you instead learn three lightsaber forms. If you already know at least three lightsaber forms, you instead learn seven lightsaber forms. If you already know at least ten lightsaber forms, you instead learn the remaining forms.\n\n(Simplified here to a single form pick per activation; the scaling count above isn't tracked.)",
   },
   {
     name: "Galvanizing Presence",

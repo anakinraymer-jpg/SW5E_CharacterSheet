@@ -2,10 +2,9 @@
 // the Maneuvers list, and the shared Customization Options > Fighting Styles page.
 //
 // Deliberately NOT modeled here (too large / require their own catalogs, consistent with the
-// scope-cuts already made for archetype sub-features and feats): Fighting Masteries, Lightsaber
-// Forms, Weapon Focuses/Supremacies, Class/Multiclass/Splashclass Improvements, Engineer's
-// Infuse Item modifications, and the nested per-skill mechanics of the Operative's Skill's
-// Exploit.
+// scope-cuts already made for archetype sub-features and feats): Weapon Focuses/Supremacies,
+// Class/Multiclass/Splashclass Improvements, Engineer's Infuse Item modifications, and the
+// nested per-skill mechanics of the Operative's Skill's Exploit.
 
 import type { ClassResourceDef, ClassSubChoiceDef, ClassSubChoiceOption } from "../types";
 
@@ -80,6 +79,32 @@ export const FIGHTING_MASTERIES: ClassSubChoiceOption[] = [
   { name: "Throwing Mastery", text: "No disadvantage at long range with thrown weapons. Hitting with a thrown ranged attack grants advantage on your next melee attack against that creature. Draw a thrown weapon free once per turn. Once per turn, thrown ranged attack in normal range without proficiency bonus, no action required." },
   { name: "Twin-Blade Mastery", text: "Maximum damage die grants +1 to your next attack against that creature. Double-Weapon Fighting works without the light property. Forgo proficiency bonus wielding a double weapon two-handed for +1.5x proficiency bonus damage, or one-handed for +proficiency bonus damage." },
   { name: "Versatile Mastery", text: "Once per turn two-handed melee hit can push the target 5 feet (Strength save) and let you follow. Once per turn one-handed melee hit against a shield-user negates their shield AC for that attack. Forgo proficiency bonus with a versatile weapon two-handed for +1.5x proficiency bonus damage, or one-handed for +proficiency bonus damage." },
+];
+
+// Lightsaber Forms, referenced by the Formfighting Dabbler feat, the Fighter Strategist
+// "Lightweapon Strategist" pick, and Guardian's own Guardian Focus archetypes (those already
+// list their forms by name in archetypeDetailsEC.ts / archetypeDetails.ts feature text).
+export const LIGHTSABER_FORMS: ClassSubChoiceOption[] = [
+  { name: "Aqinos Form", text: "As part of the bonus action to adopt this form, if you cast a tech power of 1st level or higher (no higher than half your Max Power Level) as your action, you can make one melee weapon attack.", prerequisite: "The ability to cast tech powers" },
+  { name: "Ataru Form", text: "As part of the bonus action to adopt this form, you can leap up to 15 feet to an unoccupied space you can see." },
+  { name: "Bakuuni Hand Form", text: "As part of the bonus action to adopt this form, make a bonus-action unarmed strike if the Attack action would let you. Until your next turn, a reaction lets you shove a creature that enters or moves within your reach, pushing it an extra 5 feet on a success." },
+  { name: "Djem So Form", text: "Before the end of your next turn, add half your Wisdom or Charisma modifier (minimum +1) to one Strength check or attack roll." },
+  { name: "Drallig Form", text: "Until the start of your next turn, gain a special reaction: when a creature enters or moves within your reach, leap to an unoccupied space within 10 feet without provoking opportunity attacks from it." },
+  { name: "Ishu Form", text: "If a friendly creature is within 15 feet, move up to 10 feet without provoking opportunity attacks, ending within 5 feet of that creature." },
+  { name: "Jar'Kai Form", text: "As part of the bonus action to adopt this form, if you took the Attack action, engage in Double- or Two-Weapon Fighting. Each hit this turn lets you move up to 5 feet without provoking opportunity attacks from that creature." },
+  { name: "Juyo Form", text: "Until the start of your next turn, your critical hit range with weapons increases by 1." },
+  { name: "Makashi Form", text: "Until the start of your next turn, gain a special reaction: when a melee attack against you misses, make an opportunity attack against that creature." },
+  { name: "Niman Form", text: "As part of the bonus action to adopt this form, if you took the Attack action, engage in Double- or Two-Weapon Fighting. Until the end of your next turn, use Wisdom or Charisma instead of Strength/Dexterity for melee attack and damage rolls (same modifier for both)." },
+  { name: "Shien Form", text: "Before the end of your next turn, add half your Wisdom or Charisma modifier (minimum +1) to your AC against one attack." },
+  { name: "Shii-Cho Form", text: "As part of the bonus action to adopt this form, if you took the Attack action, engage in Double- or Two-Weapon Fighting. The first hit against a Large or smaller creature within 5 feet before your next turn forces a Strength save; on a failure it's pushed 5 feet and you can move into the vacated space without provoking." },
+  { name: "Sokan Form", text: "Until the start of your next turn, ignore difficult terrain. When a hostile creature melee-attacks you, react to move to another space within 5 feet of it without provoking, imposing disadvantage on the triggering roll." },
+  { name: "Soresu Form", text: "The first time you take kinetic, energy, or ion damage from a weapon before the end of your next turn, that damage is halved." },
+  { name: "Trakata Form", text: "As part of the bonus action to adopt this form, make a Sleight of Hand or Deception check contested by a nearby creature's Perception; on a success it has disadvantage on its next attack roll against you." },
+  { name: "Trispzest Form", text: "Once before the start of your next turn, gain advantage on a melee weapon attack against a creature frightened of you." },
+  { name: "Twilight Form", text: "As part of the bonus action to adopt this form, make a Stealth check contested by a nearby creature's Perception; on a success you're invisible to it until the start of your next turn or until you act against it." },
+  { name: "Vaapad Form", text: "Once before the start of your next turn, forgo advantage on a melee attack to make an additional melee attack against the same target (no action required), also without advantage." },
+  { name: "Vonil Form", text: "After hitting with the Attack action, direct a friendly creature within 5 feet of the target who can see/hear you to immediately react with a weapon attack against the same target." },
+  { name: "Ysannanite Form", text: "As part of the bonus action to adopt this form, if you took the Attack action, engage in Double- or Two-Weapon Fighting. Until the end of your next turn, ranged attacks within 5 feet of a hostile creature don't have disadvantage." },
 ];
 
 function fightingStyleChoice(className: string, countByLevel: number[]): ClassSubChoiceDef {
