@@ -1,5 +1,5 @@
 import type { Character } from "../types";
-import { ARCHETYPES, BACKGROUNDS, ALIGNMENTS, ALLEGIANCES, SIZES } from "../data/sw5eData";
+import { ARCHETYPES, BACKGROUNDS, ALIGNMENTS, SIZES } from "../data/sw5eData";
 import { SPECIES_CATALOG } from "../data/species";
 import { CLASSES_CATALOG } from "../data/classes";
 
@@ -152,110 +152,9 @@ export default function IdentitySection({
         </div>
 
         <div className="field">
-          <label htmlFor="allegiance">Allegiance</label>
-          <input
-            id="allegiance"
-            list="allegiance-list"
-            value={character.allegiance}
-            onChange={(e) => update("allegiance", e.target.value)}
-          />
-          <Datalist id="allegiance-list" options={ALLEGIANCES} />
-        </div>
-
-        <div className="field">
-          <label htmlFor="homeworld">Homeworld</label>
-          <input
-            id="homeworld"
-            type="text"
-            value={character.homeworld}
-            onChange={(e) => update("homeworld", e.target.value)}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="place-of-birth">Place of Birth</label>
-          <input
-            id="place-of-birth"
-            type="text"
-            value={character.placeOfBirth}
-            onChange={(e) => update("placeOfBirth", e.target.value)}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="age">Age</label>
-          <input
-            id="age"
-            type="text"
-            value={character.age}
-            onChange={(e) => update("age", e.target.value)}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="gender">Gender</label>
-          <input
-            id="gender"
-            type="text"
-            value={character.gender}
-            onChange={(e) => update("gender", e.target.value)}
-          />
-        </div>
-
-        <div className="field">
           <label htmlFor="size">Size</label>
           <input id="size" list="size-list" value={character.size} onChange={(e) => update("size", e.target.value)} />
           <Datalist id="size-list" options={SIZES} />
-        </div>
-
-        <div className="field">
-          <label htmlFor="height">Height</label>
-          <input
-            id="height"
-            type="text"
-            value={character.height}
-            onChange={(e) => update("height", e.target.value)}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="weight">Weight</label>
-          <input
-            id="weight"
-            type="text"
-            value={character.weight}
-            onChange={(e) => update("weight", e.target.value)}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="hair">Hair</label>
-          <input
-            id="hair"
-            type="text"
-            value={character.hair}
-            onChange={(e) => update("hair", e.target.value)}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="eyes">Eyes</label>
-          <input
-            id="eyes"
-            type="text"
-            value={character.eyes}
-            onChange={(e) => update("eyes", e.target.value)}
-          />
-        </div>
-
-        <div className="field">
-          <label htmlFor="skin">Skin</label>
-          <input
-            id="skin"
-            type="text"
-            value={character.skin}
-            onChange={(e) => update("skin", e.target.value)}
-          />
         </div>
       </div>
 
