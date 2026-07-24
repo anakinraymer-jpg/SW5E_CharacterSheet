@@ -214,6 +214,7 @@ export default function PowersSection({
             known && "prerequisite" in known && known.prerequisite !== "-"
               ? `Prerequisite: ${known.prerequisite}`
               : "",
+            known?.description ?? "",
             power.description,
           ].filter(Boolean);
           return (
