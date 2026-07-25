@@ -1,4 +1,5 @@
-// Reference data sourced from the official SW5E rules (sw5e.com), PHB content only.
+// Reference data sourced from the official SW5E rules (sw5e.com). PHB content only except
+// BACKGROUNDS, which also includes Echoes of the Force (EC) backgrounds (see below).
 
 export const CLASSES = [
   "Berserker",
@@ -56,6 +57,7 @@ export const ARCHETYPES = [
   "Way of the Sage",
 ];
 
+// PHB backgrounds.
 export const BACKGROUNDS = [
   "Agent",
   "Bounty Hunter",
@@ -77,6 +79,48 @@ export const BACKGROUNDS = [
   "Smuggler",
   "Soldier",
   "Spacer",
+  // Echoes of the Force (EC) backgrounds.
+  "(Un)Retired Adventurer",
+  "Addict",
+  "Amnesiac",
+  "Archaeologist",
+  "Barbarian",
+  "Bartender",
+  "Blackguard",
+  "Bodyguard",
+  "City Watch",
+  "Clone",
+  "Clone Trooper",
+  "Companion",
+  "Courtier",
+  "Crime Lord",
+  "Dathomir Witch",
+  "Ex-Cultist",
+  "Faction Adventurer",
+  "Faction Artisan",
+  "Faction Merchant",
+  "Far Traveler",
+  "Farmer",
+  "Folk Hero",
+  "Gladiator",
+  "Hermit",
+  "Holonet Technician",
+  "Imperial Knight",
+  "Independent Droid",
+  "Insurgent",
+  "Jensaarai",
+  "Jizz Wailer",
+  "Laborer",
+  "Lawyer",
+  "Office Worker",
+  "Politician",
+  "Racer",
+  "Scavenger",
+  "Servant",
+  "Student",
+  "Survivor",
+  "Teacher",
+  "Urchin",
 ];
 
 export const ALIGNMENTS = [
