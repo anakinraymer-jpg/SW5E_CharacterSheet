@@ -56,7 +56,7 @@ function OptionSelect({
 
 export default function SpeciesChoiceDialog({ species, onCancel, onConfirm }: Props) {
   const [abilityChoices, setAbilityChoices] = useState<string[][]>(
-    species.abilityIncrease.choices.map(() => [""])
+    species.abilityIncrease.choices.map((c) => Array(c.count).fill(""))
   );
   const [humanVariant, setHumanVariant] = useState<"two-one" | "four">("two-one");
   const [humanFixedTwo, setHumanFixedTwo] = useState("");
@@ -190,15 +190,18 @@ export default function SpeciesChoiceDialog({ species, onCancel, onConfirm }: Pr
             Ability Score Increase (+{choiceDef.amount})
           </div>
           <div className="choice-selects">
-            <AbilitySelect
-              value={abilityChoices[i][0]}
-              onChange={(v) => {
-                const next = abilityChoices.map((arr) => [...arr]);
-                next[i][0] = v;
-                setAbilityChoices(next);
-              }}
-              options={choiceDef.options}
-            />
+            {Array.from({ length: choiceDef.count }).map((_, pi) => (
+              <AbilitySelect
+                key={pi}
+                value={abilityChoices[i][pi]}
+                onChange={(v) => {
+                  const next = abilityChoices.map((arr) => [...arr]);
+                  next[i][pi] = v;
+                  setAbilityChoices(next);
+                }}
+                options={choiceDef.options}
+              />
+            ))}
           </div>
         </div>
       ))}
