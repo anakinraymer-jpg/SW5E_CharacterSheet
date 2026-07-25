@@ -202,6 +202,7 @@ export interface EquipmentItem {
   weight: number;
   notes: string;
   location: ItemLocation;
+  equipped: boolean;
 }
 
 export interface Weapon {

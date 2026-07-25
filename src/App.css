@@ -785,6 +785,48 @@
   margin-bottom: 10px;
 }
 
+.armor-equip-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.armor-equip-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.armor-equip-row input[type="checkbox"] {
+  width: auto;
+  flex: none;
+  padding: 0;
+  background: none;
+  border: none;
+}
+
+.armor-equip-row:has(input:checked) {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.armor-equip-name {
+  font-weight: 600;
+  flex: 1;
+}
+
+.armor-equip-meta {
+  font-size: 0.75rem;
+  opacity: 0.65;
+  white-space: nowrap;
+}
+
 .armor-penalty-mark {
   color: var(--danger);
 }
@@ -1143,6 +1185,15 @@
   border-top: 1px solid var(--accent);
   border-left: 1px solid var(--accent);
   transform: rotate(45deg);
+}
+
+.hover-info-panel-above::before {
+  top: auto;
+  bottom: -6px;
+  border-top: none;
+  border-left: none;
+  border-bottom: 1px solid var(--accent);
+  border-right: 1px solid var(--accent);
 }
 
 .hover-info-title {

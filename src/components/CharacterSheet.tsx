@@ -346,6 +346,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       weight: 0,
       notes: "",
       location: "Backpack",
+      equipped: false,
     };
     setCharacter((prev) => ({ ...prev, equipment: [...prev.equipment, newItem] }));
   }
@@ -573,7 +574,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       case "abilities":
         return <AbilityScores character={character} updateAbility={updateAbility} />;
       case "combat":
-        return <CombatSection character={character} update={update} />;
+        return <CombatSection character={character} update={update} updateItem={updateItem} />;
       case "skills":
         return (
           <SkillsSection

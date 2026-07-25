@@ -1,3 +1,6 @@
+import type { EquipmentItem } from "./types";
+import { ARMOR_CATALOG, type ArmorCatalogEntry } from "./data/armor";
+
 export function abilityModifier(score: number): number {
   return Math.floor((score - 10) / 2);
 }
@@ -42,4 +45,42 @@ export function carryingCapacity(strength: number, size: string): CarryingCapaci
 
 export function passivePerception(perceptionBonus: number): number {
   return 10 + perceptionBonus;
+}
+
+export function armorClassFromFormula(ac: string, dexModifier: number): number {
+  const trimmed = ac.trim();
+  const shieldMatch = trimmed.match(/^\+(\d+)$/);
+  if (shieldMatch) return Number(shieldMatch[1]);
+  const cappedMatch = trimmed.match(/^(\d+)\s*\+\s*Dex modifier\s*\(max\s*(\d+)\)$/i);
+  if (cappedMatch) return Number(cappedMatch[1]) + Math.min(dexModifier, Number(cappedMatch[2]));
+  const uncappedMatch = trimmed.match(/^(\d+)\s*\+\s*Dex modifier$/i);
+  if (uncappedMatch) return Number(uncappedMatch[1]) + dexModifier;
+  const fixedMatch = trimmed.match(/^\d+$/);
+  if (fixedMatch) return Number(trimmed);
+  return 10 + dexModifier;
+}
+
+export function armorCatalogMatch(itemName: string): ArmorCatalogEntry | undefined {
+  const name = itemName.trim().toLowerCase();
+  return ARMOR_CATALOG.find((a) => a.name.toLowerCase() === name);
+}
+
+export interface EquippedDefense {
+  total: number;
+  armor: ArmorCatalogEntry | null;
+  shields: ArmorCatalogEntry[];
+}
+
+export function computeDefense(equipment: EquipmentItem[], dexModifier: number): EquippedDefense | null {
+  const equippedMatches = equipment
+    .filter((item) => item.equipped)
+    .map((item) => armorCatalogMatch(item.name))
+    .filter((a): a is ArmorCatalogEntry => Boolean(a));
+  const shields = equippedMatches.filter((a) => a.type === "Shield");
+  const armor = equippedMatches.find((a) => a.type !== "Shield") ?? null;
+  if (!armor && shields.length === 0) return null;
+
+  const base = armor ? armorClassFromFormula(armor.ac, dexModifier) : 10 + dexModifier;
+  const shieldBonus = shields.reduce((sum, s) => sum + armorClassFromFormula(s.ac, dexModifier), 0);
+  return { total: base + shieldBonus, armor, shields };
 }

@@ -1,5 +1,6 @@
 import type { Character } from "../types";
-import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
+import { abilityModifier, computeDefense, formatModifier, proficiencyBonus } from "../utils";
+import HoverInfo from "./HoverInfo";
 
 interface Props {
   character: Character;
@@ -7,6 +8,29 @@ interface Props {
 }
 
 export function DefenseBox({ character, update }: Props) {
+  const dexMod = abilityModifier(character.abilities.dex);
+  const computed = computeDefense(character.equipment, dexMod);
+
+  if (computed) {
+    const lines = [
+      computed.armor ? `${computed.armor.name}: ${computed.armor.ac}` : `Unarmored: 10 + Dex modifier`,
+      ...computed.shields.map((s) => `${s.name}: ${s.ac}`),
+      `Dex modifier: ${formatModifier(dexMod)}`,
+    ];
+    return (
+      <section className="sheet-section stat-box-section">
+        <div className="field">
+          <label htmlFor="defense">Defense</label>
+          <HoverInfo title="Defense Breakdown" lines={lines}>
+            <div id="defense" className="readonly-box">
+              {computed.total}
+            </div>
+          </HoverInfo>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="sheet-section stat-box-section">
       <div className="field">

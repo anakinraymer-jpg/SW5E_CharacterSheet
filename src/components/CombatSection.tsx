@@ -1,10 +1,12 @@
-import type { Character } from "../types";
+import type { Character, EquipmentItem } from "../types";
 import { SKILL_ABILITY } from "../types";
-import { abilityModifier, passivePerception, proficiencyBonus } from "../utils";
+import type { ArmorCatalogEntry } from "../data/armor";
+import { abilityModifier, armorCatalogMatch, passivePerception, proficiencyBonus } from "../utils";
 
 interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
+  updateItem: (id: string, patch: Partial<EquipmentItem>) => void;
 }
 
 function DeathSavePips({
@@ -29,8 +31,14 @@ function DeathSavePips({
   );
 }
 
-export default function CombatSection({ character, update }: Props) {
+export default function CombatSection({ character, update, updateItem }: Props) {
   const pb = proficiencyBonus(character.level);
+
+  const armorItems = character.equipment
+    .map((item) => ({ item, catalog: armorCatalogMatch(item.name) }))
+    .filter(
+      (x): x is { item: EquipmentItem; catalog: ArmorCatalogEntry } => Boolean(x.catalog)
+    );
 
   const perceptionState = character.skills.Perception;
   const wisMod = abilityModifier(character.abilities[SKILL_ABILITY.Perception]);
@@ -157,12 +165,34 @@ export default function CombatSection({ character, update }: Props) {
         </div>
       </div>
 
-      <div className="field">
-        <label htmlFor="armor-notes">Armor, Shield, Protections</label>
+      <div className="field field-wide">
+        <label>Armor, Shield, Protections</label>
+        {armorItems.length > 0 ? (
+          <div className="armor-equip-list">
+            {armorItems.map(({ item, catalog }) => (
+              <label key={item.id} className="armor-equip-row">
+                <input
+                  type="checkbox"
+                  checked={item.equipped}
+                  onChange={(e) => updateItem(item.id, { equipped: e.target.checked })}
+                />
+                <span className="armor-equip-name">{item.name}</span>
+                <span className="armor-equip-meta">
+                  {catalog.type} · AC {catalog.ac}
+                </span>
+              </label>
+            ))}
+          </div>
+        ) : (
+          <p className="section-hint">
+            No armor or shields in your Equipment inventory yet. Add one there and it'll show up
+            here to equip.
+          </p>
+        )}
         <textarea
           id="armor-notes"
-          rows={3}
-          placeholder="Name, enchantment bonus, base AC, max DEX, weight"
+          rows={2}
+          placeholder="Additional notes: enchantment bonus, special properties, etc."
           value={character.armorNotes}
           onChange={(e) => update("armorNotes", e.target.value)}
         />
