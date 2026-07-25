@@ -40,6 +40,7 @@ export default function PowersSection({
 
   const techCounts = countByAlignment(character.powers, "Tech");
   const forceCounts = countByAlignment(character.powers, "Force");
+  const techTotal = techCounts.Light + techCounts.Dark + techCounts.Universal;
 
   const sortedPowers = [...character.powers]
     .filter((p) => p.type === activeType)
@@ -61,124 +62,6 @@ export default function PowersSection({
         ))}
       </datalist>
 
-      <div className="points-grid">
-        <div className="field">
-          <label htmlFor="tech-current">Tech Points</label>
-          <div className="points-pair">
-            <input
-              id="tech-current"
-              type="number"
-              value={character.techPoints.current}
-              onChange={(e) =>
-                update("techPoints", {
-                  ...character.techPoints,
-                  current: Number(e.target.value) || 0,
-                })
-              }
-            />
-            <span>/</span>
-            <input
-              type="number"
-              value={character.techPoints.max}
-              onChange={(e) =>
-                update("techPoints", {
-                  ...character.techPoints,
-                  max: Number(e.target.value) || 0,
-                })
-              }
-            />
-          </div>
-        </div>
-
-        <div className="field">
-          <label htmlFor="force-current">Force Points</label>
-          <div className="points-pair">
-            <input
-              id="force-current"
-              type="number"
-              value={character.forcePoints.current}
-              onChange={(e) =>
-                update("forcePoints", {
-                  ...character.forcePoints,
-                  current: Number(e.target.value) || 0,
-                })
-              }
-            />
-            <span>/</span>
-            <input
-              type="number"
-              value={character.forcePoints.max}
-              onChange={(e) =>
-                update("forcePoints", {
-                  ...character.forcePoints,
-                  max: Number(e.target.value) || 0,
-                })
-              }
-            />
-          </div>
-        </div>
-
-        <div className="field">
-          <label htmlFor="force-die">Force Die</label>
-          <input
-            id="force-die"
-            type="text"
-            value={character.forceDie}
-            onChange={(e) => update("forceDie", e.target.value)}
-          />
-        </div>
-      </div>
-
-      <div className="points-grid">
-        <div className="field">
-          <label htmlFor="tech-attack">Tech Attack Modifier</label>
-          <input
-            id="tech-attack"
-            type="number"
-            value={character.techAttackModifier}
-            onChange={(e) => update("techAttackModifier", Number(e.target.value) || 0)}
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="tech-dc">Tech Save DC</label>
-          <input
-            id="tech-dc"
-            type="number"
-            value={character.techSaveDC}
-            onChange={(e) => update("techSaveDC", Number(e.target.value) || 0)}
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="force-attack">Force Attack Modifier</label>
-          <input
-            id="force-attack"
-            type="number"
-            value={character.forceAttackModifier}
-            onChange={(e) => update("forceAttackModifier", Number(e.target.value) || 0)}
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="force-dc">Force Save DC</label>
-          <input
-            id="force-dc"
-            type="number"
-            value={character.forceSaveDC}
-            onChange={(e) => update("forceSaveDC", Number(e.target.value) || 0)}
-          />
-        </div>
-      </div>
-
-      <div className="alignment-counts">
-        <div>
-          Tech known — Light {techCounts.Light}, Dark {techCounts.Dark}, Universal{" "}
-          {techCounts.Universal}
-        </div>
-        <div>
-          Force known — Light {forceCounts.Light}, Dark {forceCounts.Dark}, Universal{" "}
-          {forceCounts.Universal}
-        </div>
-      </div>
-
       <div className="power-type-toggle">
         <button
           type="button"
@@ -194,6 +77,119 @@ export default function PowersSection({
         >
           Tech
         </button>
+      </div>
+
+      {activeType === "Force" ? (
+        <div className="points-grid">
+          <div className="field">
+            <label htmlFor="force-current">Force Points</label>
+            <div className="points-pair">
+              <input
+                id="force-current"
+                type="number"
+                value={character.forcePoints.current}
+                onChange={(e) =>
+                  update("forcePoints", {
+                    ...character.forcePoints,
+                    current: Number(e.target.value) || 0,
+                  })
+                }
+              />
+              <span>/</span>
+              <input
+                type="number"
+                value={character.forcePoints.max}
+                onChange={(e) =>
+                  update("forcePoints", {
+                    ...character.forcePoints,
+                    max: Number(e.target.value) || 0,
+                  })
+                }
+              />
+            </div>
+          </div>
+          <div className="field">
+            <label htmlFor="force-die">Force Die</label>
+            <input
+              id="force-die"
+              type="text"
+              value={character.forceDie}
+              onChange={(e) => update("forceDie", e.target.value)}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="force-attack">Force Attack</label>
+            <input
+              id="force-attack"
+              type="number"
+              value={character.forceAttackModifier}
+              onChange={(e) => update("forceAttackModifier", Number(e.target.value) || 0)}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="force-dc">Force Save DC</label>
+            <input
+              id="force-dc"
+              type="number"
+              value={character.forceSaveDC}
+              onChange={(e) => update("forceSaveDC", Number(e.target.value) || 0)}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="points-grid">
+          <div className="field">
+            <label htmlFor="tech-current">Tech Points</label>
+            <div className="points-pair">
+              <input
+                id="tech-current"
+                type="number"
+                value={character.techPoints.current}
+                onChange={(e) =>
+                  update("techPoints", {
+                    ...character.techPoints,
+                    current: Number(e.target.value) || 0,
+                  })
+                }
+              />
+              <span>/</span>
+              <input
+                type="number"
+                value={character.techPoints.max}
+                onChange={(e) =>
+                  update("techPoints", {
+                    ...character.techPoints,
+                    max: Number(e.target.value) || 0,
+                  })
+                }
+              />
+            </div>
+          </div>
+          <div className="field">
+            <label htmlFor="tech-attack">Tech Attack</label>
+            <input
+              id="tech-attack"
+              type="number"
+              value={character.techAttackModifier}
+              onChange={(e) => update("techAttackModifier", Number(e.target.value) || 0)}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="tech-dc">Tech Save DC</label>
+            <input
+              id="tech-dc"
+              type="number"
+              value={character.techSaveDC}
+              onChange={(e) => update("techSaveDC", Number(e.target.value) || 0)}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="alignment-counts">
+        {activeType === "Force"
+          ? `Known — Light ${forceCounts.Light}, Dark ${forceCounts.Dark}, Universal ${forceCounts.Universal}`
+          : `Known — ${techTotal} power${techTotal === 1 ? "" : "s"}`}
       </div>
 
       <div className="powers-list">
@@ -220,78 +216,73 @@ export default function PowersSection({
           return (
             <div key={power.id}>
               {showHeader && <h3 className="power-level-header">{levelLabel(power.level)}</h3>}
-              <div className="power-card">
+              <div className="power-row">
                 <HoverInfo className="power-name-wrap" title={power.name || "Power"} lines={tooltipLines}>
-                  <div className="power-name-line">
-                    <input
-                      type="text"
-                      placeholder="Power name"
-                      list={power.type === "Force" ? "force-power-list" : "tech-power-list"}
-                      value={power.name}
-                      onChange={(e) => {
-                        const name = e.target.value;
-                        if (power.type === "Force") {
-                          const knownPower = FORCE_POWER_LOOKUP.get(name.toLowerCase());
-                          if (knownPower) {
-                            updatePower(power.id, {
-                              name: knownPower.name,
-                              level: knownPower.level,
-                              alignment: knownPower.alignment,
-                              castingTime: knownPower.castingTime,
-                              range: knownPower.range,
-                              duration: knownPower.duration,
-                            });
-                            return;
-                          }
-                        } else {
-                          const knownPower = TECH_POWER_LOOKUP.get(name.toLowerCase());
-                          if (knownPower) {
-                            updatePower(power.id, {
-                              name: knownPower.name,
-                              level: knownPower.level,
-                              castingTime: knownPower.castingTime,
-                              range: knownPower.range,
-                              duration: knownPower.duration,
-                            });
-                            return;
-                          }
-                        }
-                        updatePower(power.id, { name });
-                      }}
-                      className="power-name"
-                    />
-                    {power.type === "Force" && power.name && (
-                      <span className="power-alignment-suffix">({power.alignment})</span>
-                    )}
-                  </div>
-                </HoverInfo>
-                <div className="power-card-row">
                   <input
-                    type="number"
-                    min={0}
-                    max={9}
-                    value={power.level}
-                    onChange={(e) =>
-                      updatePower(power.id, { level: Number(e.target.value) || 0 })
-                    }
-                    title="Power level"
-                    className="power-level"
+                    type="text"
+                    placeholder="Power name"
+                    list={power.type === "Force" ? "force-power-list" : "tech-power-list"}
+                    value={power.name}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      if (power.type === "Force") {
+                        const knownPower = FORCE_POWER_LOOKUP.get(name.toLowerCase());
+                        if (knownPower) {
+                          updatePower(power.id, {
+                            name: knownPower.name,
+                            level: knownPower.level,
+                            alignment: knownPower.alignment,
+                            castingTime: knownPower.castingTime,
+                            range: knownPower.range,
+                            duration: knownPower.duration,
+                          });
+                          return;
+                        }
+                      } else {
+                        const knownPower = TECH_POWER_LOOKUP.get(name.toLowerCase());
+                        if (knownPower) {
+                          updatePower(power.id, {
+                            name: knownPower.name,
+                            level: knownPower.level,
+                            castingTime: knownPower.castingTime,
+                            range: knownPower.range,
+                            duration: knownPower.duration,
+                          });
+                          return;
+                        }
+                      }
+                      updatePower(power.id, { name });
+                    }}
+                    className="power-name"
                   />
-                  <label className="prepared-toggle">
-                    <input
-                      type="checkbox"
-                      checked={power.prepared}
-                      onChange={(e) => updatePower(power.id, { prepared: e.target.checked })}
-                    />
-                    Prepared
-                  </label>
-                  <button
-                    className="btn btn-danger btn-small"
-                    onClick={() => removePower(power.id)}
-                  >
-                    Remove
-                  </button>
-                </div>
+                </HoverInfo>
+                {power.type === "Force" && power.name && (
+                  <span className="power-alignment-suffix">({power.alignment})</span>
+                )}
+                <input
+                  type="number"
+                  min={0}
+                  max={9}
+                  value={power.level}
+                  onChange={(e) => updatePower(power.id, { level: Number(e.target.value) || 0 })}
+                  title="Power level"
+                  className="power-level"
+                />
+                <label className="prepared-toggle" title="Prepared">
+                  <input
+                    type="checkbox"
+                    checked={power.prepared}
+                    onChange={(e) => updatePower(power.id, { prepared: e.target.checked })}
+                  />
+                  P
+                </label>
+                <button
+                  className="btn btn-danger btn-small"
+                  title="Remove power"
+                  onClick={() => removePower(power.id)}
+                >
+                  ×
+                </button>
               </div>
             </div>
           );
