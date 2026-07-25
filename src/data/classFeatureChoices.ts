@@ -297,6 +297,14 @@ export const CLASS_RESOURCES: ClassResourceDef[] = [
     refresh: "Short Rest",
     maxByLevel: [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
   },
+  {
+    key: "engineer-potent-aptitude",
+    label: "Potent Aptitude",
+    className: "Engineer",
+    refresh: "Short Rest",
+    maxByLevel: [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
+    dieByLevel: ["d4", "d4", "d4", "d4", "d6", "d6", "d6", "d6", "d8", "d8", "d8", "d8", "d10", "d10", "d10", "d10", "d12", "d12", "d12", "d12"],
+  },
 ];
 
 // Options for the EC "Class Improvement" / "Multiclass Improvement" / "Splashclass Improvement"
