@@ -3,7 +3,18 @@
 // are intentionally summarized rather than fully enumerated — see the linked
 // archetype/class pages on sw5e.com for the complete option lists.
 
-import type { ClassEntry } from "../types";
+import type { ClassEntry, SpeciesTraitChoice } from "../types";
+import { GEAR_CATALOG } from "./gear";
+
+const TOOLS = GEAR_CATALOG.filter((g) => g.category === "Tool").map((g) => g.name);
+const KITS = GEAR_CATALOG.filter((g) => g.category === "Kit").map((g) => g.name);
+const GAMING_SETS = GEAR_CATALOG.filter((g) => g.category === "Gaming Set").map((g) => g.name);
+const INSTRUMENTS = GEAR_CATALOG.filter((g) => g.category === "Musical Instrument").map((g) => g.name);
+const ANY_TOOL = [...TOOLS, ...KITS, ...GAMING_SETS, ...INSTRUMENTS];
+
+function toolChoice(label: string, options: string[], count = 1): SpeciesTraitChoice {
+  return { kind: "tool", label, count, options };
+}
 
 export const CLASSES_CATALOG: ClassEntry[] = [
   {
@@ -16,6 +27,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     armorProficiencies: ["Light Armor", "Medium Armor"],
     weaponProficiencies: [{ label: "All Vibroweapons" }, { label: "Simple Blasters" }],
     toolProficiency: "None",
+    fixedToolProficiencies: [],
+    toolChoices: [],
     skillChoice: { count: 2, options: ["Animal Handling", "Athletics", "Intimidation", "Nature", "Perception", "Survival"] },
     equipmentText: [
       "(a) a vibroweapon and a light or medium physical shield or (b) two vibroweapons",
@@ -75,6 +88,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     armorProficiencies: [],
     weaponProficiencies: [{ label: "Simple Lightweapons" }, { label: "Simple Vibroweapons" }],
     toolProficiency: "None",
+    fixedToolProficiencies: [],
+    toolChoices: [],
     skillChoice: { count: 2, options: ["Deception", "Insight", "Intimidation", "Investigation", "Lore", "Medicine", "Persuasion"] },
     equipmentText: [
       "(a) a simple lightweapon or (b) a simple vibroweapon",
@@ -127,6 +142,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     armorProficiencies: ["Light Armor"],
     weaponProficiencies: [{ label: "Simple Blasters" }, { label: "Simple Vibroweapons" }],
     toolProficiency: "Tinker's implements, one of your choice",
+    fixedToolProficiencies: ["Tinker's implements"],
+    toolChoices: [toolChoice("Tool", ANY_TOOL)],
     skillChoice: { count: 3, options: ["Investigation", "Lore", "Medicine", "Nature", "Piloting", "Technology"] },
     equipmentText: [
       "(a) a simple vibroweapon or (b) a simple blaster and two power cells",
@@ -179,6 +196,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     armorProficiencies: ["Light Armor", "Medium Armor", "Heavy Armor"],
     weaponProficiencies: [{ label: "All Blasters" }, { label: "All Vibroweapons" }],
     toolProficiency: "None",
+    fixedToolProficiencies: [],
+    toolChoices: [],
     skillChoice: { count: 2, options: ["Acrobatics", "Animal Handling", "Athletics", "Lore", "Insight", "Intimidation", "Perception", "Survival"] },
     equipmentText: [
       "(a) mesh armor or (b) a combat suit, blaster rifle or simple blaster, and two power cells",
@@ -236,6 +255,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     armorProficiencies: ["Light Armor", "Medium Armor"],
     weaponProficiencies: [{ label: "All Lightweapons" }, { label: "All Vibroweapons" }],
     toolProficiency: "None",
+    fixedToolProficiencies: [],
+    toolChoices: [],
     skillChoice: { count: 2, options: ["Acrobatics", "Athletics", "Deception", "Insight", "Intimidation", "Lore", "Perception", "Persuasion", "Piloting"] },
     equipmentText: [
       "(a) mesh armor, (b) a combat suit, and a light physical shield",
@@ -296,6 +317,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { label: "Martial Vibroweapons", note: "Only those lacking the dexterity, heavy, special, and two-handed properties." },
     ],
     toolProficiency: "None",
+    fixedToolProficiencies: [],
+    toolChoices: [],
     skillChoice: { count: 2, options: ["Acrobatics", "Athletics", "Insight", "Lore", "Perception", "Stealth"] },
     equipmentText: [
       "(a) a vibroweapon with which you are proficient or (b) a simple blaster and a power cell",
@@ -365,6 +388,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { label: "Martial Vibroweapons", note: "Only those with the finesse property." },
     ],
     toolProficiency: "One specialist's kit of your choice",
+    fixedToolProficiencies: [],
+    toolChoices: [toolChoice("Kit", KITS)],
     skillChoice: { count: 4, options: ["Athletics", "Acrobatics", "Sleight of Hand", "Stealth", "Lore", "Piloting", "Investigation", "Nature", "Technology", "Animal Handling", "Insight", "Medicine", "Perception", "Survival", "Deception", "Intimidation", "Performance", "Persuasion"] },
     equipmentText: [
       "(a) a vibroweapon with which you are proficient or (b) a simple blaster and a power cell",
@@ -430,6 +455,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { label: "Martial Vibroweapons", note: "Only those with the finesse property." },
     ],
     toolProficiency: "Any one",
+    fixedToolProficiencies: [],
+    toolChoices: [toolChoice("Tool", ANY_TOOL)],
     skillChoice: { count: 3, options: ["Deception", "Insight", "Intimidation", "Investigation", "Lore", "Medicine", "Nature", "Persuasion", "Survival"] },
     equipmentText: [
       "(a) a simple vibroweapon or (b) a simple blaster and two power cells",
@@ -487,6 +514,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
     armorProficiencies: ["Light Armor", "Medium Armor"],
     weaponProficiencies: [{ label: "All Blasters" }, { label: "All Vibroweapons" }],
     toolProficiency: "None",
+    fixedToolProficiencies: [],
+    toolChoices: [],
     skillChoice: { count: 3, options: ["Animal Handling", "Athletics", "Insight", "Investigation", "Perception", "Piloting", "Stealth", "Survival", "Technology"] },
     equipmentText: [
       "(a) mesh armor or (b) a combat suit, blaster rifle or simple blaster, and two power cells",
@@ -552,6 +581,8 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { label: "Martial Vibroweapons", note: "Only those with the finesse property." },
     ],
     toolProficiency: "One specialist's kit of your choice",
+    fixedToolProficiencies: [],
+    toolChoices: [toolChoice("Kit", KITS)],
     skillChoice: { count: 3, options: ["Acrobatics", "Animal Handling", "Insight", "Intimidation", "Perception", "Persuasion", "Piloting", "Stealth", "Technology"] },
     equipmentText: [
       "(a) two simple lightweapons or vibroweapons or (b) one lightweapon or vibroweapon with which you are proficient",

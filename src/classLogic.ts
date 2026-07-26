@@ -11,7 +11,7 @@ import { emptyAbilities0 } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
 
 export function classNeedsChoices(classEntry: ClassEntry): boolean {
-  return classEntry.skillChoice.count > 0;
+  return classEntry.skillChoice.count > 0 || classEntry.toolChoices.length > 0;
 }
 
 // Parses a "(a) X or (b) Y" / "(a) X, (b) Y, or (c) Z" equipment line into its lettered options.
@@ -66,6 +66,7 @@ export function revertClass(character: Character): Character {
     classAppliedName: "",
     classSavingThrowsApplied: [],
     classGrantedSkills: [],
+    classGrantedProficiencies: [],
     classTraitsText: "",
     classEquipmentText: [],
     classCreditsApplied: 0,
@@ -98,6 +99,12 @@ export function applyClass(
   const creditsApplied = selections.useStartingFunds ? selections.rolledFunds : 0;
   const equipmentText = selections.useStartingFunds ? [] : selections.equipmentChoice;
 
+  const grantedProficiencies = [...classEntry.fixedToolProficiencies];
+  classEntry.toolChoices.forEach((choiceDef, i) => {
+    const chosen = (selections.toolChoice[i] ?? []).filter(Boolean);
+    chosen.forEach((val) => grantedProficiencies.push(`${val} (${choiceDef.label})`));
+  });
+
   const next: Character = {
     ...base,
     characterClass: classEntry.name,
@@ -111,6 +118,7 @@ export function applyClass(
     classAppliedName: classEntry.name,
     classSavingThrowsApplied: [...classEntry.savingThrows],
     classGrantedSkills: grantedSkills,
+    classGrantedProficiencies: grantedProficiencies,
     classEquipmentText: equipmentText,
     classCreditsApplied: creditsApplied,
   };
@@ -142,7 +150,11 @@ function buildClassTraitsText(classEntry: ClassEntry, character: Character): str
       .map((k) => ABILITY_LABEL[k])
       .join(", ")}.`
   );
-  lines.push(`Tools: ${classEntry.toolProficiency}.`);
+  const toolsText =
+    character.classGrantedProficiencies.length > 0
+      ? character.classGrantedProficiencies.join(", ")
+      : classEntry.toolProficiency;
+  lines.push(`Tools: ${toolsText}.`);
   if (row?.extra) lines.push(`Level ${level} resources — ${row.extra}`);
   lines.push(`Archetype (chosen at ${classEntry.archetypeLevel}rd level) — see the Archetype field for the full list of options, including Echoes of the Force archetypes.`);
 

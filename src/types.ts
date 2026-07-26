@@ -36,7 +36,15 @@ export type SkillName =
 
 export type PowerAlignment = "Light" | "Dark" | "Universal";
 
-export type SpeciesChoiceKind = "skill" | "language" | "instrument" | "tool" | "kit" | "weapon" | "other";
+export type SpeciesChoiceKind =
+  | "skill"
+  | "language"
+  | "instrument"
+  | "tool"
+  | "kit"
+  | "weapon"
+  | "other"
+  | "skillOrTool"; // a single pick that may be either a skill or a tool (e.g. Practiced)
 
 export interface SpeciesTraitChoice {
   kind: SpeciesChoiceKind;
@@ -110,6 +118,8 @@ export interface ClassEntry {
   armorProficiencies: string[];
   weaponProficiencies: { label: string; note?: string }[];
   toolProficiency: string;
+  fixedToolProficiencies: string[];
+  toolChoices: SpeciesTraitChoice[];
   skillChoice: { count: number; options: string[] };
   equipmentText: string[];
   startingFunds: string;
@@ -157,6 +167,7 @@ export interface ArchetypeEntry {
 
 export interface ClassSelections {
   skillChoice: string[];
+  toolChoice: string[][];
   equipmentChoice: string[];
   useStartingFunds: boolean;
   rolledFunds: number;
@@ -327,6 +338,7 @@ export interface Character {
   classAppliedName: string;
   classSavingThrowsApplied: AbilityKey[];
   classGrantedSkills: SkillName[];
+  classGrantedProficiencies: string[];
   classAbilityBonus: AbilityScores;
   asiChoices: Record<number, AbilityKey[]>;
   classTraitsText: string;
@@ -517,6 +529,7 @@ export function createBlankCharacter(): Character {
     classAppliedName: "",
     classSavingThrowsApplied: [],
     classGrantedSkills: [],
+    classGrantedProficiencies: [],
     classAbilityBonus: emptyAbilities0(),
     asiChoices: {},
     classTraitsText: "",

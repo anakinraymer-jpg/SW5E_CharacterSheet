@@ -14,7 +14,9 @@ const ALL_SKILLS = [...SKILL_LIST];
 const INSTRUMENTS = GEAR_CATALOG.filter((g) => g.category === "Musical Instrument").map((g) => g.name);
 const TOOLS = GEAR_CATALOG.filter((g) => g.category === "Tool").map((g) => g.name);
 const KITS = GEAR_CATALOG.filter((g) => g.category === "Kit").map((g) => g.name);
+const GAMING_SETS = GEAR_CATALOG.filter((g) => g.category === "Gaming Set").map((g) => g.name);
 const TOOLS_AND_KITS = [...TOOLS, ...KITS];
+const ANY_TOOL = [...TOOLS, ...KITS, ...GAMING_SETS, ...INSTRUMENTS];
 const EXOTIC_WEAPONS = WEAPON_CATALOG.filter((w) => /exotic/i.test(w.type)).map((w) => w.name);
 const DAMAGE_TYPES = ["Acid", "Cold", "Fire", "Force", "Lightning", "Necrotic"];
 const FIGHTING_STYLE_NAMES = FIGHTING_STYLES.map((s) => s.name);
@@ -26,9 +28,6 @@ const CLASS_IMPROVEMENT_NAMES = CLASS_IMPROVEMENTS.map((c) => c.name);
 const MULTICLASS_IMPROVEMENT_NAMES = MULTICLASS_IMPROVEMENTS.map((c) => c.name);
 const SPLASHCLASS_IMPROVEMENT_NAMES = SPLASHCLASS_IMPROVEMENTS.map((c) => c.name);
 
-function skillChoice(count = 1): SpeciesTraitChoice {
-  return { kind: "skill", label: "Skill", count, options: ALL_SKILLS };
-}
 function instrumentChoice(): SpeciesTraitChoice {
   return { kind: "instrument", label: "Musical Instrument", count: 1, options: INSTRUMENTS };
 }
@@ -43,6 +42,9 @@ function otherChoice(label: string, options: string[], count = 1): SpeciesTraitC
 }
 function weaponChoice(label: string, count: number, options: string[]): SpeciesTraitChoice {
   return { kind: "weapon", label, count, options };
+}
+function skillOrToolChoice(count: number): SpeciesTraitChoice {
+  return { kind: "skillOrTool", label: "Skill or Tool", count, options: [...ALL_SKILLS, ...ANY_TOOL] };
 }
 
 export const FEATS_CATALOG: FeatEntry[] = [
@@ -347,7 +349,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Practiced",
     prerequisite: null,
     abilityOptions: ALL_ABILITIES,
-    choices: [skillChoice(2)],
+    choices: [skillOrToolChoice(2)],
     text: "You have acquired skills over your career, gaining the following benefits:\n- Increase an ability score of your choice by 1, to a maximum of 20.\n- You gain proficiency in any combination of two skills or tools of your choice.",
   },
   {

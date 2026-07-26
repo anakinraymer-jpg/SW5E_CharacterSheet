@@ -102,10 +102,11 @@ export default function FeatChoiceDialog({ feat, skills, onCancel, onConfirm }: 
                   setChoiceSelections(next);
                 }}
                 options={
-                  choiceDef.kind === "skill"
-                    ? choiceDef.options.filter(
-                        (o) => !skills[o as SkillName].proficient && !skills[o as SkillName].expertise
-                      )
+                  choiceDef.kind === "skill" || choiceDef.kind === "skillOrTool"
+                    ? choiceDef.options.filter((o) => {
+                        const sk = skills[o as SkillName];
+                        return !sk || (!sk.proficient && !sk.expertise);
+                      })
                     : choiceDef.options
                 }
               />

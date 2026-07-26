@@ -17,6 +17,9 @@ export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConf
   const [skillChoice, setSkillChoice] = useState<string[]>(
     Array(classEntry.skillChoice.count).fill("")
   );
+  const [toolChoice, setToolChoice] = useState<string[][]>(
+    classEntry.toolChoices.map((c) => Array(c.count).fill(""))
+  );
 
   const equipmentLines = classEntry.equipmentText.map((line) => parseEquipmentOptions(line));
   const [equipmentChoice, setEquipmentChoice] = useState<string[]>(
@@ -28,8 +31,11 @@ export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConf
 
   const skillsComplete =
     skillChoice.every(Boolean) && new Set(skillChoice).size === skillChoice.length;
+  const toolsComplete = toolChoice.every(
+    (picks) => picks.every(Boolean) && new Set(picks).size === picks.length
+  );
   const equipmentComplete = useStartingFunds ? rolledFunds > 0 : equipmentChoice.every(Boolean);
-  const isComplete = skillsComplete && equipmentComplete;
+  const isComplete = skillsComplete && toolsComplete && equipmentComplete;
 
   function roll() {
     if (fundsFormula) setRolledFunds(rollStartingFunds(fundsFormula));
@@ -47,7 +53,9 @@ export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConf
           <button
             className="btn btn-primary"
             disabled={!isComplete}
-            onClick={() => onConfirm({ skillChoice, equipmentChoice, useStartingFunds, rolledFunds })}
+            onClick={() =>
+              onConfirm({ skillChoice, toolChoice, equipmentChoice, useStartingFunds, rolledFunds })
+            }
           >
             Apply
           </button>
@@ -56,7 +64,8 @@ export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConf
     >
       <p className="section-hint">
         Saving throws, hit dice, and other fixed proficiencies apply automatically. Choose your
-        starting skills below ({classEntry.skillChoice.count} from the {classEntry.name} list).
+        starting skills ({classEntry.skillChoice.count} from the {classEntry.name} list)
+        {classEntry.toolChoices.length > 0 ? ", tool proficiencies," : ""} and equipment below.
       </p>
       <div className="choice-group">
         <div className="choice-group-label">Skills</div>
@@ -81,6 +90,42 @@ export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConf
           ))}
         </div>
       </div>
+
+      {classEntry.fixedToolProficiencies.length > 0 && (
+        <div className="choice-group">
+          <div className="choice-group-label">Tool Proficiencies</div>
+          <div className="choice-group-hint">{classEntry.fixedToolProficiencies.join(", ")}</div>
+        </div>
+      )}
+
+      {classEntry.toolChoices.map((choiceDef, i) => (
+        <div className="choice-group" key={choiceDef.label + i}>
+          <div className="choice-group-label">
+            {choiceDef.label}
+            {choiceDef.count > 1 ? ` (${choiceDef.count})` : ""}
+          </div>
+          <div className="choice-selects">
+            {toolChoice[i].map((v, j) => (
+              <select
+                key={j}
+                value={v}
+                onChange={(e) => {
+                  const next = toolChoice.map((arr) => [...arr]);
+                  next[i][j] = e.target.value;
+                  setToolChoice(next);
+                }}
+              >
+                <option value="">Choose…</option>
+                {choiceDef.options.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            ))}
+          </div>
+        </div>
+      ))}
 
       <div className="choice-group">
         <div className="choice-group-label">Starting Equipment</div>

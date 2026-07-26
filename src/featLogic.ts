@@ -1,8 +1,10 @@
 import type { AbilityKey, Character, CharacterFeat, FeatEntry, SkillName } from "./types";
+import { SKILL_LIST } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
 import { FEATS_CATALOG } from "./data/feats";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
+const isSkillName = (v: string): v is SkillName => (SKILL_LIST as readonly string[]).includes(v);
 
 export function featNeedsChoices(feat: FeatEntry): boolean {
   if (feat.abilityOptions.length > 1) return true;
@@ -56,10 +58,11 @@ export function addFeat(character: Character, feat: FeatEntry, selections: FeatS
   }
 
   feat.choices?.forEach((choiceDef, i) => {
-    if (choiceDef.kind !== "skill") return;
-    const chosen = (selections.choiceSelections[i] ?? []).filter(Boolean) as SkillName[];
-    chosen.forEach((sk) => {
-      skills[sk] = { ...skills[sk], proficient: true };
+    if (choiceDef.kind !== "skill" && choiceDef.kind !== "skillOrTool") return;
+    const chosen = (selections.choiceSelections[i] ?? []).filter(Boolean);
+    chosen.forEach((val) => {
+      if (!isSkillName(val)) return;
+      skills[val] = { ...skills[val], proficient: true };
     });
   });
 
@@ -103,10 +106,11 @@ export function removeFeat(character: Character, featId: string): Character {
     skills[cf.skillExpertiseGranted] = { ...skills[cf.skillExpertiseGranted], expertise: false };
   }
   feat?.choices?.forEach((choiceDef, i) => {
-    if (choiceDef.kind !== "skill") return;
-    const chosen = (cf.choiceSelections[i] ?? []) as SkillName[];
-    chosen.forEach((sk) => {
-      skills[sk] = { ...skills[sk], proficient: false };
+    if (choiceDef.kind !== "skill" && choiceDef.kind !== "skillOrTool") return;
+    const chosen = cf.choiceSelections[i] ?? [];
+    chosen.forEach((val) => {
+      if (!isSkillName(val)) return;
+      skills[val] = { ...skills[val], proficient: false };
     });
   });
 
@@ -143,7 +147,10 @@ export function grantedProficienciesFromFeat(cf: CharacterFeat): string[] {
   feat.choices.forEach((choiceDef, i) => {
     if (choiceDef.kind === "skill" || choiceDef.kind === "language") return;
     const chosen = cf.choiceSelections[i] ?? [];
-    chosen.forEach((val) => out.push(`${val} (${choiceDef.label})`));
+    chosen.forEach((val) => {
+      if (choiceDef.kind === "skillOrTool" && isSkillName(val)) return;
+      out.push(`${val} (${choiceDef.label})`);
+    });
   });
   return out;
 }

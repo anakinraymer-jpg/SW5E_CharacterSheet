@@ -1860,7 +1860,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Claws", text: "Your unarmed strikes deal 1d4 kinetic damage and have the finesse property." },
       { name: "Darkvision", text: "You have a cat's keen senses, especially in the dark. You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray." },
       { name: "Notorious Slavers", text: "Whenever you make an ability check related to the buying, selling, or controlling of slaves, you are considered proficient in the check. If you would already be proficient, you instead have expertise." },
-      { name: "Reputation for Cruelty", text: "You are proficient in Intimidation, as well as the saberwhip and vibrowhip.", grantsSkills: ["Intimidation"] },
+      { name: "Reputation for Cruelty", text: "You are proficient in Intimidation, as well as the saberwhip and vibrowhip.", grantsSkills: ["Intimidation"], grantsProficiency: "Saberwhip, vibrowhip" },
     ],
   },
 ];
