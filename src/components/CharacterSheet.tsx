@@ -31,11 +31,14 @@ import { applySpecies, revertSpecies, speciesNeedsChoices } from "../speciesLogi
 import { applyBackground, backgroundNeedsChoices, revertBackground } from "../backgroundLogic";
 import {
   applyArchetype,
+  applyArchetypeFeatureChoice,
   applyAsi,
   applyClass,
   classNeedsChoices,
   pendingArchetypeChoice,
+  pendingArchetypeFeatureChoice,
   pendingAsiLevel,
+  recalcArchetypeFeatureChoices,
   recalcArchetypeForLevel,
   recalcClassForLevel,
   revertArchetype,
@@ -58,6 +61,7 @@ import ClassFeaturesSection from "./ClassFeaturesSection";
 import FeatsSection from "./FeatsSection";
 import FeatChoiceDialog from "./FeatChoiceDialog";
 import ArchetypeChoiceDialog from "./ArchetypeChoiceDialog";
+import ArchetypeFeatureChoiceDialog from "./ArchetypeFeatureChoiceDialog";
 import ClassSubChoiceDialog from "./ClassSubChoiceDialog";
 import SectionBlock from "./SectionBlock";
 import HealthBar from "./HealthBar";
@@ -73,7 +77,7 @@ import {
 } from "../layout";
 import { FEATS_CATALOG } from "../data/feats";
 import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
-import type { ClassSubChoiceDef, ClassSubChoicePickDetail, FeatEntry } from "../types";
+import type { ClassFeature, ClassSubChoiceDef, ClassSubChoicePickDetail, FeatEntry } from "../types";
 import { CLASS_ACCENTS } from "../data/classFeatureChoices";
 import {
   applySubChoicePicks,
@@ -99,6 +103,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [pendingSubChoiceDef, setPendingSubChoiceDef] = useState<{ def: ClassSubChoiceDef; needed: number } | null>(
     null
   );
+  const [pendingArchetypeFeature, setPendingArchetypeFeature] = useState<ClassFeature | null>(null);
   const [editLayout, setEditLayout] = useState(false);
   const [layout, setLayout] = useState<SheetLayout>(() => getStoredLayout());
   const [draggedId, setDraggedId] = useState<SectionId | null>(null);
@@ -140,7 +145,15 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       (a) => a.name === character.archetypeAppliedName
     );
     if (archetypeEntry) {
-      setCharacter((prev) => recalcArchetypeForLevel(prev, archetypeEntry));
+      setCharacter((prev) => recalcArchetypeFeatureChoices(recalcArchetypeForLevel(prev, archetypeEntry), archetypeEntry));
+      const pendingFeature = pendingArchetypeFeatureChoice(character, archetypeEntry);
+      if (pendingFeature && pendingFeature.name !== pendingArchetypeFeature?.name) {
+        setPendingArchetypeFeature(pendingFeature);
+      } else if (!pendingFeature && pendingArchetypeFeature) {
+        setPendingArchetypeFeature(null);
+      }
+    } else if (pendingArchetypeFeature) {
+      setPendingArchetypeFeature(null);
     }
 
     setCharacter((prev) => recalcClassSubChoices(recalcClassResources(prev)));
@@ -311,6 +324,15 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     // Chain straight to the next pending sub-choice (if any) rather than waiting for a
     // level/class change to re-trigger the reactive effect.
     setPendingSubChoiceDef(pendingSubChoice(applied));
+  }
+
+  function handleArchetypeFeatureChoiceConfirm(selections: string[][]) {
+    if (!pendingArchetypeFeature) return;
+    const archetypeEntry = ARCHETYPES_CATALOG.find((a) => a.name === character.archetypeAppliedName);
+    if (!archetypeEntry) return;
+    const applied = applyArchetypeFeatureChoice(character, archetypeEntry, pendingArchetypeFeature.name, selections);
+    setCharacter(applied);
+    setPendingArchetypeFeature(pendingArchetypeFeatureChoice(applied, archetypeEntry));
   }
 
   function handleUpdateResource(key: string, current: number) {
@@ -804,9 +826,18 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         />
       )}
 
+      {pendingArchetypeFeature && (
+        <ArchetypeFeatureChoiceDialog
+          key={pendingArchetypeFeature.name}
+          feature={pendingArchetypeFeature}
+          onCancel={() => setPendingArchetypeFeature(null)}
+          onConfirm={handleArchetypeFeatureChoiceConfirm}
+        />
+      )}
+
       {pendingSubChoiceDef && (
         <ClassSubChoiceDialog
-          key={pendingSubChoiceDef.def.key}
+          key={`${pendingSubChoiceDef.def.key}-${pendingSubChoiceDef.needed}`}
           def={pendingSubChoiceDef.def}
           needed={pendingSubChoiceDef.needed}
           alreadyChosen={character.classSubChoicePicks[pendingSubChoiceDef.def.key] ?? []}

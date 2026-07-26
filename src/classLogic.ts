@@ -3,6 +3,7 @@ import type {
   ArchetypeEntry,
   Character,
   ClassEntry,
+  ClassFeature,
   ClassSelections,
   SkillName,
 } from "./types";
@@ -155,7 +156,18 @@ function buildClassTraitsText(classEntry: ClassEntry, character: Character): str
 
 export function revertArchetype(character: Character): Character {
   if (!character.archetypeAppliedName) return character;
-  return { ...character, archetypeAppliedName: "", archetypeTraitsText: "" };
+  const skills = { ...character.skills };
+  for (const sk of character.archetypeFeatureGrantedSkills) {
+    skills[sk] = { ...skills[sk], proficient: false };
+  }
+  return {
+    ...character,
+    skills,
+    archetypeAppliedName: "",
+    archetypeTraitsText: "",
+    archetypeFeatureChoiceSelections: {},
+    archetypeFeatureGrantedSkills: [],
+  };
 }
 
 export function applyArchetype(character: Character, archetypeEntry: ArchetypeEntry): Character {
@@ -174,7 +186,21 @@ export function recalcArchetypeForLevel(character: Character, archetypeEntry: Ar
 
 function buildArchetypeTraitsText(archetypeEntry: ArchetypeEntry, character: Character): string {
   const level = Math.max(1, Math.min(20, character.level || 1));
-  return archetypeFeaturesText(archetypeEntry, level);
+  const lines: string[] = [];
+  for (const feature of archetypeEntry.features) {
+    if (feature.level > level) continue;
+    let text = feature.text;
+    const selections = character.archetypeFeatureChoiceSelections[feature.name];
+    if (selections && feature.choices?.length) {
+      const extras = feature.choices.map((choiceDef, i) => {
+        const chosen = selections[i] ?? [];
+        return chosen.length ? `${choiceDef.label}: ${chosen.join(", ")}` : `${choiceDef.label}: (unset)`;
+      });
+      text = `${text} [${extras.join("; ")}]`;
+    }
+    lines.push(`${feature.name} (${archetypeEntry.name} ${feature.level}). ${text}`);
+  }
+  return lines.join("\n\n");
 }
 
 // Preview text for an archetype's features unlocked up to (and including) the given level.
@@ -193,6 +219,113 @@ export function archetypeFeaturesText(archetypeEntry: ArchetypeEntry, level: num
 // without having chosen one yet — used to trigger the archetype choice popup.
 export function pendingArchetypeChoice(character: Character, classEntry: ClassEntry): boolean {
   return (character.level || 1) >= classEntry.archetypeLevel && !character.archetypeAppliedName;
+}
+
+// --- Archetype feature choices (e.g. Silver Tongue's languages+skill, Gambler's Aptitude's skill) ---
+
+// The next archetype feature (at or below current level) whose choices haven't been resolved yet.
+export function pendingArchetypeFeatureChoice(
+  character: Character,
+  archetypeEntry: ArchetypeEntry
+): ClassFeature | null {
+  const level = Math.max(1, Math.min(20, character.level || 1));
+  for (const feature of archetypeEntry.features) {
+    if (feature.level > level) continue;
+    if (!feature.choices || feature.choices.length === 0) continue;
+    if (character.archetypeFeatureChoiceSelections[feature.name]) continue;
+    return feature;
+  }
+  return null;
+}
+
+export function applyArchetypeFeatureChoice(
+  character: Character,
+  archetypeEntry: ArchetypeEntry,
+  featureName: string,
+  selections: string[][]
+): Character {
+  const next: Character = {
+    ...character,
+    archetypeFeatureChoiceSelections: {
+      ...character.archetypeFeatureChoiceSelections,
+      [featureName]: selections.map((arr) => arr.filter(Boolean)),
+    },
+  };
+  const synced = resyncArchetypeFeatureGrantedSkills(next, archetypeEntry);
+  return { ...synced, archetypeTraitsText: buildArchetypeTraitsText(archetypeEntry, synced) };
+}
+
+// Un-proficients the previously tracked archetype-feature skill grants, then re-proficients
+// whatever archetypeFeatureChoiceSelections currently holds — same revert-then-reapply shape
+// used for class sub-choices, kept in sync as selections are added/pruned across levels.
+function resyncArchetypeFeatureGrantedSkills(character: Character, archetypeEntry: ArchetypeEntry): Character {
+  const skills = { ...character.skills };
+  for (const sk of character.archetypeFeatureGrantedSkills) {
+    skills[sk] = { ...skills[sk], proficient: false };
+  }
+  const granted: SkillName[] = [];
+  for (const feature of archetypeEntry.features) {
+    const selections = character.archetypeFeatureChoiceSelections[feature.name];
+    if (!selections) continue;
+    feature.choices?.forEach((choiceDef, i) => {
+      if (choiceDef.kind !== "skill") return;
+      const chosen = (selections[i] ?? []) as SkillName[];
+      chosen.forEach((sk) => granted.push(sk));
+    });
+  }
+  for (const sk of granted) {
+    skills[sk] = { ...skills[sk], proficient: true };
+  }
+  return { ...character, skills, archetypeFeatureGrantedSkills: granted };
+}
+
+// Prunes selections for features whose level requirement is no longer met (e.g. leveling down),
+// and resyncs the skills they grant. No-op if no archetype is applied.
+export function recalcArchetypeFeatureChoices(character: Character, archetypeEntry: ArchetypeEntry | undefined): Character {
+  if (!archetypeEntry) return character;
+  const level = Math.max(1, Math.min(20, character.level || 1));
+  const validNames = new Set(archetypeEntry.features.filter((f) => f.level <= level).map((f) => f.name));
+  const selections: Record<string, string[][]> = {};
+  for (const [name, sel] of Object.entries(character.archetypeFeatureChoiceSelections)) {
+    if (validNames.has(name)) selections[name] = sel;
+  }
+  const synced = resyncArchetypeFeatureGrantedSkills(
+    { ...character, archetypeFeatureChoiceSelections: selections },
+    archetypeEntry
+  );
+  return { ...synced, archetypeTraitsText: buildArchetypeTraitsText(archetypeEntry, synced) };
+}
+
+export function grantedLanguagesFromArchetypeFeatures(character: Character, archetypeEntry: ArchetypeEntry | undefined): string[] {
+  if (!archetypeEntry) return [];
+  const out: string[] = [];
+  for (const feature of archetypeEntry.features) {
+    const selections = character.archetypeFeatureChoiceSelections[feature.name];
+    if (!selections) continue;
+    feature.choices?.forEach((choiceDef, i) => {
+      if (choiceDef.kind !== "language") return;
+      out.push(...(selections[i] ?? []));
+    });
+  }
+  return out;
+}
+
+export function grantedProficienciesFromArchetypeFeatures(character: Character, archetypeEntry: ArchetypeEntry | undefined): string[] {
+  if (!archetypeEntry) return [];
+  const level = Math.max(1, Math.min(20, character.level || 1));
+  const out: string[] = [];
+  for (const feature of archetypeEntry.features) {
+    if (feature.level > level) continue;
+    if (feature.grantsProficiency) out.push(feature.grantsProficiency);
+    const selections = character.archetypeFeatureChoiceSelections[feature.name];
+    if (!selections) continue;
+    feature.choices?.forEach((choiceDef, i) => {
+      if (choiceDef.kind === "skill" || choiceDef.kind === "language") return;
+      const chosen = selections[i] ?? [];
+      chosen.forEach((val) => out.push(`${val} (${choiceDef.label})`));
+    });
+  }
+  return out;
 }
 
 // --- Ability Score Improvement engine ---

@@ -95,6 +95,8 @@ export interface ClassFeature {
   name: string;
   level: number;
   text: string;
+  grantsProficiency?: string; // fixed proficiency this feature grants once its level is reached
+  choices?: SpeciesTraitChoice[]; // reused choice structure (skill/language/tool/weapon picks)
 }
 
 export interface ClassEntry {
@@ -327,6 +329,8 @@ export interface Character {
   classCreditsApplied: number;
   archetypeAppliedName: string;
   archetypeTraitsText: string;
+  archetypeFeatureChoiceSelections: Record<string, string[][]>; // keyed by feature name
+  archetypeFeatureGrantedSkills: SkillName[]; // tracked so revert/relevel can cleanly un-proficient
   classResources: ClassResourceState[];
   classSubChoicePicks: Record<string, string[]>;
   classSubChoiceDetails: Record<string, ClassSubChoicePickDetail[]>; // parallel to classSubChoicePicks[key]
@@ -514,6 +518,8 @@ export function createBlankCharacter(): Character {
     classCreditsApplied: 0,
     archetypeAppliedName: "",
     archetypeTraitsText: "",
+    archetypeFeatureChoiceSelections: {},
+    archetypeFeatureGrantedSkills: [],
     classResources: [],
     classSubChoicePicks: {},
     classSubChoiceDetails: {},

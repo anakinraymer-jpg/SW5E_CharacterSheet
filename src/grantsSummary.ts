@@ -1,8 +1,13 @@
 import type { Character } from "./types";
 import { CLASSES_CATALOG } from "./data/classes";
 import { BACKGROUND_CATALOG } from "./data/backgrounds";
+import { ARCHETYPES_CATALOG as ARCHETYPES_CATALOG_PHB } from "./data/archetypeDetails";
+import { ARCHETYPES_CATALOG_EC } from "./data/archetypeDetailsEC";
 import { grantedLanguagesFromFeat, grantedProficienciesFromFeat } from "./featLogic";
 import { grantedProficienciesFromSubChoices, grantedLanguagesFromSubChoices } from "./classFeatureLogic";
+import { grantedLanguagesFromArchetypeFeatures, grantedProficienciesFromArchetypeFeatures } from "./classLogic";
+
+const ARCHETYPES_CATALOG = [...ARCHETYPES_CATALOG_PHB, ...ARCHETYPES_CATALOG_EC];
 
 export function grantedLanguages(character: Character): string[] {
   const out = [...character.speciesGrantedLanguages, ...character.backgroundGrantedLanguages];
@@ -10,6 +15,8 @@ export function grantedLanguages(character: Character): string[] {
     out.push(...grantedLanguagesFromFeat(feat));
   }
   out.push(...grantedLanguagesFromSubChoices(character));
+  const archetypeEntry = ARCHETYPES_CATALOG.find((a) => a.name === character.archetypeAppliedName);
+  out.push(...grantedLanguagesFromArchetypeFeatures(character, archetypeEntry));
   return [...new Set(out)];
 }
 
@@ -24,6 +31,8 @@ export function grantedProficiencies(character: Character): string[] {
     out.push(`${tool} (Class)`);
   }
   out.push(...grantedProficienciesFromSubChoices(character));
+  const archetypeEntry = ARCHETYPES_CATALOG.find((a) => a.name === character.archetypeAppliedName);
+  out.push(...grantedProficienciesFromArchetypeFeatures(character, archetypeEntry));
   if (character.backgroundAppliedName) {
     const bg = BACKGROUND_CATALOG.find((b) => b.name === character.backgroundAppliedName);
     if (bg?.toolProficienciesText) {

@@ -2,7 +2,26 @@
 // discoveries, surge tables) are intentionally summarized rather than fully
 // enumerated — see the linked archetype page on sw5e.com for the complete list.
 
-import type { ArchetypeEntry } from "../types";
+import type { ArchetypeEntry, SpeciesTraitChoice } from "../types";
+import { GEAR_CATALOG } from "./gear";
+import { WEAPON_CATALOG } from "./weapons";
+import { LANGUAGES } from "./sw5eData";
+
+const ARTISAN_IMPLEMENTS = GEAR_CATALOG.filter((g) => g.category === "Tool" || g.category === "Kit").map((g) => g.name);
+const ALL_BLASTERS = WEAPON_CATALOG.filter((w) => /blaster/i.test(w.type)).map((w) => w.name);
+
+function skillChoice(label: string, options: string[]): SpeciesTraitChoice {
+  return { kind: "skill", label, count: 1, options };
+}
+function languageChoice(count: number): SpeciesTraitChoice {
+  return { kind: "language", label: "Language", count, options: LANGUAGES };
+}
+function toolChoice(label: string, options: string[]): SpeciesTraitChoice {
+  return { kind: "tool", label, count: 1, options };
+}
+function weaponChoice(label: string, count: number, options: string[]): SpeciesTraitChoice {
+  return { kind: "weapon", label, count, options };
+}
 
 export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
   // ---- Guardian ----
@@ -34,7 +53,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Shien/Djem So Form",
     className: "Guardian",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "You gain proficiency in heavy armor." },
+      { name: "Bonus Proficiencies", level: 3, text: "You gain proficiency in heavy armor.", grantsProficiency: "Heavy armor" },
       { name: "Form Basics", level: 3, text: "You gain your choice of the Shien or Djem So lightsaber form. If you already know it, choose another form instead." },
       { name: "The Way of the Krayt Dragon", level: 3, text: "Bonus action: threatening stance for 1 minute; first Strength melee hit each turn deals extra Strength-mod damage, redirectable to an adjacent creature. Long rest to reuse." },
       { name: "Channel the Force", level: 3, text: "Choose Blade Barrier (Shien: forgo Strength damage to reduce incoming energy/kinetic damage) or Falling Avalanche (Djem So: gain advantage on a Strength check/attack by halving speed)." },
@@ -47,7 +66,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Soresu Form",
     className: "Guardian",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "You gain proficiency in heavy armor." },
+      { name: "Bonus Proficiencies", level: 3, text: "You gain proficiency in heavy armor.", grantsProficiency: "Heavy armor" },
       { name: "Form Basics", level: 3, text: "You gain the Soresu lightsaber form. If you already know it, choose another lightsaber form instead." },
       { name: "The Way of the Mynock", level: 3, text: "Bonus action: defensive stance 1 minute, casting saber ward as part of the bonus action and each turn; gain special reactions equal to proficiency bonus usable only to cast saber reflect. Long rest to reuse." },
       { name: "Channel the Force: Advancing Defender", level: 3, text: "When you cast saber reflect, expend a Channel the Force use to move up to 10 feet as part of the reaction without provoking opportunity attacks." },
@@ -62,7 +81,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Ballistic Approach",
     className: "Berserker",
     features: [
-      { name: "Firestorm", level: 3, text: "Proficiency with martial blasters that have the burst or rapid property. While wielding a proficient blaster: use Strength or Dexterity for attack/damage within 30 feet; count as proficient with improvised blasters." },
+      { name: "Firestorm", level: 3, text: "Proficiency with martial blasters that have the burst or rapid property. While wielding a proficient blaster: use Strength or Dexterity for attack/damage within 30 feet; count as proficient with improvised blasters.", grantsProficiency: "Martial blasters (burst/rapid)" },
       { name: "Explosive", level: 3, text: "While raging: blaster damage rolls gain a minimum roll threshold; add rage damage to Strength ranged attacks. At 9th level, add Brutal Critical dice when a target rolls a 1 on a save against your burst/rapid weapon." },
       { name: "Rampage", level: 6, text: "While raging, dealing Strength blaster damage lets you use a bonus action to move half your speed toward the target and melee attack if you end within 5 feet." },
       { name: "Down, Not Out", level: 10, text: "Reaction to make a blaster attack against a creature within 30 feet that hits you." },
@@ -84,7 +103,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Juggernaut Approach",
     className: "Berserker",
     features: [
-      { name: "Armored Brute", level: 3, text: "Proficiency in heavy armor; you can rage and gain rage benefits while wearing it." },
+      { name: "Armored Brute", level: 3, text: "Proficiency in heavy armor; you can rage and gain rage benefits while wearing it.", grantsProficiency: "Heavy armor" },
       { name: "Unstoppable Force", level: 3, text: "While raging, move through a hostile creature's space via a contested Athletics check; on success, ignore difficult terrain, push the creature 5 feet, and avoid opportunity attacks from it this turn." },
       { name: "Raging Bulwark", level: 6, text: "Reaction to move toward an ally targeted by a ranged attack/save and provide cover; you provide enhanced cover tiers to creatures your size or one size smaller." },
       { name: "Overwhelming Cleave", level: 10, text: "Pushing a creature into a surface/creature while raging deals kinetic damage equal to Rage Damage; first Strength melee hit each turn can also damage an adjacent creature." },
@@ -154,7 +173,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Armormech Engineering",
     className: "Engineer",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in armormech's implements, medium armor, and heavy armor; crafting with armormech's implements is twice as fast." },
+      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in armormech's implements, medium armor, and heavy armor; crafting with armormech's implements is twice as fast.", grantsProficiency: "Armormech's implements, medium armor, heavy armor" },
       { name: "Modified Armor", level: 3, text: "Modify one suit of armor or a shield into an enhanced, attuned item that also serves as your tech focus. It has 4+ modification slots (growing with level, see engineer table) to install modifications; excess installs beyond your proficiency bonus reduce your tech point max. At 9th level, maintain a modified armor and shield simultaneously. (Full modification list omitted — see sw5e.com.)" },
       { name: "Damage Absorption", level: 3, text: "Reaction + a Potent Aptitude use: reduce damage taken by the die rolled + Intelligence modifier, while wearing/wielding your modified gear." },
       { name: "Extra Attack", level: 6, text: "You can attack twice, instead of once, while wearing your modified armor or wielding your modified shield." },
@@ -166,7 +185,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Armstech Engineering",
     className: "Engineer",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in armstech's implements, medium armor, martial blasters, and martial vibroweapons; crafting with armstech's implements is twice as fast." },
+      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in armstech's implements, medium armor, martial blasters, and martial vibroweapons; crafting with armstech's implements is twice as fast.", grantsProficiency: "Armstech's implements, medium armor, martial blasters, martial vibroweapons" },
       { name: "Modified Weaponry", level: 3, text: "Modify one proficient weapon into an enhanced, attuned item that also serves as your tech focus, with 4+ modification slots growing with level; excess installs reduce your tech point max. At 9th level, maintain two modified weapons. (Full modification list omitted — see sw5e.com.)" },
       { name: "Close Call", level: 3, text: "Expend a Potent Aptitude use to reroll a missed attack with your modified weapon." },
       { name: "Armstech's Strike", level: 6, text: "Once per round, deal an extra 1d6 damage (same type) with your modified weapon, growing to 2d6 at 11th level and 3d6 at 17th." },
@@ -178,7 +197,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Gadgeteer Engineering",
     className: "Engineer",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in gadgeteer's implements; crafting with them is twice as fast." },
+      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in gadgeteer's implements; crafting with them is twice as fast.", grantsProficiency: "Gadgeteer's implements" },
       { name: "Gadgeteer Harness", level: 3, text: "Create a gadgeteer harness — an enhanced, attuned item that serves as your tech focus, with 4+ modification slots growing with level for attaching gadgets. (Full modification list omitted — see sw5e.com.)" },
       { name: "Projected Barrier", level: 3, text: "Bonus action + Potent Aptitude use: project an Environmental or Physical Barrier onto a friendly creature within 30 feet, absorbing chosen damage types until it drops to 0 HP." },
       { name: "Versatile Direction", level: 6, text: "You can take a second bonus action each round. 3 uses, more at 9th/13th/17th level; regains on long rest." },
@@ -190,7 +209,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Unstable Engineering",
     className: "Engineer",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "Proficiency with your choice of artisan's implements; crafting with tinker's implements is twice as fast." },
+      { name: "Bonus Proficiencies", level: 3, text: "Proficiency with your choice of artisan's implements; crafting with tinker's implements is twice as fast.", choices: [toolChoice("Artisan's Implement", ARTISAN_IMPLEMENTS)] },
       { name: "Modified Tinkercannon", level: 3, text: "Modify your tinker's implements into a tinkercannon. Casting a 1st-level+ tech power while wielding it risks an Unstable Engineering Surge on a roll of 1. You have 4+ overrides (growing with level) to reroll a surge, at the cost of reduced tech points if overused. (Full surge table omitted — see sw5e.com.)" },
       { name: "Unstable Volley", level: 3, text: "Bonus action + Potent Aptitude use: launch unstable energy at a surface within 30 feet (growing to 60/120 feet); it erupts for lightning damage (Dexterity save) after 1 minute or when detonated early. Damage grows with level." },
       { name: "Creative Destruction", level: 6, text: "Add your governing ability modifier (min +1) to tech power/class feature damage that doesn't already include it; doing so may trigger a Surge roll." },
@@ -240,7 +259,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Tactical Specialist",
     className: "Fighter",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "Proficiency with your choice of artisan's implements." },
+      { name: "Bonus Proficiencies", level: 3, text: "Proficiency with your choice of artisan's implements.", choices: [toolChoice("Artisan's Implement", ARTISAN_IMPLEMENTS)] },
       { name: "Improved Combat Superiority", level: 3, text: "You know four maneuvers (instead of two) and have four superiority dice (instead of two), both growing faster per a dedicated Tactical Superiority table." },
       { name: "Maneuver Versatility", level: 3, text: "You can use each maneuver twice per turn; two known maneuvers count as general maneuvers, with more swappable at 5th/9th/13th/17th level." },
       { name: "Know Your Enemy", level: 7, text: "After observing/interacting with a creature for 1 minute, the GM tells you if it's your equal, superior, or inferior in two chosen traits (ability scores, AC, HP, class levels)." },
@@ -255,7 +274,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Crimson Order",
     className: "Monk",
     features: [
-      { name: "Crimson Armaments", level: 3, text: "Proficiency in light and medium armor (or heavy armor if already proficient); Martial Arts and Unarmored Movement work while armored (no shield). Over an hour, adapt to a new weapon, gaining its proficiency and monk-weapon status (one at a time)." },
+      { name: "Crimson Armaments", level: 3, text: "Proficiency in light and medium armor (or heavy armor if already proficient); Martial Arts and Unarmored Movement work while armored (no shield). Over an hour, adapt to a new weapon, gaining its proficiency and monk-weapon status (one at a time).", grantsProficiency: "Light and medium armor" },
       { name: "Crimson Squall", level: 6, text: "Bonus action + 1 focus point while wielding a monk weapon: create a 5-foot (growing to 15 at 11th, 30 at 17th) difficult-terrain aura around you that blocks opportunity attacks from within it." },
       { name: "Vigilant Sentinel", level: 11, text: "+10 bonus to Wisdom (Perception) checks until your next turn if you don't move on your turn." },
       { name: "Sovereign Protector", level: 17, text: "Bonus action: for 1 minute, double speed, +2 AC, advantage on Dexterity saves, and an extra limited action each turn. Long rest to reuse." },
@@ -343,7 +362,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Gambler Pursuit",
     className: "Scholar",
     features: [
-      { name: "Gambler's Aptitude", level: 3, text: "Proficiency with a gaming set and your choice of Insight, Deception, Persuasion, or Sleight of Hand, with no disadvantage on either." },
+      { name: "Gambler's Aptitude", level: 3, text: "Proficiency with a gaming set and your choice of Insight, Deception, Persuasion, or Sleight of Hand, with no disadvantage on either.", grantsProficiency: "Gaming set", choices: [skillChoice("Skill", ["Insight", "Deception", "Persuasion", "Sleight of Hand"])] },
       { name: "Risk Versus Reward", level: 3, text: "On your first attack vs. your Critical Analysis target, roll a d6 (growing to d8/d10/d12): 4+ grants you advantage until your next turn, 3 or lower grants the target advantage against you instead." },
       { name: "Lucky Number 7", level: 6, text: "Rolling a 7 on an attack against your Critical Analysis target auto-hits and regains a superiority die." },
       { name: "Tell Me the Odds", level: 9, text: "Reaction when your Critical Analysis target hits you: roll a d8 (growing to d10/d12); 4+ imposes disadvantage on the attack, or forces a reroll if already at disadvantage." },
@@ -354,7 +373,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Physician Pursuit",
     className: "Scholar",
     features: [
-      { name: "Medical Practitioner", level: 3, text: "Proficiency with biochemist's kits and your choice of Medicine or Nature, with no disadvantage on either." },
+      { name: "Medical Practitioner", level: 3, text: "Proficiency with biochemist's kits and your choice of Medicine or Nature, with no disadvantage on either.", grantsProficiency: "Biochemist's kit", choices: [skillChoice("Skill", ["Medicine", "Nature"])] },
       { name: "Remote Healer", level: 3, text: "Maneuvers targeting your Critical Analysis ally gain a 30-foot range." },
       { name: "Field Surgeon", level: 6, text: "Healing/temp-HP maneuvers gain an extra die (growing with level); on your Critical Analysis target, you can max both dice. 1 use, 2 at 11th; regains on short/long rest, once per turn." },
       { name: "Resuscitate", level: 9, text: "Bonus action to stabilize a creature at 0 HP; action to revive a creature that died since your last turn to 1 HP. Short/long rest to reuse." },
@@ -365,7 +384,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Politician Pursuit",
     className: "Scholar",
     features: [
-      { name: "Silver Tongue", level: 3, text: "Learn two languages and gain proficiency in a Charisma skill of your choice, with no disadvantage on it." },
+      { name: "Silver Tongue", level: 3, text: "Learn two languages and gain proficiency in a Charisma skill of your choice, with no disadvantage on it.", choices: [languageChoice(2), skillChoice("Charisma Skill", ["Deception", "Intimidation", "Performance", "Persuasion"])] },
       { name: "Motivating Diplomat", level: 3, text: "Your Critical Analysis target and allies within 10 feet gain an AC bonus equal to half your Critical Analysis ability modifier." },
       { name: "Force of Personality", level: 6, text: "Action: a creature makes a Wisdom save or is charmed and follows a suggested course of action for up to 24 hours. 3 uses, more at 9th/13th/17th; regains on long rest." },
       { name: "Reassemble", level: 9, text: "Bonus action: chosen allies within 60 feet can reaction-move their speed toward you without provoking." },
@@ -376,7 +395,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Tactician Pursuit",
     className: "Scholar",
     features: [
-      { name: "Battle Display", level: 3, text: "Proficiency in martial blasters and martial vibroweapons." },
+      { name: "Battle Display", level: 3, text: "Proficiency in martial blasters and martial vibroweapons.", grantsProficiency: "Martial blasters and martial vibroweapons" },
       { name: "Tactical Mastery", level: 3, text: "Your Critical Analysis range increases to 90 feet." },
       { name: "Fire as One", level: 6, text: "Reaction attack against your Critical Analysis target once per round when someone else attacks it." },
       { name: "Battlefield Survey", level: 9, text: "After 10 minutes observing an area, chosen allies (up to your Critical Analysis modifier) ignore difficult terrain and gain Stealth advantage there." },
@@ -389,7 +408,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Bulwark Technique",
     className: "Scout",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in heavy armor." },
+      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in heavy armor.", grantsProficiency: "Heavy armor" },
       { name: "Personal Barrier", level: 3, text: "A rest-refreshed barrier (HP = twice your scout level + Intelligence modifier) absorbs damage; while it has HP you're considered proficient in Constitution saves for power concentration, and melee attackers take energy damage." },
       { name: "Mark of the Bulwark", level: 3, text: "Reaction to redirect your Ranger's Quarry target's melee attack on a nearby ally to yourself, dealing bonus damage if your barrier has HP." },
       { name: "Projected Barrier", level: 7, text: "Action: spend 3 barrier hit points for a Projected Sphere, Maelstrom, or Wave effect (cover, damage zone, or cone damage)." },
@@ -412,7 +431,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Slayer Technique",
     className: "Scout",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in heavy armor." },
+      { name: "Bonus Proficiencies", level: 3, text: "Proficiency in heavy armor.", grantsProficiency: "Heavy armor" },
       { name: "Slayer's Pride", level: 3, text: "Advantage on saves against being frightened." },
       { name: "Mark of the Slayer", level: 3, text: "You learn your Ranger's Quarry target's damage immunities/resistances/vulnerabilities; the first hit against it each turn deals extra Ranger's Quarry damage." },
       { name: "Supernatural Defense", level: 7, text: "Reaction to add your Ranger's Quarry die to a save forced by your Quarry, or to a grapple-escape check against it." },
@@ -459,7 +478,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Path of the Corsair",
     className: "Sentinel",
     features: [
-      { name: "Bonus Proficiencies", level: 3, text: "Proficiency with demolitions kits and three blasters of your choice." },
+      { name: "Bonus Proficiencies", level: 3, text: "Proficiency with demolitions kits and three blasters of your choice.", grantsProficiency: "Demolitions kit", choices: [weaponChoice("Blaster", 3, ALL_BLASTERS)] },
       { name: "Corsair Munitions", level: 3, text: "Throw grenades/set mines as a bonus action; use Wisdom or Charisma for throwing range; use your universal force save DC for explosives if higher." },
       { name: "Force-Empowered Detonators", level: 3, text: "Create two grenades per rest (growing to six by 17th level) using a demolitions kit; thrown as an action, dealing Kinetic Combat die + Wisdom/Charisma damage (force, necrotic, or psychic) on a failed Dex/Con/Wis save, half on success." },
       { name: "Remote Start", level: 7, text: "Bonus action (or integrated into a blaster Attack action) to detonate a primed explosive within 60 feet, gaining advantage on the damage roll." },
