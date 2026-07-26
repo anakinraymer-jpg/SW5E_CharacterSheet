@@ -1,5 +1,8 @@
 import type { Character, ClassResourceState, ClassSubChoiceDef, ClassSubChoicePickDetail, SkillName } from "./types";
-import { CLASS_RESOURCES_BY_CLASS, CLASS_SUB_CHOICES_BY_CLASS } from "./data/classFeatureChoices";
+import { CLASS_RESOURCES_BY_CLASS, CLASS_SUB_CHOICES_BY_CLASS, FIGHTING_STYLES, FIGHTING_MASTERIES } from "./data/classFeatureChoices";
+
+const FIGHTING_STYLES_BY_NAME = new Map(FIGHTING_STYLES.map((s) => [s.name, s]));
+const FIGHTING_MASTERIES_BY_NAME = new Map(FIGHTING_MASTERIES.map((m) => [m.name, m]));
 
 function levelIndex(character: Character): number {
   return Math.max(1, Math.min(20, character.level || 1)) - 1;
@@ -21,6 +24,14 @@ export function grantedProficienciesFromSubChoices(character: Character): string
     for (const detail of character.classSubChoiceDetails[def.key] ?? []) {
       for (const tool of detail.tools ?? []) out.push(tool);
       for (const weapon of detail.weapons ?? []) out.push(weapon);
+      if (detail.fightingStyle) {
+        const granted = FIGHTING_STYLES_BY_NAME.get(detail.fightingStyle)?.grantsProficiency;
+        if (granted) out.push(granted);
+      }
+      if (detail.fightingMastery) {
+        const granted = FIGHTING_MASTERIES_BY_NAME.get(detail.fightingMastery)?.grantsProficiency;
+        if (granted) out.push(granted);
+      }
     }
   }
   return out;

@@ -466,6 +466,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Weapon Expert",
     prerequisite: null,
     abilityOptions: ["str", "dex", "con"],
+    grantsProficiency: "All blasters, all lightweapons, all vibroweapons",
     text: "You have practiced extensively with a variety of weapons, gaining the following benefits:\n- Increase your Strength, Dexterity, or Constitution score by 1, to a maximum of 20.\n- You gain proficiency with all blasters. If you are already proficient with all blasters, instead once per turn when you would roll weapon damage using a blaster, you can choose to have advantage.\n- You gain proficiency with all lightweapons. If you are already proficient with all lightweapons, instead once per turn when you would roll weapon damage using a lightweapon, you can choose to have advantage.\n- You gain proficiency with all vibroweapons. If you are already proficient with all vibroweapons, instead once per turn when you would roll weapon damage using a vibroweapon, you can choose to have advantage.\n\nYou can take this feat twice.",
   },
 

@@ -157,6 +157,9 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
                 if (detail?.skill) extra.push(`Skill: ${detail.skill}`);
                 if (detail?.tools?.length) extra.push(`Tool${detail.tools.length > 1 ? "s" : ""}: ${detail.tools.join(", ")}`);
                 if (detail?.weapons?.length) extra.push(`Weapons: ${detail.weapons.join(", ")}`);
+                if (detail?.fightingStyle) extra.push(`Fighting Style: ${detail.fightingStyle}`);
+                if (detail?.fightingMastery) extra.push(`Fighting Mastery: ${detail.fightingMastery}`);
+                if (detail?.lightsaberForms?.length) extra.push(`Lightsaber Forms: ${detail.lightsaberForms.join(", ")}`);
                 return (
                   <HoverInfo
                     key={`${def.key}-${name}-${i}`}

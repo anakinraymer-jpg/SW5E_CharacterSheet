@@ -201,6 +201,9 @@ export interface ClassSubChoiceOption {
   skillChoice?: boolean; // grants one skill of the player's choice (e.g. Monk's Vow of the Open Mind)
   skillOrToolFork?: boolean; // "a skill and a tool, or two tools" pattern (Learner's Exploit, etc.)
   weaponChoiceCount?: number; // e.g. Operative's Weaponmaster's Exploit: pick this many weapons
+  fightingStyleChoice?: boolean; // nested pick of one FIGHTING_STYLES option (e.g. Berserker's Fighter's Instinct)
+  fightingMasteryChoice?: boolean; // nested pick of one FIGHTING_MASTERIES option (e.g. Fighter's Mastery Strategist)
+  lightsaberFormChoiceCount?: number; // e.g. Formfighting Style/Mastery: learn this many LIGHTSABER_FORMS
   repeatable?: boolean; // option text explicitly allows choosing it again for a fresh grant
 }
 
@@ -220,6 +223,9 @@ export interface ClassSubChoicePickDetail {
   skill?: SkillName;
   tools?: string[];
   weapons?: string[];
+  fightingStyle?: string;
+  fightingMastery?: string;
+  lightsaberForms?: string[];
 }
 
 export interface FeatEntry {
@@ -230,6 +236,7 @@ export interface FeatEntry {
   grantsSkill?: SkillName; // fixed skill proficiency (upgrades to expertise if already proficient)
   grantsSavingThrow?: AbilityKey; // fixed saving throw proficiency (e.g. Titan's Power)
   grantsSavingThrowForAbilityChoice?: boolean; // Resilient: proficiency in the saving throw of the chosen ability
+  grantsProficiency?: string; // fixed non-skill proficiency (armor/weapon/tool), if any (e.g. Weapon Expert)
   choices?: SpeciesTraitChoice[]; // reused choice structure (tool/instrument/kit/skill/other picks)
 }
 

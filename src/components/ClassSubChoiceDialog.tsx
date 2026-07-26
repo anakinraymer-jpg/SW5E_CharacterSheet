@@ -4,9 +4,13 @@ import { SKILL_LIST } from "../types";
 import { LANGUAGES } from "../data/sw5eData";
 import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
+import { FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS } from "../data/classFeatureChoices";
 import Modal from "./Modal";
 
 const TOOL_OPTIONS = GEAR_CATALOG.filter((g) => g.category === "Tool" || g.category === "Kit").map((g) => g.name);
+const FIGHTING_STYLE_NAMES = FIGHTING_STYLES.map((s) => s.name);
+const FIGHTING_MASTERY_NAMES = FIGHTING_MASTERIES.map((m) => m.name);
+const LIGHTSABER_FORM_NAMES = LIGHTSABER_FORMS.map((f) => f.name);
 
 // Blasters/vibroweapons without the heavy property or a Strength requirement, per Weaponmaster's Exploit.
 const NON_HEAVY_WEAPON_OPTIONS = WEAPON_CATALOG.filter((w) => {
@@ -39,6 +43,20 @@ function detailComplete(option: ClassSubChoiceDef["options"][number] | undefined
       weapons.length === option.weaponChoiceCount &&
       weapons.every(Boolean) &&
       new Set(weapons).size === weapons.length
+    );
+  }
+  if (option.fightingStyleChoice) {
+    return Boolean(detail.fightingStyle);
+  }
+  if (option.fightingMasteryChoice) {
+    return Boolean(detail.fightingMastery);
+  }
+  if (option.lightsaberFormChoiceCount) {
+    const forms = detail.lightsaberForms ?? [];
+    return (
+      forms.length === option.lightsaberFormChoiceCount &&
+      forms.every(Boolean) &&
+      new Set(forms).size === forms.length
     );
   }
   if (option.skillOrToolFork) {
@@ -156,6 +174,61 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
                         {NON_HEAVY_WEAPON_OPTIONS.map((w) => (
                           <option key={w} value={w}>
                             {w}
+                          </option>
+                        ))}
+                      </select>
+                    ))}
+                  </div>
+                )}
+
+                {option?.fightingStyleChoice && (
+                  <div className="choice-selects" style={{ marginTop: 4 }}>
+                    <select
+                      value={detail.fightingStyle ?? ""}
+                      onChange={(e) => updateDetail(i, { ...detail, fightingStyle: e.target.value || undefined })}
+                    >
+                      <option value="">Choose fighting style…</option>
+                      {FIGHTING_STYLE_NAMES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {option?.fightingMasteryChoice && (
+                  <div className="choice-selects" style={{ marginTop: 4 }}>
+                    <select
+                      value={detail.fightingMastery ?? ""}
+                      onChange={(e) => updateDetail(i, { ...detail, fightingMastery: e.target.value || undefined })}
+                    >
+                      <option value="">Choose fighting mastery…</option>
+                      {FIGHTING_MASTERY_NAMES.map((m) => (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {option?.lightsaberFormChoiceCount && (
+                  <div className="choice-selects" style={{ marginTop: 4 }}>
+                    {Array.from({ length: option.lightsaberFormChoiceCount }).map((_, fi) => (
+                      <select
+                        key={fi}
+                        value={detail.lightsaberForms?.[fi] ?? ""}
+                        onChange={(e) => {
+                          const forms = [...(detail.lightsaberForms ?? Array(option.lightsaberFormChoiceCount).fill(""))];
+                          forms[fi] = e.target.value;
+                          updateDetail(i, { ...detail, lightsaberForms: forms });
+                        }}
+                      >
+                        <option value="">Choose lightsaber form…</option>
+                        {LIGHTSABER_FORM_NAMES.map((f) => (
+                          <option key={f} value={f}>
+                            {f}
                           </option>
                         ))}
                       </select>

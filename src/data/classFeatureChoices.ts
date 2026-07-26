@@ -26,7 +26,7 @@ export const FIGHTING_STYLES: ClassSubChoiceOption[] = [
   { name: "Equilibrium Style", text: "While wearing light/no armor and no shield, mark a target within 30 feet with your bonus action; you gain a bonus to AC and Dex saves against effects it controls equal to half your Dexterity modifier while marked. You have advantage on Dexterity checks/saves to avoid being moved." },
   { name: "Explosives Style", text: "You can throw grenades and set mines with your bonus action (or reaction if already bonus action). When a creature rolls a 1 on a save against a grenade/mine/missile you control, they take maximum damage instead." },
   { name: "Formation Style", text: "You can take the Guard action as a bonus action (or reaction if already bonus action). You can bring a willing ally within 5 feet along when you move with your bonus action. Letting an attack meant for a guarded ally hit you instead rolls damage normally instead of maximum." },
-  { name: "Formfighting Style", text: "Prerequisite: the ability to cast force powers. You learn three lightsaber forms. Once per turn you can draw or stow a lightweapon without an object interaction." },
+  { name: "Formfighting Style", text: "Prerequisite: the ability to cast force powers. You learn three lightsaber forms. Once per turn you can draw or stow a lightweapon without an object interaction.", lightsaberFormChoiceCount: 3 },
   { name: "Great Weapon Style", text: "While wielding a two-handed light-/vibro-weapon you're proficient with, its damage rolls gain a minimum roll threshold. Grasping such a weapon with your other hand no longer needs an object interaction." },
   { name: "Guerrilla Style", text: "You can take the Disengage action as a bonus action (or reaction if already bonus action). When you Disengage, you ignore unenhanced difficult terrain and have advantage on the first check/save to avoid movement-impairing effects." },
   { name: "Gunning Style", text: "Creatures who roll a 1 on a save against your burst/rapid property take maximum damage instead. You can spray a line with the burst property, or double one set of rapid-property damage dice instead of adding them." },
@@ -46,9 +46,8 @@ export const FIGHTING_STYLES: ClassSubChoiceOption[] = [
   { name: "Versatile Style", text: "On a miss with a versatile weapon wielded in two hands, repeat the attack one-handed with your bonus action. Wielded one-handed instead, attempt to shove or trip with your bonus action. Grasping such a weapon one-handed no longer needs an object interaction." },
 ];
 
-// Fighting Masteries, referenced by the Fighting Master feat and the Fighter Strategist
-// "Mastery Strategist" pick (that nested pick is left as descriptive text, consistent with
-// the rest of the archetype/class sub-choice nesting scope-cuts).
+// Fighting Masteries, referenced by the Fighting Master feat and the Fighter Strategist's
+// "Mastery Strategist" pick (that nested pick is captured via fightingMasteryChoice below).
 export const FIGHTING_MASTERIES: ClassSubChoiceOption[] = [
   { name: "Area Mastery", text: "Your projector canister save DC can use 8 + proficiency bonus + Intelligence modifier if higher. Your projector canisters reduce partial cover by one step (ignoring one-quarter cover entirely). You can trade proficiency bonus from a projector canister's save DC for the same bonus to its damage." },
   { name: "Assisting Mastery", text: "Helping an ally at the cost of up to half your speed lets them reroll one die of their advantage. Helping against an enemy the same way gives allies attacking it the same reroll. Your Help action's range becomes 5 feet per proficiency bonus." },
@@ -64,7 +63,7 @@ export const FIGHTING_MASTERIES: ClassSubChoiceOption[] = [
   { name: "Equilibrium Mastery", text: "Reaction to catch a weapon you're disarmed of. In light/no armor, no shield: react to a miss with a counter-attack (no proficiency bonus), or react to a hit by imposing a proficiency-bonus penalty on the attack roll." },
   { name: "Explosives Mastery", text: "Grenade/mine/missile save DC can use 8 + proficiency bonus + Intelligence modifier if higher. Advantage on saves against your own such items. Trade proficiency bonus from the save DC for the same bonus to damage." },
   { name: "Formation Mastery", text: "Guarded allies have advantage on Dexterity saves affecting only them. React to a miss against an adjacent ally with a counter-attack (no proficiency bonus), or react to a hit against them by imposing a proficiency-bonus penalty on the attack roll." },
-  { name: "Formfighting Mastery", text: "Learn three lightsaber forms (seven if you already know three). Once per turn, forgo proficiency bonus to use a lightsaber form without your bonus action. Once per turn, forgo proficiency bonus so a hit also deals weapon damage (2x proficiency bonus) to an adjacent second creature.", prerequisite: "The ability to cast force powers" },
+  { name: "Formfighting Mastery", text: "Learn three lightsaber forms (seven if you already know three). Once per turn, forgo proficiency bonus to use a lightsaber form without your bonus action. Once per turn, forgo proficiency bonus so a hit also deals weapon damage (2x proficiency bonus) to an adjacent second creature.", prerequisite: "The ability to cast force powers", lightsaberFormChoiceCount: 3 },
   { name: "Great Weapon Mastery", text: "Bonus-action melee attack after a crit or a kill. Two-handed light-/vibro-weapon: repeat a miss with your bonus action for extra kinetic damage (Strength modifier). Advantage on saves/checks against disarm. Forgo proficiency bonus for +2x proficiency bonus damage with such weapons." },
   { name: "Guerrilla Mastery", text: "Move through hostile creatures' spaces regardless of size. Opportunity-attack hits let you move half speed without provoking. React to an adjacent enemy with Disengage + half speed move. Once per turn, extra damage (2x proficiency bonus) when a flanking ally is present." },
   { name: "Gunning Mastery", text: "Creatures who succeed a burst/rapid save still take damage equal to the weapon's ability modifier. Treat weapon Strength requirements one step lower. Forgo proficiency bonus on burst/rapid save DC for extra damage to those who fail." },
@@ -393,7 +392,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Boggdo's Instinct", text: "While raging, you have a flying speed equal to your walking speed, though you fall if you end your turn airborne with nothing else holding you up.", prerequisite: "13th level" },
       { name: "Chirodactyl's Instinct", text: "While raging, you have blindsight to 30 feet and advantage on Wisdom (Perception) checks relying on sound, as long as you aren't deafened.", prerequisite: "7th level" },
       { name: "Dewback's Instinct", text: "Choose three damage types other than true damage. While raging, you have resistance to those types." },
-      { name: "Fighter's Instinct", text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options." },
+      { name: "Fighter's Instinct", text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options.", fightingStyleChoice: true },
       { name: "Fyrnock's Instinct", text: "While raging, use your bonus action to leap up to 30 feet, dealing kinetic damage equal to your Strength modifier to each creature within 5 feet of where you land. Usable twice, more at 5th/9th/13th/17th level; regains on long rest." },
       { name: "Hawk's Instinct", text: "You can see up to 1 mile away without difficulty, discerning fine details as if within 100 feet. Dim light no longer imposes disadvantage on Perception checks.", prerequisite: "7th level" },
       { name: "Katarn's Instinct", text: "You gain a climbing speed equal to your movement speed." },
@@ -417,11 +416,11 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Cover Strategist", text: "You treat partial cover as one step higher, and while in cover, your attacks reduce partial cover by one step." },
       { name: "Cunning Strategist", text: "Choose two actions (apply poison, Dash, Disengage, Guard, Help, Hide, Search, throw grenades/set mines, mounted beast attack, or vehicle action) you can take as a bonus action instead of an action." },
       { name: "Enduring Strategist", text: "You only need 3 hours of sleep for a long rest's benefits, an interrupted long rest just needs completing rather than restarting, and you have advantage on saves against exhaustion." },
-      { name: "Mastery Strategist", text: "You've mastered a particular style of fighting. Choose one of the Fighting Mastery options." },
+      { name: "Mastery Strategist", text: "You've mastered a particular style of fighting. Choose one of the Fighting Mastery options.", fightingMasteryChoice: true },
       { name: "Lightweapon Strategist", text: "You gain proficiency in all lightweapons, no longer need force-casting ability to learn lightsaber-form-granting features, and learn one lightsaber form of your choice.", grantsProficiency: "All lightweapons" },
       { name: "Maneuver Strategist", text: "You learn two additional maneuvers, replaceable one at a short rest or both at a long rest." },
       { name: "Skilled Strategist", text: "You gain proficiency in a skill and a tool, or two tools.", skillOrToolFork: true },
-      { name: "Style Strategist", text: "You adopt a second fighting style (choose one of the Fighting Style options), swappable at the end of a long rest." },
+      { name: "Style Strategist", text: "You adopt a second fighting style (choose one of the Fighting Style options), swappable at the end of a long rest.", fightingStyleChoice: true },
     ],
   },
   {
@@ -479,7 +478,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Vow of Deflection", text: "Reaction to reduce melee weapon attack damage by 1d10 + Dexterity modifier + monk level." },
       { name: "Vow of the Devoted", text: "You learn 2 (growing) universal force powers, cast with focus points (1 per power level) instead of force points, using your focus ability and DC/attack modifier." },
       { name: "Vow of Fate", text: "Roll a d20 after a rest; before the next rest, replace any attack/save/check by you or a creature within 5 feet with that roll.", prerequisite: "7th level" },
-      { name: "Vow of the Fighter", text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options." },
+      { name: "Vow of the Fighter", text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options.", fightingStyleChoice: true },
       { name: "Vow of the Focused", text: "Substitute Strength, Constitution, or Intelligence (chosen now) for Wisdom or Charisma on monk class features (except other vows and Monastic Order)." },
       { name: "Vow of Fortitude", text: "Use your action or bonus action to end being blinded or deafened on yourself.", prerequisite: "7th level" },
       { name: "Vow of Freedom", text: "Ignore unenhanced difficult terrain; break free of a grapple/restraint as a bonus action instead of an action." },
@@ -505,7 +504,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Commander's Exploit", text: "You gain proficiency in medium armor.", grantsProficiency: "Medium armor" },
       { name: "Explorer's Exploit", text: "You can hold your breath twice as long, and take half damage from falling." },
       { name: "Fate's Exploit", text: "Roll a d20 after a rest; before the next rest, replace any attack/save/check by you or a creature within 5 feet with that roll.", prerequisite: "7th level" },
-      { name: "Fighter's Exploit", text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options." },
+      { name: "Fighter's Exploit", text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options.", fightingStyleChoice: true },
       { name: "Freedom's Exploit", text: "Ignore unenhanced difficult terrain; break free of a grapple/restraint as a bonus action instead of an action." },
       { name: "Guerrilla's Exploit", text: "You only need 3 hours of sleep for a long rest's benefits, an interrupted long rest just needs completing, and you have advantage on saves against exhaustion." },
       { name: "Learner's Exploit", text: "Gain proficiency in a skill and a tool, or two tools. Can be taken multiple times, choosing new proficiencies each time.", skillOrToolFork: true, repeatable: true },
@@ -602,7 +601,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Ideal of the Agile", text: "Swimming and climbing speed equal to walking speed; longer jumps. Manifest (bonus action): for 1 minute, opportunity attacks against you have disadvantage." },
       { name: "Ideal of the Artisan", text: "Add half your Wis/Cha modifier to checks with a chosen skill/tool. Manifest (action): for 10 minutes, the bonus becomes full and extends to a second skill/tool." },
       { name: "Ideal of the Contender", text: "Unarmed strike damage die increases one step and gains finesse. Manifest (bonus action): for 1 minute, unarmed strikes count as enhanced and you can use Wis/Cha for grapple checks." },
-      { name: "Ideal of the Fighter", text: "Choose a Fighting Style option. Manifest (bonus action): for 1 minute, you know the corresponding fighting mastery (or another of your choice if already known)." },
+      { name: "Ideal of the Fighter", text: "Choose a Fighting Style option. Manifest (bonus action): for 1 minute, you know the corresponding fighting mastery (or another of your choice if already known).", fightingStyleChoice: true },
       { name: "Ideal of the Hunter", text: "Darkvision to 60 feet (or +30 feet if you already have it). Manifest (bonus action): for 1 minute, see in enhanced darkness and gain blindsight to 10 feet." },
       { name: "Ideal of the Steadfast", text: "Force a Dexterity save instead of a melee attack roll, with advantage/disadvantage mirrored from what your attack roll would have had. Manifest (bonus action): for 1 minute, successes take half damage and 1s on the die take maximum." },
       { name: "Ideal of the Titan", text: "Proficiency in medium armor. Manifest (bonus action): for 1 minute, advantage on forced-movement checks/attacks and +5 feet to the distance moved.", grantsProficiency: "Medium armor" },
