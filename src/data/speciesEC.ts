@@ -160,7 +160,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Small and Nimble", text: "You are too small and fast to effectively target. You have a +1 bonus to AC, and you have advantage on Dexterity saving throws." },
       { name: "Tanned", text: "You are naturally adapted to hot climates, as described in chapter 5 of the Dungeon Master's Guide." },
       { name: "Technician", text: "You are proficient in the Technology skill.", grantsSkills: ["Technology"] },
-      { name: "Tinker", text: "You have proficiency with tinker's implements. You can use these and spend 1 hour and 100 cr worth of materials to construct a Tiny Device (AC 5, 1 hp). You can take the Use an Object action to have your device cause one of the following effects: create a small explosion, create a repeating loud noise for 1 minute, create smoke for 1 minute, create a soothing melody for 1 minute. You can maintain a number of these devices up to your proficiency bonus at once, and a device stops functioning after 24 hours away from you. You can dismantle the device to reclaim the materials used to create it." },
+      { name: "Tinker", text: "You have proficiency with tinker's implements. You can use these and spend 1 hour and 100 cr worth of materials to construct a Tiny Device (AC 5, 1 hp). You can take the Use an Object action to have your device cause one of the following effects: create a small explosion, create a repeating loud noise for 1 minute, create smoke for 1 minute, create a soothing melody for 1 minute. You can maintain a number of these devices up to your proficiency bonus at once, and a device stops functioning after 24 hours away from you. You can dismantle the device to reclaim the materials used to create it.", grantsProficiency: "Tinker's implements" },
     ],
   },
   {
@@ -242,7 +242,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Alignment", text: "Balosars are notoriously cynical, selfish, and pragmatic, causing most to be neutral dark side. However, there are exceptions." },
       { name: "Keen Hearing", text: "Your antennapalps give you advantage on Wisdom (Perception) checks based on hearing." },
       { name: "Snap Senses", text: "Through your antennapalps, you can sense incoming danger and react accordingly. When you roll for initiative, you can choose to gain advantage on the roll. Alternatively, if you are surprised, you may act normally on your first turn. Once you've used this trait, you can't use it again until you finish a short or long rest." },
-      { name: "Spicer", text: "You are proficient in spicer's kit." },
+      { name: "Spicer", text: "You are proficient in spicer's kit.", grantsProficiency: "Spicer's kit" },
       { name: "Toxin Resistance", text: "You have advantage on saving throws against poison, and you have resistance against poison damage (explained in chapter 9)." },
     ],
   },
@@ -324,7 +324,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Climb", text: "You have a climbing speed of 25 feet." },
       { name: "Keen Hearing and Smell", text: "You have advantage on Wisdom (Perception) checks that involve hearing or smell." },
       { name: "Second Heart", text: "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. You can't use this feature again until you finish a long rest." },
-      { name: "Tinker", text: "You have proficiency with tinker's implements. You can use these and spend 1 hour and 100 cr worth of materials to construct a Tiny Device (AC 5, 1 hp). You can take the Use an Object action to have your device cause one of the following effects: create a small explosion, create a repeating loud noise for 1 minute, create smoke for 1 minute, emit an onerous smell for 1 minute. You can maintain a number of these devices up to your proficiency bonus at once, and a device stops functioning after 24 hours away from you. You can dismantle the device to reclaim the materials used to create it." },
+      { name: "Tinker", text: "You have proficiency with tinker's implements. You can use these and spend 1 hour and 100 cr worth of materials to construct a Tiny Device (AC 5, 1 hp). You can take the Use an Object action to have your device cause one of the following effects: create a small explosion, create a repeating loud noise for 1 minute, create smoke for 1 minute, emit an onerous smell for 1 minute. You can maintain a number of these devices up to your proficiency bonus at once, and a device stops functioning after 24 hours away from you. You can dismantle the device to reclaim the materials used to create it.", grantsProficiency: "Tinker's implements" },
       { name: "Trance", text: "You only need 3 hours of sleep during a long rest to gain its benefits, instead of 6. Additionally, if your long rest would be interrupted, you only need to complete the long rest instead of restarting it to gain its benefits." },
       { name: "Undersized", text: "Your small stature makes it hard for you to wield bigger weapons. You can't use heavy shields. Additionally, you can't use martial weapons with the two-handed property unless it also has the light property, and if a martial weapon has the versatile property, you can only wield it in two hands." },
     ],
@@ -470,7 +470,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Claws", text: "Your claws are a natural weapon, which you can use to make unarmed strikes. Additionally, your unarmed strikes deal 1d4 kinetic damage and have the finesse property." },
       { name: "Darkvision", text: "You have a keen eyesight, especially in the dark. You can see in dim light within 120 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray." },
       { name: "Hidden Step", text: "As a bonus action, you can turn invisible until the start of your next turn or until you attack, make a damage roll, or force someone to make a saving throw. Once you've used this trait, you can't use it again until you finish a short or long rest." },
-      { name: "Miners", text: "You have proficiency in scavenging kits." },
+      { name: "Miners", text: "You have proficiency in scavenging kits.", grantsProficiency: "Scavenging kit" },
       { name: "Sunlight Sensitivity", text: "You have disadvantage on attack rolls and on Wisdom (Perception) checks that rely on sight when you, the target of your attack, or whatever you are trying to perceive is in direct sunlight." },
       { name: "Sneaky", text: "You are proficient in the Stealth skill.", grantsSkills: ["Stealth"] },
       { name: "Surprise Attack", text: "If you surprise a creature and hit it with an attack on your first turn in combat, the attack deals an extra 2d6 damage to it. You can use this trait only once per combat." },
@@ -522,7 +522,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Alignment", text: "Draethos tend toward no particular alignment. The best and worst are found among them." },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray." },
       { name: "Telepathy", text: "You can communicate telepathically with creatures within 30 feet of you. You must share a language with the target in order to communicate in this way." },
-      { name: "Way of the Warrior", text: "You have proficiency with light and medium armor as well as vibroblades and vibroswords." },
+      { name: "Way of the Warrior", text: "You have proficiency with light and medium armor as well as vibroblades and vibroswords.", grantsProficiency: "Light and medium armor, vibroblade, vibrosword" },
     ],
   },
   {
@@ -667,7 +667,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Crafter", text: "Geonosian culture promotes artisanry. You have proficiency in one set of artisan's implements of your choice.", choices: [toolChoice("Implements", TOOLS)] },
       { name: "Exoskeleton", text: "You have a thick exoskeleton. While you are unarmored or wearing light armor, your AC is 12 + your Dexterity modifier." },
       { name: "Flight", text: "You have a flying speed equal to your walking speed. While wearing medium or heavy armor, your flying speed is reduced by half." },
-      { name: "Geonosian Weaponry", text: "You have proficiency in blasters that deal sonic damage." },
+      { name: "Geonosian Weaponry", text: "You have proficiency in blasters that deal sonic damage.", grantsProficiency: "Blasters (sonic damage)" },
     ],
   },
   {
@@ -868,7 +868,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Sunlight Sensitivity", text: "You have disadvantage on attack rolls and on Wisdom (Perception) checks that rely on sight when you, the target of your attack, or whatever you are trying to perceive is in direct sunlight." },
       { name: "Superior Darkvision", text: "You've lived most of your life without direct sunlight. You can see in dim light within 120 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray." },
       { name: "Unarmed Combatant", text: "Your unarmed strikes deal 1d4 kinetic damage and have the finesse property." },
-      { name: "Weapon Training", text: "Kage are adept warriors. You are proficient with the electroprod and electrostaff." },
+      { name: "Weapon Training", text: "Kage are adept warriors. You are proficient with the electroprod and electrostaff.", grantsProficiency: "Electroprod, electrostaff" },
     ],
   },
   {
@@ -881,7 +881,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Age", text: "Kaleesh reach adulthood in their early teens and live to be about 80." },
       { name: "Alignment", text: "Kaleesh tend toward no particular alignment. The best and worst are found among them." },
       { name: "Darkvision", text: "The thermal pits under a Kaleesh's eyes grant darkvision. You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray." },
-      { name: "Weapon Training", text: "Kaleesh are adept hunters. You are proficient with the blaster carbine, vibroblade, vibropike, and, vibrospear." },
+      { name: "Weapon Training", text: "Kaleesh are adept hunters. You are proficient with the blaster carbine, vibroblade, vibropike, and, vibrospear.", grantsProficiency: "Blaster carbine, vibroblade, vibropike, vibrospear" },
       { name: "Keen Smell", text: "You have advantage on Wisdom (Perception) checks that rely on smell." },
       { name: "Tracker", text: "You have proficiency in the Survival skill. Additionally, you are considered to have expertise in Wisdom (Survival) checks made to track a creature if that creature has a scent.", grantsSkills: ["Survival"] },
     ],
@@ -1063,7 +1063,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Lasats reach adulthood in their late teens and live less than a century." },
       { name: "Alignment", text: "Lasat' honorable tendences cause them to tend toward lawful light side, though there are exceptions." },
-      { name: "Bo-rifle Training", text: "You have proficiency with blaster rifles, bo-rifles, and vibrostaffs." },
+      { name: "Bo-rifle Training", text: "You have proficiency with blaster rifles, bo-rifles, and vibrostaffs.", grantsProficiency: "Blaster rifles, bo-rifles, vibrostaffs" },
       { name: "Climbing", text: "You have a climbing speed of 30 feet." },
       { name: "Darkvision", text: "Your vision can easily cut through darkness. You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light." },
       { name: "Keen Hearing and Sight", text: "You have advantage on Wisdom (Perception) checks that rely on hearing or sight." },
@@ -1338,7 +1338,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Long-Limbed", text: "When you make a melee attack on your turn, your reach for it is 5 feet greater than normal." },
       { name: "Mercantile", text: "You have proficiency in one of the following skills of your choice: Deception, Persuasion, or Intimidation.", choices: [skillChoice("Skill", ["Deception", "Persuasion", "Intimidation"])] },
       { name: "Notorious Slavers", text: "Whenever you make an ability check related to the buying, selling, or controlling of slaves, you are considered proficient in the check. If you would already be proficient, you instead have expertise." },
-      { name: "Spicer", text: "You are proficient in spicer's kit." },
+      { name: "Spicer", text: "You are proficient in spicer's kit.", grantsProficiency: "Spicer's kit" },
     ],
   },
   {
@@ -1595,11 +1595,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Theelin reach adulthood in their late teens and live for about 70 years." },
       { name: "Alignment", text: "Theelin's good-nature and positivity despite the dour state of their species causes them to tend toward the light side, though there are exceptions." },
-      // "Expressive" is a single pick from a mixed set of three named tools OR any musical
-      // instrument — the SpeciesTraitChoice model grants one proficiency per choices[] entry
-      // rather than one pick across a combined tool+instrument pool, so this can't be modeled
-      // cleanly. Left as plain text per the "default to plain text when ambiguous" guidance.
-      { name: "Expressive", text: "You have proficiency in your choice of artist's implements, disguise kits, synthweaver's implements, or one musical instrument of your choice." },
+      { name: "Expressive", text: "You have proficiency in your choice of artist's implements, disguise kits, synthweaver's implements, or one musical instrument of your choice.", choices: [toolChoice("Tool or Instrument", ["Artist's implements", "Disguise kit", "Synthweaver's implements", ...INSTRUMENTS])] },
       { name: "Performer", text: "You have proficiency in the Performance skill.", grantsSkills: ["Performance"] },
       { name: "Skill Versatility", text: "You gain proficiency in one skill of your choice.", choices: [skillChoice("Skill", ALL_SKILLS)] },
       // As with Kiffar/Nikto, "Mutation" references a sub-table not present in the API response.
@@ -1700,7 +1696,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray." },
       { name: "Industrial Hazards", text: "You have resistance to acid damage." },
       { name: "Tech Dabbler", text: "You know the *mending* at-will tech power. When you reach 3rd level, you learn and can cast the *analyze* tech power once per day. When you reach 5th level, you learn and can cast the *overheat* tech power once per day. Your techcasting ability is Intelligence. You do not require use of a wristpad for these powers." },
-      { name: "Tinker", text: "You have proficiency with tinker's implements. You can use these and spend 1 hour and 100 cr worth of materials to construct a Tiny Device (AC 5, 1 hp). You can take the Use an Object action to have your device cause one of the following effects: create a small explosion, create a repeating loud noise for 1 minute, create smoke for 1 minute, cause harmless tremors for 1 minute. You can maintain a number of these devices up to your proficiency bonus at once, and a device stops functioning after 24 hours away from you. You can dismantle the device to reclaim the materials used to create it." },
+      { name: "Tinker", text: "You have proficiency with tinker's implements. You can use these and spend 1 hour and 100 cr worth of materials to construct a Tiny Device (AC 5, 1 hp). You can take the Use an Object action to have your device cause one of the following effects: create a small explosion, create a repeating loud noise for 1 minute, create smoke for 1 minute, cause harmless tremors for 1 minute. You can maintain a number of these devices up to your proficiency bonus at once, and a device stops functioning after 24 hours away from you. You can dismantle the device to reclaim the materials used to create it.", grantsProficiency: "Tinker's implements" },
       { name: "Undersized", text: "Your small stature makes it hard for you to wield bigger weapons. You can't use heavy shields. Additionally, you can't use martial weapons with the two-handed property unless it also has the light property, and if a martial weapon has the versatile property, you can only wield it in two hands." },
     ],
   },
@@ -1762,7 +1758,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of grey." },
       { name: "Precognition", text: "You see brief visions of the future, that allow you to turn failures into successes. When you roll a 1 on an attack roll, ability check, or saving throw, you can reroll the die and must use the new roll." },
       { name: "Mystic Healing", text: "You have proficiency in Medicine.", grantsSkills: ["Medicine"] },
-      { name: "Voss Weapon Training", text: "You have proficiency with the blaster rifle and techblade." },
+      { name: "Voss Weapon Training", text: "You have proficiency with the blaster rifle and techblade.", grantsProficiency: "Blaster rifle, techblade" },
       { name: "Inscrutable", text: "Your calm demeanor and control make you hard to read. Wisdom (Insight) checks made against you have disadvantage, and you have advantage on any saving throw against an effect that would read your thoughts." },
     ],
   },

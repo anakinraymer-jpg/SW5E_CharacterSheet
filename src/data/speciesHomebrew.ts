@@ -90,7 +90,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       // Tribal Talents grants a choice between a specific tool (synthweaver's implements) or any
       // instrument -- a mixed-kind choice the SpeciesTraitChoice model can't cleanly represent.
       // Left as plain text per the "default to plain text when ambiguous" guidance (see speciesEC.ts's Baragwin).
-      { name: "Tribal Talents", text: "You have proficiency with synthweaver's implements or one musical instrument of your choice." },
+      { name: "Tribal Talents", text: "You have proficiency with synthweaver's implements or one musical instrument of your choice.", choices: [toolChoice("Tool or Instrument", ["Synthweaver's implements", ...INSTRUMENTS])] },
     ],
   },
   {
@@ -127,7 +127,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       // Homeworld Talent grants a choice between a musical instrument or a gaming set -- a
       // mixed-kind choice the SpeciesTraitChoice model can't cleanly represent. Left as plain text
       // per the "default to plain text when ambiguous" guidance (see speciesEC.ts's Baragwin).
-      { name: "Homeworld Talent", text: "You have proficiency with one musical instrument or one gaming set of your choice." },
+      { name: "Homeworld Talent", text: "You have proficiency with one musical instrument or one gaming set of your choice.", choices: [toolChoice("Instrument or Gaming Set", [...INSTRUMENTS, ...GAMING_SETS])] },
     ],
   },
   {
@@ -279,7 +279,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Nomadic", text: "You have proficiency in the Survival skill.", grantsSkills: ["Survival"] },
       { name: "Protective Membrane", text: "You have advantage on saving throws against being blinded." },
       { name: "Second Heart", text: "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. Requires a long rest to use again." },
-      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device." },
+      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device.", grantsProficiency: "Tinker's implements" },
     ],
   },
   {
@@ -465,7 +465,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Alignment", text: "Dressellians' uncooperative nature and passion for freedom cause them to tend toward chaotic alignments, though there are exceptions." },
       { name: "Defiant", text: "When you or a creature you can see makes an ability check, attack roll, or saving throw, you can roll a d4 and add it to their roll. Requires a short or long rest to use again." },
       { name: "Guerilla", text: "You have proficiency in the Stealth and Survival skills.", grantsSkills: ["Stealth", "Survival"] },
-      { name: "Primitive Weaponry", text: "You have proficiency with the slugthrower and slugpistol." },
+      { name: "Primitive Weaponry", text: "You have proficiency with the slugthrower and slugpistol.", grantsProficiency: "Slugthrower, slugpistol" },
       { name: "Surprise Attack", text: "If you surprise a creature and hit it with an attack on your first turn in combat, the attack deals an extra 2d6 damage. Usable only once per combat." },
     ],
   },
@@ -584,7 +584,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       // mixed-kind choice (a fixed pair plus a nested instrument sub-choice) the SpeciesTraitChoice
       // model can't cleanly represent. Left as plain text per the "default to plain text when
       // ambiguous" guidance (see speciesEC.ts's Baragwin).
-      { name: "Artistic Culture", text: "You have proficiency with artist's implements, constructor's implements, or one musical instrument of your choice, and expertise on Intelligence (Lore) checks to recall a culture's art." },
+      { name: "Artistic Culture", text: "You have proficiency with artist's implements, constructor's implements, or one musical instrument of your choice, and expertise on Intelligence (Lore) checks to recall a culture's art.", choices: [toolChoice("Tool or Instrument", ["Artist's implements", "Constructor's implements", ...INSTRUMENTS])] },
       { name: "Closed Mind", text: "You have advantage on Wisdom and Charisma saving throws against force powers." },
       { name: "Elegant Influence", text: "You have proficiency in Lore and one of the following skills: Acrobatics, Athletics, Technology, or Insight.", grantsSkills: ["Lore"], choices: [skillChoice("Skill", ["Acrobatics", "Athletics", "Technology", "Insight"])] },
       { name: "Unarmed Combatant", text: "Your unarmed strikes deal 1d4 kinetic damage and have the finesse property." },
@@ -603,7 +603,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Careful Footing", text: "When you use the Dash action, difficult terrain doesn't cost you extra movement on that turn." },
       { name: "Cultured", text: "You have proficiency in the Lore skill.", grantsSkills: ["Lore"] },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light." },
-      { name: "Farfallan Training", text: "You have proficiency with light and medium armor, and with the vibroaxe, vibroblade, and vibropike." },
+      { name: "Farfallan Training", text: "You have proficiency with light and medium armor, and with the vibroaxe, vibroblade, and vibropike.", grantsProficiency: "Light and medium armor, vibroaxe, vibroblade, vibropike" },
       { name: "Powerful Charge", text: "If you move at least 10 feet in a straight line before hitting with a melee weapon attack, you can attempt to trip the target prone as part of the same attack. Usable once per short or long rest." },
       { name: "Sure-Footed", text: "You have advantage on ability checks and saving throws against being knocked prone." },
     ],
@@ -733,7 +733,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Gree Intellect", text: "You have proficiency in the Technology skill and one other Intelligence skill of your choice.", grantsSkills: ["Technology"], choices: [skillChoice("Skill", NON_TECH_INT_SKILLS)] },
       { name: "Honed Mind", text: "You have advantage on Intelligence, Wisdom, and Charisma saving throws against force and tech powers." },
       { name: "Tech Dabbler", text: "You know your choice of the reboot, mending, or short circuit at-will tech power, using Intelligence as your techcasting ability with no wristpad required." },
-      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device." },
+      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device.", grantsProficiency: "Tinker's implements" },
       { name: "Undersized", text: "You can't use heavy shields. You can't use two-handed martial weapons unless they're also light, and versatile weapons can only be wielded two-handed." },
     ],
   },
@@ -801,7 +801,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Hide", text: "While unarmored or wearing light armor, your AC is 12 + your Dexterity modifier." },
       { name: "Powerful Build", text: "Your carrying capacity and the weight you can push, drag, or lift doubles (or triples if it would already double)." },
       { name: "Technological Affinity", text: "You have proficiency in the Technology skill, with advantage on Intelligence (Technology) checks to understand, use, or modify unfamiliar technology.", grantsSkills: ["Technology"] },
-      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device." },
+      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device.", grantsProficiency: "Tinker's implements" },
     ],
   },
   {
@@ -866,7 +866,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       // Mainline), not a single-dimension skill/tool/weapon pick the SpeciesTraitChoice model
       // supports. Left as plain text per the "default to plain text when ambiguous" guidance.
       { name: "Ancestry", text: "Choose Lost or Mainline ancestry. Lost: proficiency in your choice of Piloting, Technology, or Lore, plus advantage on Dexterity and Intelligence saving throws against tech powers. Mainline: darkvision out to 60 feet, advantage on Constitution saving throws against extreme cold exhaustion, and the ability to gain temporary hit points equal to your Constitution modifier by spending a minute devouring a corpse (once per short or long rest)." },
-      { name: "Darkstick Training", text: "You have proficiency with darksticks, techblades, and vibroswords." },
+      { name: "Darkstick Training", text: "You have proficiency with darksticks, techblades, and vibroswords.", grantsProficiency: "Darkstick, techblade, vibrosword" },
       { name: "Hunter", text: "You have proficiency in the Survival skill.", grantsSkills: ["Survival"] },
       { name: "Into the Abyss", text: "You have advantage on saving throws against being frightened." },
       { name: "Savage Attacks", text: "When you score a critical hit with a melee weapon attack, you can roll one of the weapon's damage dice one additional time." },
@@ -898,7 +898,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Age", text: "Keshiri reach adulthood in their late teens and live less than a century." },
       { name: "Alignment", text: "Keshiri's unification under the sith led them to focus on cooperation and unity, causing them to tend toward the light side, though there are exceptions." },
       { name: "Alluring", text: "You have proficiency with Deception or Performance (your choice).", choices: [skillChoice("Skill", ["Deception", "Performance"])] },
-      { name: "Martial Proficiency", text: "You have proficiency with light armor as well as the vibroblade and vibropike." },
+      { name: "Martial Proficiency", text: "You have proficiency with light armor as well as the vibroblade and vibropike.", grantsProficiency: "Light armor, vibroblade, vibropike" },
       { name: "Powerful Build", text: "Your carrying capacity and the weight you can push, drag, or lift doubles (or triples if it would already double)." },
       { name: "Seafaring", text: "You have a swimming speed of 20 feet." },
       { name: "Sith Artisanry", text: "You have proficiency in your choice of archaeologist kit, artist's implements, constructor's implements, jeweler's implements, or surveyor's implements.", choices: [toolChoice("Implements", ["Archaeologist kit", "Artist's implements", "Constructor's implements", "Jeweler's implements", "Surveyor's implements"])] },
@@ -1166,7 +1166,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Problem Solver", text: "You can treat a d20 roll of 9 or lower on an Intelligence check or saving throw as a 10. Usable a number of times equal to your proficiency bonus per long rest." },
       { name: "Scholarly", text: "You have proficiency in the Insight skill.", grantsSkills: ["Insight"] },
       { name: "Superior Memory", text: "You can double your proficiency bonus when you make an Intelligence (Lore) check to recall information you've learned or details of your own experiences." },
-      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device." },
+      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device.", grantsProficiency: "Tinker's implements" },
       { name: "Undersized", text: "You can't use heavy shields. You can't use two-handed martial weapons unless they're also light, and versatile weapons can only be wielded two-handed." },
     ],
   },
@@ -1428,7 +1428,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       // Artistic grants a choice between two specific tools or any musical instrument -- a
       // mixed-kind choice the SpeciesTraitChoice model can't cleanly represent. Left as plain text
       // per the "default to plain text when ambiguous" guidance (see speciesEC.ts's Baragwin).
-      { name: "Artistic", text: "You have proficiency with artist's implements, constructor's implements, or one musical instrument of your choice." },
+      { name: "Artistic", text: "You have proficiency with artist's implements, constructor's implements, or one musical instrument of your choice.", choices: [toolChoice("Tool or Instrument", ["Artist's implements", "Constructor's implements", ...INSTRUMENTS])] },
       { name: "Communicative", text: "You have proficiency with Persuasion or Insight (your choice).", choices: [skillChoice("Skill", ["Persuasion", "Insight"])] },
       { name: "Crafters", text: "You have proficiency with one set of artisan's implements of your choice.", choices: [toolChoice("Implements", TOOLS)] },
       { name: "Eight-Armed", text: "You have eight arms which you can use independently. You can only benefit from items held by two arms at a time, and can switch which arms you're benefiting from once per round as a free action." },
@@ -1503,7 +1503,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Darkvision", text: "You can see in dim light within 120 feet of you as if it were bright light, and in darkness as if it were dim light." },
       { name: "Elegant Dancers", text: "You have proficiency in the Performance skill.", grantsSkills: ["Performance"] },
       { name: "Hide", text: "While unarmored, your AC is 13 + your Dexterity modifier." },
-      { name: "Jewelers", text: "You have proficiency with jeweler's implements." },
+      { name: "Jewelers", text: "You have proficiency with jeweler's implements.", grantsProficiency: "Jeweler's implements" },
       { name: "Naturalist", text: "You have proficiency in the Nature skill.", grantsSkills: ["Nature"] },
       { name: "Powerful Tail", text: "Your tail and teeth are natural weapons; your unarmed strikes deal 1d6 kinetic damage." },
       { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr." },
@@ -1535,7 +1535,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Artistic", text: "You have proficiency in your choice of artist's implements, constructor's implements, or jeweler's implements.", choices: [toolChoice("Implements", ["Artist's implements", "Constructor's implements", "Jeweler's implements"])] },
       { name: "Cultured", text: "You have proficiency in the Lore skill.", grantsSkills: ["Lore"] },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light." },
-      { name: "Mechanic", text: "You have proficiency with mechanic's kits. Once per day you can cast the repair droid tech power, using Intelligence as your techcasting ability with no wristpad required." },
+      { name: "Mechanic", text: "You have proficiency with mechanic's kits. Once per day you can cast the repair droid tech power, using Intelligence as your techcasting ability with no wristpad required.", grantsProficiency: "Mechanic's kit" },
       { name: "Vigilant", text: "You can choose to have advantage on your next Initiative check. Usable once per short or long rest." },
     ],
   },
@@ -1571,7 +1571,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Alignment", text: "Siniteen's arrogant nature causes them to tend toward neutral alignments, particularly neutral dark side, though there are exceptions." },
       { name: "Hyperintelligence", text: "You have advantage on Intelligence and Wisdom saving throws, and proficiency in two Intelligence or Wisdom skills of your choice.", choices: [skillChoice("Skills", INT_OR_WIS_SKILLS, 2)] },
       { name: "Mathematical Savants", text: "Whenever you make an Intelligence (Technology) check involving mathematics, you are considered to have expertise in the Technology skill." },
-      { name: "Navigators", text: "You have proficiency with surveyor's implements." },
+      { name: "Navigators", text: "You have proficiency with surveyor's implements.", grantsProficiency: "Surveyor's implements" },
     ],
   },
   {
@@ -1643,12 +1643,12 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Sluissi reach adulthood in their late teens and live for about 75 years." },
       { name: "Alignment", text: "Sluissi's calm, composed nature causes them to tend toward lawful alignments, though there are exceptions." },
-      { name: "Mechanic", text: "You have proficiency with mechanic's kits. Once per day you can cast the repair droid tech power, using Intelligence with no wristpad required." },
+      { name: "Mechanic", text: "You have proficiency with mechanic's kits. Once per day you can cast the repair droid tech power, using Intelligence with no wristpad required.", grantsProficiency: "Mechanic's kit" },
       { name: "Prehensile Tail", text: "You have supreme control over your tail and can use it to manipulate objects as well as your hands." },
       { name: "Reptilian Senses", text: "You are considered to have expertise on Wisdom (Perception) checks related to sensing heat." },
       { name: "Technician", text: "You have proficiency in the Technology skill.", grantsSkills: ["Technology"] },
       { name: "Tech Resistance", text: "You have advantage on Dexterity and Intelligence saving throws against tech powers." },
-      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device." },
+      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device.", grantsProficiency: "Tinker's implements" },
     ],
   },
   {
@@ -1751,7 +1751,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Skilled Scavenger", text: "You have proficiency in Investigation or Technology (your choice), and proficiency with mechanic's kits or the electrobaton and electroprod (your choice).", choices: [skillChoice("Skill", ["Investigation", "Technology"])] },
       { name: "Survivors of the Sands", text: "You have proficiency in the Survival skill, don't treat desert terrain as difficult terrain, and have advantage on Constitution saving throws against extreme heat exhaustion.", grantsSkills: ["Survival"] },
       { name: "Teedo Telepathy", text: "You can communicate with other teedo within 60 feet without speaking, and can search their memories as if they were your own. Force-attuned individuals can detect but not understand the communication." },
-      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device." },
+      { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device.", grantsProficiency: "Tinker's implements" },
       { name: "Undersized", text: "You can't use heavy shields. You can't use two-handed martial weapons unless they're also light, and versatile weapons can only be wielded two-handed." },
     ],
   },
@@ -1921,7 +1921,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Mysterious Wanderers", text: "You have proficiency in the Stealth and Survival skills.", grantsSkills: ["Stealth", "Survival"] },
       { name: "Surprise Attack", text: "If you surprise a creature and hit it with an attack on your first turn in combat, the attack deals an extra 2d6 damage. Usable only once per combat." },
       { name: "Vengeful Assault", text: "When you take damage from a creature within range of a weapon you're wielding, you can use your reaction to attack it with that weapon (excluding burst or rapid weapon properties). Usable once per short or long rest." },
-      { name: "Weapon Training", text: "You have proficiency with the blaster rifle and marksman blaster." },
+      { name: "Weapon Training", text: "You have proficiency with the blaster rifle and marksman blaster.", grantsProficiency: "Blaster rifle, marksman blaster" },
     ],
   },
   {
@@ -2089,7 +2089,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Age", text: "Wroonians reach adulthood in their late teens and live less than a century." },
       { name: "Alignment", text: "Wroonians' thrill-seeking nature causes them to tend toward chaotic alignments, though there are exceptions." },
       { name: "Fearless", text: "You have advantage on saving throws against being frightened." },
-      { name: "Navigators", text: "You have proficiency with surveyor's implements." },
+      { name: "Navigators", text: "You have proficiency with surveyor's implements.", grantsProficiency: "Surveyor's implements" },
       { name: "Pilot", text: "You have proficiency in the Piloting skill.", grantsSkills: ["Piloting"] },
       { name: "Seafaring", text: "You have a swimming speed of 20 feet." },
       { name: "Smooth Talker", text: "You have proficiency with Persuasion or Deception (your choice).", choices: [skillChoice("Skill", ["Persuasion", "Deception"])] },
@@ -2109,7 +2109,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light." },
       { name: "Mask of the Wild", text: "You can attempt to hide even when only lightly obscured by foliage, heavy rain, falling snow, mist, and other natural phenomena." },
       { name: "Naturalist", text: "You have proficiency in the Nature skill.", grantsSkills: ["Nature"] },
-      { name: "Plant Communion", text: "You can communicate simply with plants, who understand your words though you can't understand theirs, and have advantage on Charisma checks to influence them. You also have proficiency with bioanalysis kits." },
+      { name: "Plant Communion", text: "You can communicate simply with plants, who understand your words though you can't understand theirs, and have advantage on Charisma checks to influence them. You also have proficiency with bioanalysis kits.", grantsProficiency: "Bioanalysis kit" },
       { name: "Snap Senses", text: "When you roll for initiative, you can choose to gain advantage. Alternatively, if you're surprised, you can still act normally on your first turn. Usable once per short or long rest." },
       { name: "Tooth and Nail", text: "Your fangs and claws are natural weapons; your unarmed strikes deal 1d4 kinetic damage." },
       { name: "Undersized", text: "You can't use heavy shields. You can't use two-handed martial weapons unless they're also light, and versatile weapons can only be wielded two-handed." },
@@ -2175,7 +2175,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Yuzzums reach adulthood in their late teens and live less than a century." },
       { name: "Alignment", text: "Yuzzums' resourceful, survival-first nature causes them to tend toward balanced alignments, though there are exceptions." },
-      { name: "Brewer", text: "You have proficiency with brewer's kits." },
+      { name: "Brewer", text: "You have proficiency with brewer's kits.", grantsProficiency: "Brewer's kit" },
       { name: "Cannibalize", text: "If you spend at least 1 minute devouring the corpse of a beast or humanoid, you gain temporary hit points equal to your Constitution modifier. Usable once per short or long rest." },
       { name: "Crude Weapon Specialists", text: "You can spend 1 hour crafting a simple kinetic weapon out of loose materials, though its damage suffers a -1 penalty." },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light." },

@@ -49,6 +49,7 @@ export interface SpeciesTrait {
   name: string;
   text: string;
   grantsSkills?: SkillName[];
+  grantsProficiency?: string; // fixed non-skill proficiency this trait grants (armor/weapon/tool)
   choices?: SpeciesTraitChoice[];
 }
 

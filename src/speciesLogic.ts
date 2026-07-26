@@ -108,6 +108,7 @@ export function applySpecies(
 
   const grantedProficiencies: string[] = [];
   for (const trait of species.traits) {
+    if (trait.grantsProficiency) grantedProficiencies.push(trait.grantsProficiency);
     if (!trait.choices) continue;
     const picks = selections.traitChoices[trait.name] ?? [];
     trait.choices.forEach((choiceDef, i) => {
