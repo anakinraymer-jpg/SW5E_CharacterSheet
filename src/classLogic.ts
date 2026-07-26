@@ -13,6 +13,40 @@ export function classNeedsChoices(classEntry: ClassEntry): boolean {
   return classEntry.skillChoice.count > 0;
 }
 
+// Parses a "(a) X or (b) Y" / "(a) X, (b) Y, or (c) Z" equipment line into its lettered options.
+export function parseEquipmentOptions(line: string): string[] {
+  return line
+    .split(/\([a-z]\)\s*/i)
+    .filter(Boolean)
+    .map((part) =>
+      part
+        .replace(/\s+(or|and)\s*$/i, "")
+        .replace(/,\s*$/, "")
+        .trim()
+    );
+}
+
+export interface StartingFundsFormula {
+  count: number;
+  sides: number;
+  multiplier: number;
+}
+
+// Parses a "5d4 x 100 cr" starting-funds string into its roll formula.
+export function parseStartingFunds(text: string): StartingFundsFormula | null {
+  const m = text.match(/(\d+)d(\d+)\s*x\s*(\d+)/i);
+  if (!m) return null;
+  return { count: Number(m[1]), sides: Number(m[2]), multiplier: Number(m[3]) };
+}
+
+export function rollStartingFunds(formula: StartingFundsFormula): number {
+  let total = 0;
+  for (let i = 0; i < formula.count; i++) {
+    total += 1 + Math.floor(Math.random() * formula.sides);
+  }
+  return total * formula.multiplier;
+}
+
 export function revertClass(character: Character): Character {
   if (!character.classAppliedName) return character;
   const savingThrows = { ...character.savingThrows };
@@ -27,10 +61,13 @@ export function revertClass(character: Character): Character {
     ...character,
     savingThrows,
     skills,
+    credits: character.credits - character.classCreditsApplied,
     classAppliedName: "",
     classSavingThrowsApplied: [],
     classGrantedSkills: [],
     classTraitsText: "",
+    classEquipmentText: [],
+    classCreditsApplied: 0,
   };
 }
 
@@ -57,11 +94,15 @@ export function applyClass(
   const level = Math.max(1, Math.min(20, base.level || 1));
   const row = classEntry.levels[level - 1];
 
+  const creditsApplied = selections.useStartingFunds ? selections.rolledFunds : 0;
+  const equipmentText = selections.useStartingFunds ? [] : selections.equipmentChoice;
+
   const next: Character = {
     ...base,
     characterClass: classEntry.name,
     savingThrows,
     skills,
+    credits: base.credits + creditsApplied,
     hitDiceTotal: `${level}d${classEntry.hitDie}`,
     hitDiceRemaining: `${level}d${classEntry.hitDie}`,
     forcePoints: row?.forcePoints !== undefined ? { ...base.forcePoints, max: row.forcePoints } : base.forcePoints,
@@ -69,6 +110,8 @@ export function applyClass(
     classAppliedName: classEntry.name,
     classSavingThrowsApplied: [...classEntry.savingThrows],
     classGrantedSkills: grantedSkills,
+    classEquipmentText: equipmentText,
+    classCreditsApplied: creditsApplied,
   };
   next.classTraitsText = buildClassTraitsText(classEntry, next);
   return next;

@@ -151,6 +151,9 @@ export interface ArchetypeEntry {
 
 export interface ClassSelections {
   skillChoice: string[];
+  equipmentChoice: string[];
+  useStartingFunds: boolean;
+  rolledFunds: number;
 }
 
 export type ClassResourceRefresh = "Short Rest" | "Long Rest";
@@ -306,6 +309,8 @@ export interface Character {
   classAbilityBonus: AbilityScores;
   asiChoices: Record<number, AbilityKey[]>;
   classTraitsText: string;
+  classEquipmentText: string[];
+  classCreditsApplied: number;
   archetypeAppliedName: string;
   archetypeTraitsText: string;
   classResources: ClassResourceState[];
@@ -489,6 +494,8 @@ export function createBlankCharacter(): Character {
     classAbilityBonus: emptyAbilities0(),
     asiChoices: {},
     classTraitsText: "",
+    classEquipmentText: [],
+    classCreditsApplied: 0,
     archetypeAppliedName: "",
     archetypeTraitsText: "",
     classResources: [],

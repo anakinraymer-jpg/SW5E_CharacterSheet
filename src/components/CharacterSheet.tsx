@@ -261,7 +261,9 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     if (classNeedsChoices(match)) {
       setPendingClass(match);
     } else {
-      setCharacter((prev) => applyClass(prev, match, { skillChoice: [] }));
+      setCharacter((prev) =>
+        applyClass(prev, match, { skillChoice: [], equipmentChoice: [], useStartingFunds: false, rolledFunds: 0 })
+      );
     }
   }
 

@@ -169,6 +169,20 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
         />
       )}
 
+      {character.classEquipmentText.length > 0 && (
+        <div className="species-traits-box">
+          <div className="species-traits-header">{character.classAppliedName} Starting Equipment</div>
+          {character.classEquipmentText.map((line, i) => (
+            <p key={i} className="species-trait-line">
+              {line}
+            </p>
+          ))}
+          <p className="section-hint" style={{ marginTop: 6, marginBottom: 0 }}>
+            Add the specific items to your Equipment list once chosen.
+          </p>
+        </div>
+      )}
+
       {character.classTraitsText && (
         <div className="species-traits-box">
           <div className="species-traits-header">{character.classAppliedName} Features</div>
