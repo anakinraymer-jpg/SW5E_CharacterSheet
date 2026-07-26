@@ -2,9 +2,10 @@ import type { Character } from "../types";
 import { ARCHETYPES, BACKGROUNDS, ALIGNMENTS, SIZES } from "../data/sw5eData";
 import { SPECIES_CATALOG as SPECIES_CATALOG_PHB } from "../data/species";
 import { SPECIES_CATALOG_EC } from "../data/speciesEC";
+import { SPECIES_CATALOG_HOMEBREW } from "../data/speciesHomebrew";
 import { CLASSES_CATALOG } from "../data/classes";
 
-const SPECIES_CATALOG = [...SPECIES_CATALOG_PHB, ...SPECIES_CATALOG_EC];
+const SPECIES_CATALOG = [...SPECIES_CATALOG_PHB, ...SPECIES_CATALOG_EC, ...SPECIES_CATALOG_HOMEBREW];
 const SPECIES_NAMES = SPECIES_CATALOG.map((s) => s.name);
 const CLASS_NAMES = CLASSES_CATALOG.map((c) => c.name);
 
