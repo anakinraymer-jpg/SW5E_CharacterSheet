@@ -156,6 +156,7 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
                 if (detail?.languages?.length) extra.push(`Languages: ${detail.languages.join(", ")}`);
                 if (detail?.skill) extra.push(`Skill: ${detail.skill}`);
                 if (detail?.tools?.length) extra.push(`Tool${detail.tools.length > 1 ? "s" : ""}: ${detail.tools.join(", ")}`);
+                if (detail?.weapons?.length) extra.push(`Weapons: ${detail.weapons.join(", ")}`);
                 return (
                   <HoverInfo
                     key={`${def.key}-${name}-${i}`}

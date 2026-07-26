@@ -181,6 +181,7 @@ export interface ClassSubChoiceOption {
   languageChoiceCount?: number; // e.g. Scholar's Ambassador discovery: pick this many languages
   skillChoice?: boolean; // grants one skill of the player's choice (e.g. Monk's Vow of the Open Mind)
   skillOrToolFork?: boolean; // "a skill and a tool, or two tools" pattern (Learner's Exploit, etc.)
+  weaponChoiceCount?: number; // e.g. Operative's Weaponmaster's Exploit: pick this many weapons
   repeatable?: boolean; // option text explicitly allows choosing it again for a fresh grant
 }
 
@@ -199,6 +200,7 @@ export interface ClassSubChoicePickDetail {
   languages?: string[];
   skill?: SkillName;
   tools?: string[];
+  weapons?: string[];
 }
 
 export interface FeatEntry {

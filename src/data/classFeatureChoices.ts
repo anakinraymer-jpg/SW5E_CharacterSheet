@@ -512,7 +512,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Mentor's Exploit", text: "Once per turn, share a forced saving throw with a friendly creature within 60 feet, taking disadvantage yourself to give them advantage.", prerequisite: "13th level" },
       { name: "Skill's Exploit", text: "You learn an exploit letting you use a proficient skill on the Attack action (see the Skill's Exploit list below). Usable twice combined, more at 5th/9th/13th/17th level; regains on long rest. Can be taken multiple times." },
       { name: "Technologist's Exploit", text: "You learn and can cast one 1st-level tech power once per long rest (Intelligence, wristpad required). Can be taken multiple times, choosing a different power each time." },
-      { name: "Weaponmaster's Exploit", text: "You gain proficiency in three blasters or vibroweapons that lack the heavy and strength properties. Can be taken multiple times, choosing different weapons each time." },
+      { name: "Weaponmaster's Exploit", text: "You gain proficiency in three blasters or vibroweapons that lack the heavy and strength properties. Can be taken multiple times, choosing different weapons each time.", weaponChoiceCount: 3, repeatable: true },
     ],
   },
   {

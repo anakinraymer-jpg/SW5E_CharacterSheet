@@ -3,9 +3,17 @@ import type { ClassSubChoiceDef, ClassSubChoicePickDetail, SkillName } from "../
 import { SKILL_LIST } from "../types";
 import { LANGUAGES } from "../data/sw5eData";
 import { GEAR_CATALOG } from "../data/gear";
+import { WEAPON_CATALOG } from "../data/weapons";
 import Modal from "./Modal";
 
 const TOOL_OPTIONS = GEAR_CATALOG.filter((g) => g.category === "Tool" || g.category === "Kit").map((g) => g.name);
+
+// Blasters/vibroweapons without the heavy property or a Strength requirement, per Weaponmaster's Exploit.
+const NON_HEAVY_WEAPON_OPTIONS = WEAPON_CATALOG.filter((w) => {
+  if (!/blaster|vibroweapon/i.test(w.type)) return false;
+  const tags = w.property.split(",").map((t) => t.trim());
+  return !tags.some((t) => t === "Heavy" || /^Strength\b/.test(t));
+}).map((w) => w.name);
 
 interface Props {
   def: ClassSubChoiceDef;
@@ -23,6 +31,14 @@ function detailComplete(option: ClassSubChoiceDef["options"][number] | undefined
   }
   if (option.skillChoice) {
     return Boolean(detail.skill);
+  }
+  if (option.weaponChoiceCount) {
+    const weapons = detail.weapons ?? [];
+    return (
+      weapons.length === option.weaponChoiceCount &&
+      weapons.every(Boolean) &&
+      new Set(weapons).size === weapons.length
+    );
   }
   if (option.skillOrToolFork) {
     const tools = detail.tools ?? [];
@@ -115,6 +131,29 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, onCan
                         {LANGUAGES.map((l) => (
                           <option key={l} value={l}>
                             {l}
+                          </option>
+                        ))}
+                      </select>
+                    ))}
+                  </div>
+                )}
+
+                {option?.weaponChoiceCount && (
+                  <div className="choice-selects" style={{ marginTop: 4 }}>
+                    {Array.from({ length: option.weaponChoiceCount }).map((_, wi) => (
+                      <select
+                        key={wi}
+                        value={detail.weapons?.[wi] ?? ""}
+                        onChange={(e) => {
+                          const weapons = [...(detail.weapons ?? Array(option.weaponChoiceCount).fill(""))];
+                          weapons[wi] = e.target.value;
+                          updateDetail(i, { ...detail, weapons });
+                        }}
+                      >
+                        <option value="">Choose weapon…</option>
+                        {NON_HEAVY_WEAPON_OPTIONS.map((w) => (
+                          <option key={w} value={w}>
+                            {w}
                           </option>
                         ))}
                       </select>

@@ -20,6 +20,7 @@ export function grantedProficienciesFromSubChoices(character: Character): string
     }
     for (const detail of character.classSubChoiceDetails[def.key] ?? []) {
       for (const tool of detail.tools ?? []) out.push(tool);
+      for (const weapon of detail.weapons ?? []) out.push(weapon);
     }
   }
   return out;
