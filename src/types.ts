@@ -117,6 +117,32 @@ export interface ClassEntry {
   features: ClassFeature[];
 }
 
+export interface BackgroundSkillChoice {
+  count: number;
+  options: SkillName[];
+}
+
+export interface BackgroundLanguageGrant {
+  fixed: string[];
+  choiceCount: number;
+}
+
+export interface BackgroundEntry {
+  name: string;
+  skillChoice: BackgroundSkillChoice;
+  toolProficienciesText: string;
+  languages: BackgroundLanguageGrant;
+  equipmentText: string;
+  startingCredits: number;
+  featureName: string;
+  featureText: string;
+}
+
+export interface BackgroundSelections {
+  skillChoice: string[];
+  languageChoice: string[];
+}
+
 export interface ArchetypeEntry {
   name: string;
   className: string;
@@ -249,6 +275,10 @@ export interface Character {
   characterClass: string;
   archetype: string;
   background: string;
+  backgroundAppliedName: string;
+  backgroundGrantedSkills: SkillName[];
+  backgroundGrantedLanguages: string[];
+  backgroundCreditsApplied: number;
   level: number;
   alignment: string;
   allegiance: string;
@@ -432,6 +462,10 @@ export function createBlankCharacter(): Character {
     characterClass: "",
     archetype: "",
     background: "",
+    backgroundAppliedName: "",
+    backgroundGrantedSkills: [],
+    backgroundGrantedLanguages: [],
+    backgroundCreditsApplied: 0,
     level: 1,
     alignment: "",
     allegiance: "",

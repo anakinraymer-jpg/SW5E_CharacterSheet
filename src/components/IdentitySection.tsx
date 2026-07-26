@@ -1,13 +1,15 @@
 import type { Character } from "../types";
-import { ARCHETYPES, BACKGROUNDS, ALIGNMENTS, SIZES } from "../data/sw5eData";
+import { ARCHETYPES, ALIGNMENTS, SIZES } from "../data/sw5eData";
 import { SPECIES_CATALOG as SPECIES_CATALOG_PHB } from "../data/species";
 import { SPECIES_CATALOG_EC } from "../data/speciesEC";
 import { SPECIES_CATALOG_HOMEBREW } from "../data/speciesHomebrew";
 import { CLASSES_CATALOG } from "../data/classes";
+import { BACKGROUND_CATALOG } from "../data/backgrounds";
 
 const SPECIES_CATALOG = [...SPECIES_CATALOG_PHB, ...SPECIES_CATALOG_EC, ...SPECIES_CATALOG_HOMEBREW];
 const SPECIES_NAMES = SPECIES_CATALOG.map((s) => s.name);
 const CLASS_NAMES = CLASSES_CATALOG.map((c) => c.name);
+const BACKGROUND_NAMES = BACKGROUND_CATALOG.map((b) => b.name);
 
 interface Props {
   character: Character;
@@ -15,6 +17,7 @@ interface Props {
   onSpeciesCommit: (value: string) => void;
   onClassCommit: (value: string) => void;
   onArchetypeCommit: (value: string) => void;
+  onBackgroundCommit: (value: string) => void;
   archetypeOptions: string[];
 }
 
@@ -34,6 +37,7 @@ export default function IdentitySection({
   onSpeciesCommit,
   onClassCommit,
   onArchetypeCommit,
+  onBackgroundCommit,
   archetypeOptions,
 }: Props) {
   return (
@@ -139,8 +143,9 @@ export default function IdentitySection({
             list="background-list"
             value={character.background}
             onChange={(e) => update("background", e.target.value)}
+            onBlur={(e) => onBackgroundCommit(e.target.value)}
           />
-          <Datalist id="background-list" options={BACKGROUNDS} />
+          <Datalist id="background-list" options={BACKGROUND_NAMES} />
         </div>
 
         <div className="field">

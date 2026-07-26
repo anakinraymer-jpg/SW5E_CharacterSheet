@@ -2,6 +2,8 @@ import { useEffect, useState, type CSSProperties, type PointerEvent as ReactPoin
 import type {
   AbilityKey,
   ArchetypeEntry,
+  BackgroundEntry,
+  BackgroundSelections,
   Character,
   ClassEntry,
   ClassSelections,
@@ -19,12 +21,14 @@ import { SPECIES_CATALOG as SPECIES_CATALOG_PHB } from "../data/species";
 import { SPECIES_CATALOG_EC } from "../data/speciesEC";
 import { SPECIES_CATALOG_HOMEBREW } from "../data/speciesHomebrew";
 import { CLASSES_CATALOG } from "../data/classes";
+import { BACKGROUND_CATALOG } from "../data/backgrounds";
 import { ARCHETYPES_CATALOG as ARCHETYPES_CATALOG_PHB } from "../data/archetypeDetails";
 import { ARCHETYPES_CATALOG_EC } from "../data/archetypeDetailsEC";
 
 const ARCHETYPES_CATALOG = [...ARCHETYPES_CATALOG_PHB, ...ARCHETYPES_CATALOG_EC];
 const SPECIES_CATALOG = [...SPECIES_CATALOG_PHB, ...SPECIES_CATALOG_EC, ...SPECIES_CATALOG_HOMEBREW];
 import { applySpecies, revertSpecies, speciesNeedsChoices } from "../speciesLogic";
+import { applyBackground, backgroundNeedsChoices, revertBackground } from "../backgroundLogic";
 import {
   applyArchetype,
   applyAsi,
@@ -47,6 +51,7 @@ import PowersSection from "./PowersSection";
 import EquipmentSection from "./EquipmentSection";
 import BackstorySection from "./BackstorySection";
 import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
+import BackgroundChoiceDialog from "./BackgroundChoiceDialog";
 import ClassChoiceDialog from "./ClassChoiceDialog";
 import AbilityImprovementDialog from "./AbilityImprovementDialog";
 import ClassFeaturesSection from "./ClassFeaturesSection";
@@ -86,6 +91,7 @@ interface Props {
 export default function CharacterSheet({ initial, onBack }: Props) {
   const [character, setCharacter] = useState<Character>(initial);
   const [pendingSpecies, setPendingSpecies] = useState<SpeciesEntry | null>(null);
+  const [pendingBackground, setPendingBackground] = useState<BackgroundEntry | null>(null);
   const [pendingClass, setPendingClass] = useState<ClassEntry | null>(null);
   const [pendingAsi, setPendingAsi] = useState<{ level: number; className: string } | null>(null);
   const [pendingFeat, setPendingFeat] = useState<FeatEntry | null>(null);
@@ -217,6 +223,30 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     if (!pendingSpecies) return;
     setCharacter((prev) => applySpecies(prev, pendingSpecies, selections));
     setPendingSpecies(null);
+  }
+
+  function handleBackgroundCommit(value: string) {
+    const match = BACKGROUND_CATALOG.find(
+      (b) => b.name.toLowerCase() === value.trim().toLowerCase()
+    );
+    if (!match) {
+      if (character.backgroundAppliedName) {
+        setCharacter((prev) => revertBackground(prev));
+      }
+      return;
+    }
+    if (match.name === character.backgroundAppliedName) return;
+    if (backgroundNeedsChoices(match)) {
+      setPendingBackground(match);
+    } else {
+      setCharacter((prev) => applyBackground(prev, match, { skillChoice: [], languageChoice: [] }));
+    }
+  }
+
+  function handleBackgroundConfirm(selections: BackgroundSelections) {
+    if (!pendingBackground) return;
+    setCharacter((prev) => applyBackground(prev, pendingBackground, selections));
+    setPendingBackground(null);
   }
 
   function handleClassCommit(value: string) {
@@ -663,6 +693,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         onSpeciesCommit={handleSpeciesCommit}
         onClassCommit={handleClassCommit}
         onArchetypeCommit={handleArchetypeCommit}
+        onBackgroundCommit={handleBackgroundCommit}
         archetypeOptions={currentClassArchetypes.map((a) => a.name)}
       />
 
@@ -725,6 +756,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           species={pendingSpecies}
           onCancel={() => setPendingSpecies(null)}
           onConfirm={handleSpeciesConfirm}
+        />
+      )}
+
+      {pendingBackground && (
+        <BackgroundChoiceDialog
+          background={pendingBackground}
+          onCancel={() => setPendingBackground(null)}
+          onConfirm={handleBackgroundConfirm}
         />
       )}
 
