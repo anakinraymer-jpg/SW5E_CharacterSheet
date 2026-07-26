@@ -1,5 +1,6 @@
 import type { Character } from "../types";
 import { ALLEGIANCES } from "../data/sw5eData";
+import { grantedLanguages, grantedProficiencies } from "../grantsSummary";
 
 interface Props {
   character: Character;
@@ -7,6 +8,9 @@ interface Props {
 }
 
 export default function BackstorySection({ character, update }: Props) {
+  const languages = grantedLanguages(character);
+  const proficiencies = grantedProficiencies(character);
+
   return (
     <>
       <section className="sheet-section backstory-section">
@@ -14,18 +18,38 @@ export default function BackstorySection({ character, update }: Props) {
         <div className="field-grid">
           <div className="field">
             <label htmlFor="proficiencies">Proficiencies</label>
+            {proficiencies.length > 0 && (
+              <div className="chip-row granted-chip-row">
+                {proficiencies.map((p) => (
+                  <span key={p} className="info-chip">
+                    {p}
+                  </span>
+                ))}
+              </div>
+            )}
             <textarea
               id="proficiencies"
               rows={3}
+              placeholder="Anything not already granted above"
               value={character.proficiencies}
               onChange={(e) => update("proficiencies", e.target.value)}
             />
           </div>
           <div className="field">
             <label htmlFor="languages">Languages</label>
+            {languages.length > 0 && (
+              <div className="chip-row granted-chip-row">
+                {languages.map((l) => (
+                  <span key={l} className="info-chip">
+                    {l}
+                  </span>
+                ))}
+              </div>
+            )}
             <textarea
               id="languages"
               rows={3}
+              placeholder="Anything not already granted above"
               value={character.languages}
               onChange={(e) => update("languages", e.target.value)}
             />

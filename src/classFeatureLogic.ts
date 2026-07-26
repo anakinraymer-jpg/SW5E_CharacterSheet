@@ -5,9 +5,21 @@ function levelIndex(character: Character): number {
   return Math.max(1, Math.min(20, character.level || 1)) - 1;
 }
 
-function applicableSubChoiceDefs(character: Character): ClassSubChoiceDef[] {
+export function applicableSubChoiceDefs(character: Character): ClassSubChoiceDef[] {
   const defs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
   return defs.filter((d) => !d.archetypeName || d.archetypeName === character.archetypeAppliedName);
+}
+
+export function grantedProficienciesFromSubChoices(character: Character): string[] {
+  const out: string[] = [];
+  for (const def of applicableSubChoiceDefs(character)) {
+    const chosen = character.classSubChoicePicks[def.key] ?? [];
+    for (const name of chosen) {
+      const option = def.options.find((o) => o.name === name);
+      if (option?.grantsProficiency) out.push(option.grantsProficiency);
+    }
+  }
+  return out;
 }
 
 // Rebuilds classResources from scratch for the character's current class, dropping resources

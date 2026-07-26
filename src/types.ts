@@ -148,6 +148,7 @@ export interface ClassSubChoiceOption {
   name: string;
   text: string;
   prerequisite?: string;
+  grantsProficiency?: string; // fixed proficiency this option grants (e.g. "Medium armor"), if any
 }
 
 export interface ClassSubChoiceDef {
@@ -264,6 +265,8 @@ export interface Character {
   speciesAppliedName: string;
   speciesAbilityBonus: AbilityScores;
   speciesGrantedSkills: SkillName[];
+  speciesGrantedLanguages: string[];
+  speciesGrantedProficiencies: string[];
   speciesTraitsText: string;
 
   // Class/archetype trait application state
@@ -443,6 +446,8 @@ export function createBlankCharacter(): Character {
     speciesAppliedName: "",
     speciesAbilityBonus: emptyAbilities0(),
     speciesGrantedSkills: [],
+    speciesGrantedLanguages: [],
+    speciesGrantedProficiencies: [],
     speciesTraitsText: "",
     classAppliedName: "",
     classSavingThrowsApplied: [],

@@ -305,6 +305,13 @@ export const CLASS_RESOURCES: ClassResourceDef[] = [
     maxByLevel: [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
     dieByLevel: ["d4", "d4", "d4", "d4", "d6", "d6", "d6", "d6", "d8", "d8", "d8", "d8", "d10", "d10", "d10", "d10", "d12", "d12", "d12", "d12"],
   },
+  {
+    key: "guardian-channel-the-force",
+    label: "Channel the Force",
+    className: "Guardian",
+    refresh: "Short Rest",
+    maxByLevel: [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
+  },
 ];
 
 // Options for the EC "Class Improvement" / "Multiclass Improvement" / "Splashclass Improvement"
@@ -495,7 +502,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     className: "Operative",
     countByLevel: [0, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5],
     options: [
-      { name: "Commander's Exploit", text: "You gain proficiency in medium armor." },
+      { name: "Commander's Exploit", text: "You gain proficiency in medium armor.", grantsProficiency: "Medium armor" },
       { name: "Explorer's Exploit", text: "You can hold your breath twice as long, and take half damage from falling." },
       { name: "Fate's Exploit", text: "Roll a d20 after a rest; before the next rest, replace any attack/save/check by you or a creature within 5 feet with that roll.", prerequisite: "7th level" },
       { name: "Fighter's Exploit", text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options." },
@@ -555,7 +562,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Malleable Maneuvering", text: "Learn two additional maneuvers, replaceable one at a short rest or both at a long rest." },
       { name: "Master's Advice", text: "The first time a Sage Advice target uses the chosen check, they gain an additional bonus equal to your full Critical Analysis modifier.", prerequisite: "11th level, Expert's Advice" },
       { name: "Mental Prowess", text: "Use your Critical Analysis modifier instead of Strength/Dexterity to grapple or escape a grapple/restraint." },
-      { name: "Moderately Armored", text: "You gain proficiency in medium armor.", prerequisite: "5th level" },
+      { name: "Moderately Armored", text: "You gain proficiency in medium armor.", prerequisite: "5th level", grantsProficiency: "Medium armor" },
       { name: "Perfect Maneuver", text: "Your superiority die rolls gain a minimum roll threshold." },
       { name: "Quick Analysis", text: "When you roll initiative and aren't surprised, use your reaction to trigger Critical Analysis.", prerequisite: "9th level" },
       { name: "Rancor's Discipline", text: "Substitute Wisdom or Charisma for Intelligence on scholar class features (except other discoveries and Academic Pursuit)." },

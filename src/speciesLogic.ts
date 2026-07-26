@@ -41,6 +41,8 @@ export function revertSpecies(character: Character): Character {
     speciesAppliedName: "",
     speciesAbilityBonus: emptyAbilities0(),
     speciesGrantedSkills: [],
+    speciesGrantedLanguages: [],
+    speciesGrantedProficiencies: [],
     speciesTraitsText: "",
   };
 }
@@ -99,6 +101,22 @@ export function applySpecies(
     }
   }
 
+  const grantedLanguages = [...species.knownLanguages];
+  if (species.languageChoice) {
+    grantedLanguages.push(...selections.languageChoice);
+  }
+
+  const grantedProficiencies: string[] = [];
+  for (const trait of species.traits) {
+    if (!trait.choices) continue;
+    const picks = selections.traitChoices[trait.name] ?? [];
+    trait.choices.forEach((choiceDef, i) => {
+      if (choiceDef.kind === "skill") return;
+      const chosen = picks[i] ?? [];
+      chosen.forEach((val) => grantedProficiencies.push(`${val} (${choiceDef.label})`));
+    });
+  }
+
   return {
     ...base,
     species: species.name,
@@ -109,6 +127,8 @@ export function applySpecies(
     speciesAppliedName: species.name,
     speciesAbilityBonus: bonus,
     speciesGrantedSkills: grantedSkills,
+    speciesGrantedLanguages: grantedLanguages,
+    speciesGrantedProficiencies: grantedProficiencies,
     speciesTraitsText: buildTraitsText(species, selections),
   };
 }

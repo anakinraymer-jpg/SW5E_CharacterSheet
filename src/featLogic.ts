@@ -125,6 +125,29 @@ export function removeFeat(character: Character, featId: string): Character {
   };
 }
 
+export function grantedLanguagesFromFeat(cf: CharacterFeat): string[] {
+  const feat = FEATS_BY_NAME.get(cf.name);
+  if (!feat?.choices) return [];
+  const out: string[] = [];
+  feat.choices.forEach((choiceDef, i) => {
+    if (choiceDef.kind !== "language") return;
+    out.push(...(cf.choiceSelections[i] ?? []));
+  });
+  return out;
+}
+
+export function grantedProficienciesFromFeat(cf: CharacterFeat): string[] {
+  const feat = FEATS_BY_NAME.get(cf.name);
+  if (!feat?.choices) return [];
+  const out: string[] = [];
+  feat.choices.forEach((choiceDef, i) => {
+    if (choiceDef.kind === "skill" || choiceDef.kind === "language") return;
+    const chosen = cf.choiceSelections[i] ?? [];
+    chosen.forEach((val) => out.push(`${val} (${choiceDef.label})`));
+  });
+  return out;
+}
+
 export function buildFeatText(feat: FeatEntry, cf: CharacterFeat): string {
   const extras: string[] = [];
   if (cf.abilityChosen.length) {

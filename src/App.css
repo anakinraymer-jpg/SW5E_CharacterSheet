@@ -1236,6 +1236,10 @@
   margin-top: 4px;
 }
 
+.granted-chip-row {
+  margin-bottom: 6px;
+}
+
 .info-chip {
   display: inline-flex;
   align-items: center;
