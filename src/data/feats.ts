@@ -5,6 +5,7 @@
 import type { AbilityKey, FeatEntry, SpeciesTraitChoice } from "../types";
 import { SKILL_LIST } from "../types";
 import { GEAR_CATALOG } from "./gear";
+import { WEAPON_CATALOG } from "./weapons";
 import { LANGUAGES } from "./sw5eData";
 import { FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS, WEAPON_FOCUSES, WEAPON_SUPREMACIES, CLASS_IMPROVEMENTS, MULTICLASS_IMPROVEMENTS, SPLASHCLASS_IMPROVEMENTS } from "./classFeatureChoices";
 
@@ -14,6 +15,7 @@ const INSTRUMENTS = GEAR_CATALOG.filter((g) => g.category === "Musical Instrumen
 const TOOLS = GEAR_CATALOG.filter((g) => g.category === "Tool").map((g) => g.name);
 const KITS = GEAR_CATALOG.filter((g) => g.category === "Kit").map((g) => g.name);
 const TOOLS_AND_KITS = [...TOOLS, ...KITS];
+const EXOTIC_WEAPONS = WEAPON_CATALOG.filter((w) => /exotic/i.test(w.type)).map((w) => w.name);
 const DAMAGE_TYPES = ["Acid", "Cold", "Fire", "Force", "Lightning", "Necrotic"];
 const FIGHTING_STYLE_NAMES = FIGHTING_STYLES.map((s) => s.name);
 const FIGHTING_MASTERY_NAMES = FIGHTING_MASTERIES.map((m) => m.name);
@@ -38,6 +40,9 @@ function languageChoice(count: number): SpeciesTraitChoice {
 }
 function otherChoice(label: string, options: string[], count = 1): SpeciesTraitChoice {
   return { kind: "other", label, count, options };
+}
+function weaponChoice(label: string, count: number, options: string[]): SpeciesTraitChoice {
+  return { kind: "weapon", label, count, options };
 }
 
 export const FEATS_CATALOG: FeatEntry[] = [
@@ -631,6 +636,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Exotic Weapon Training",
     prerequisite: null,
     abilityOptions: ["str", "dex", "con"],
+    choices: [weaponChoice("Exotic Weapon", 3, EXOTIC_WEAPONS)],
     text: "Mastery of simple and martial weapons has unlocked new potential for you. You gain the following benefits:\n- Increase your Strength, Dexterity, or Constitution score by 1, to a maximum of 20.\n- You gain proficiency in three exotic weapons. You must have proficiency in all simple and martial weapons in the exotic weapon's category to gain proficiency in it. If the exotic has modes that would fall in two different weapon categories, you require proficiency all simple and martial weapons in both categories in order to gain proficiency in that exotic.",
   },
   {
