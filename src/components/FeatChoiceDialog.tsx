@@ -1,11 +1,12 @@
 import { useState } from "react";
-import type { AbilityKey, FeatEntry } from "../types";
+import type { AbilityKey, FeatEntry, SkillName, SkillState } from "../types";
 import { ABILITY_LABEL } from "../speciesLogic";
 import type { FeatSelections } from "../featLogic";
 import Modal from "./Modal";
 
 interface Props {
   feat: FeatEntry;
+  skills: Record<SkillName, SkillState>;
   onCancel: () => void;
   onConfirm: (selections: FeatSelections) => void;
 }
@@ -31,7 +32,7 @@ function OptionSelect({
   );
 }
 
-export default function FeatChoiceDialog({ feat, onCancel, onConfirm }: Props) {
+export default function FeatChoiceDialog({ feat, skills, onCancel, onConfirm }: Props) {
   const [abilityChoice, setAbilityChoice] = useState<AbilityKey | "">("");
   const [choiceSelections, setChoiceSelections] = useState<string[][]>(
     (feat.choices ?? []).map((c) => Array(c.count).fill(""))
@@ -100,7 +101,13 @@ export default function FeatChoiceDialog({ feat, onCancel, onConfirm }: Props) {
                   next[ci][pi] = v;
                   setChoiceSelections(next);
                 }}
-                options={choiceDef.options}
+                options={
+                  choiceDef.kind === "skill"
+                    ? choiceDef.options.filter(
+                        (o) => !skills[o as SkillName].proficient && !skills[o as SkillName].expertise
+                      )
+                    : choiceDef.options
+                }
               />
             ))}
           </div>

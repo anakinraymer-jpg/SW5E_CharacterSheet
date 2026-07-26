@@ -1,14 +1,15 @@
 import { useState } from "react";
-import type { ClassFeature } from "../types";
+import type { ClassFeature, SkillName, SkillState } from "../types";
 import Modal from "./Modal";
 
 interface Props {
   feature: ClassFeature;
+  skills: Record<SkillName, SkillState>;
   onCancel: () => void;
   onConfirm: (selections: string[][]) => void;
 }
 
-export default function ArchetypeFeatureChoiceDialog({ feature, onCancel, onConfirm }: Props) {
+export default function ArchetypeFeatureChoiceDialog({ feature, skills, onCancel, onConfirm }: Props) {
   const choiceDefs = feature.choices ?? [];
   const [picks, setPicks] = useState<string[][]>(choiceDefs.map((c) => Array(c.count).fill("")));
 
@@ -51,7 +52,12 @@ export default function ArchetypeFeatureChoiceDialog({ feature, onCancel, onConf
                 }}
               >
                 <option value="">Choose…</option>
-                {choiceDef.options.map((o) => (
+                {(choiceDef.kind === "skill"
+                  ? choiceDef.options.filter(
+                      (o) => !skills[o as SkillName].proficient && !skills[o as SkillName].expertise
+                    )
+                  : choiceDef.options
+                ).map((o) => (
                   <option key={o} value={o}>
                     {o}
                   </option>

@@ -1,15 +1,19 @@
 import { useState } from "react";
-import type { ClassEntry, ClassSelections } from "../types";
+import type { ClassEntry, ClassSelections, SkillName, SkillState } from "../types";
 import { parseEquipmentOptions, parseStartingFunds, rollStartingFunds } from "../classLogic";
 import Modal from "./Modal";
 
 interface Props {
   classEntry: ClassEntry;
+  skills: Record<SkillName, SkillState>;
   onCancel: () => void;
   onConfirm: (selections: ClassSelections) => void;
 }
 
-export default function ClassChoiceDialog({ classEntry, onCancel, onConfirm }: Props) {
+export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConfirm }: Props) {
+  const availableSkills = classEntry.skillChoice.options.filter(
+    (o) => !skills[o as SkillName].proficient && !skills[o as SkillName].expertise
+  );
   const [skillChoice, setSkillChoice] = useState<string[]>(
     Array(classEntry.skillChoice.count).fill("")
   );
@@ -68,7 +72,7 @@ export default function ClassChoiceDialog({ classEntry, onCancel, onConfirm }: P
               }}
             >
               <option value="">Choose…</option>
-              {classEntry.skillChoice.options.map((o) => (
+              {availableSkills.map((o) => (
                 <option key={o} value={o}>
                   {o}
                 </option>

@@ -1,17 +1,21 @@
 import { useState } from "react";
-import type { BackgroundEntry, BackgroundSelections } from "../types";
+import type { BackgroundEntry, BackgroundSelections, SkillName, SkillState } from "../types";
 import { LANGUAGES } from "../data/sw5eData";
 import Modal from "./Modal";
 
 interface Props {
   background: BackgroundEntry;
+  skills: Record<SkillName, SkillState>;
   onCancel: () => void;
   onConfirm: (selections: BackgroundSelections) => void;
 }
 
-export default function BackgroundChoiceDialog({ background, onCancel, onConfirm }: Props) {
+export default function BackgroundChoiceDialog({ background, skills, onCancel, onConfirm }: Props) {
   const [skillChoice, setSkillChoice] = useState<string[]>(
     Array(background.skillChoice.count).fill("")
+  );
+  const availableSkills = background.skillChoice.options.filter(
+    (o) => !skills[o as SkillName].proficient && !skills[o as SkillName].expertise
   );
   const [languageChoice, setLanguageChoice] = useState<string[]>(
     Array(background.languages.choiceCount).fill("")
@@ -62,7 +66,7 @@ export default function BackgroundChoiceDialog({ background, onCancel, onConfirm
                 }}
               >
                 <option value="">Choose…</option>
-                {background.skillChoice.options.map((o) => (
+                {availableSkills.map((o) => (
                   <option key={o} value={o}>
                     {o}
                   </option>

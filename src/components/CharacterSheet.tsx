@@ -778,6 +778,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       {pendingSpecies && (
         <SpeciesChoiceDialog
           species={pendingSpecies}
+          skills={character.skills}
           onCancel={() => setPendingSpecies(null)}
           onConfirm={handleSpeciesConfirm}
         />
@@ -786,6 +787,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       {pendingBackground && (
         <BackgroundChoiceDialog
           background={pendingBackground}
+          skills={character.skills}
           onCancel={() => setPendingBackground(null)}
           onConfirm={handleBackgroundConfirm}
         />
@@ -794,6 +796,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       {pendingClass && (
         <ClassChoiceDialog
           classEntry={pendingClass}
+          skills={character.skills}
           onCancel={() => setPendingClass(null)}
           onConfirm={handleClassConfirm}
         />
@@ -811,6 +814,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       {pendingFeat && (
         <FeatChoiceDialog
           feat={pendingFeat}
+          skills={character.skills}
           onCancel={() => setPendingFeat(null)}
           onConfirm={handleFeatConfirm}
         />
@@ -830,6 +834,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         <ArchetypeFeatureChoiceDialog
           key={pendingArchetypeFeature.name}
           feature={pendingArchetypeFeature}
+          skills={character.skills}
           onCancel={() => setPendingArchetypeFeature(null)}
           onConfirm={handleArchetypeFeatureChoiceConfirm}
         />
@@ -837,10 +842,11 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
       {pendingSubChoiceDef && (
         <ClassSubChoiceDialog
-          key={`${pendingSubChoiceDef.def.key}-${pendingSubChoiceDef.needed}`}
+          key={`${pendingSubChoiceDef.def.key}-${(character.classSubChoicePicks[pendingSubChoiceDef.def.key] ?? []).length}-${pendingSubChoiceDef.needed}`}
           def={pendingSubChoiceDef.def}
           needed={pendingSubChoiceDef.needed}
           alreadyChosen={character.classSubChoicePicks[pendingSubChoiceDef.def.key] ?? []}
+          skills={character.skills}
           onCancel={() => setPendingSubChoiceDef(null)}
           onConfirm={handleSubChoiceConfirm}
         />

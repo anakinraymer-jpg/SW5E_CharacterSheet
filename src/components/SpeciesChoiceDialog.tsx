@@ -1,11 +1,12 @@
 import { useState } from "react";
-import type { AbilityKey, SpeciesEntry, SpeciesSelections } from "../types";
+import type { AbilityKey, SkillName, SkillState, SpeciesEntry, SpeciesSelections } from "../types";
 import { LANGUAGES } from "../data/sw5eData";
 import { ABILITY_LABEL } from "../speciesLogic";
 import Modal from "./Modal";
 
 interface Props {
   species: SpeciesEntry;
+  skills: Record<SkillName, SkillState>;
   onCancel: () => void;
   onConfirm: (selections: SpeciesSelections) => void;
 }
@@ -54,7 +55,7 @@ function OptionSelect({
   );
 }
 
-export default function SpeciesChoiceDialog({ species, onCancel, onConfirm }: Props) {
+export default function SpeciesChoiceDialog({ species, skills, onCancel, onConfirm }: Props) {
   const [abilityChoices, setAbilityChoices] = useState<string[][]>(
     species.abilityIncrease.choices.map((c) => Array(c.count).fill(""))
   );
@@ -248,7 +249,13 @@ export default function SpeciesChoiceDialog({ species, onCancel, onConfirm }: Pr
                       next[t.name][ci][pi] = v;
                       setTraitChoices(next);
                     }}
-                    options={choiceDef.options}
+                    options={
+                      choiceDef.kind === "skill"
+                        ? choiceDef.options.filter(
+                            (o) => !skills[o as SkillName].proficient && !skills[o as SkillName].expertise
+                          )
+                        : choiceDef.options
+                    }
                   />
                 ))}
               </div>

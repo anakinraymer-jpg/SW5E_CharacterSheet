@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ClassSubChoiceDef, ClassSubChoicePickDetail, SkillName } from "../types";
+import type { ClassSubChoiceDef, ClassSubChoicePickDetail, SkillName, SkillState } from "../types";
 import { SKILL_LIST } from "../types";
 import { LANGUAGES } from "../data/sw5eData";
 import { GEAR_CATALOG } from "../data/gear";
@@ -19,6 +19,7 @@ interface Props {
   def: ClassSubChoiceDef;
   needed: number;
   alreadyChosen: string[];
+  skills: Record<SkillName, SkillState>;
   onCancel: () => void;
   onConfirm: (names: string[], details: ClassSubChoicePickDetail[]) => void;
 }
@@ -50,9 +51,10 @@ function detailComplete(option: ClassSubChoiceDef["options"][number] | undefined
   return true;
 }
 
-export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, onCancel, onConfirm }: Props) {
+export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skills, onCancel, onConfirm }: Props) {
   const [picks, setPicks] = useState<string[]>(Array(needed).fill(""));
   const [details, setDetails] = useState<ClassSubChoicePickDetail[]>(Array(needed).fill({}));
+  const availableSkills = SKILL_LIST.filter((s) => !skills[s].proficient && !skills[s].expertise);
 
   function updateDetail(i: number, patch: ClassSubChoicePickDetail) {
     setDetails((prev) => prev.map((d, idx) => (idx === i ? patch : d)));
@@ -170,7 +172,7 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, onCan
                       }
                     >
                       <option value="">Choose skill…</option>
-                      {SKILL_LIST.map((s) => (
+                      {availableSkills.map((s) => (
                         <option key={s} value={s}>
                           {s}
                         </option>
@@ -200,7 +202,7 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, onCan
                       }
                         >
                           <option value="">Choose skill…</option>
-                          {SKILL_LIST.map((s) => (
+                          {availableSkills.map((s) => (
                             <option key={s} value={s}>
                               {s}
                             </option>
