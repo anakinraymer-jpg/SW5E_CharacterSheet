@@ -9,6 +9,8 @@ import { LANGUAGES } from "./sw5eData";
 
 const ARTISAN_IMPLEMENTS = GEAR_CATALOG.filter((g) => g.category === "Tool" || g.category === "Kit").map((g) => g.name);
 const ALL_BLASTERS = WEAPON_CATALOG.filter((w) => /blaster/i.test(w.type)).map((w) => w.name);
+const ALL_VIBROWEAPONS = WEAPON_CATALOG.filter((w) => /vibroweapon/i.test(w.type)).map((w) => w.name);
+const MARTIAL_BLASTERS = WEAPON_CATALOG.filter((w) => w.type === "Martial Blaster").map((w) => w.name);
 
 function skillChoice(label: string, options: string[]): SpeciesTraitChoice {
   return { kind: "skill", label, count: 1, options };
@@ -284,7 +286,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Echani Order",
     className: "Monk",
     features: [
-      { name: "Echani Weapons", level: 3, text: "Choose two weapon types (one vibroweapon, one blaster) as Echani/monk weapons, gaining proficiency and Agile Parry (+2 AC after an unarmed strike while holding one) and Echani's Shot (+1d4 ranged damage via bonus action). One more weapon type at 6th/11th/17th level." },
+      { name: "Echani Weapons", level: 3, text: "Choose two weapon types (one vibroweapon, one blaster) as Echani/monk weapons, gaining proficiency and Agile Parry (+2 AC after an unarmed strike while holding one) and Echani's Shot (+1d4 ranged damage via bonus action). One more weapon type at 6th/11th/17th level.", choices: [weaponChoice("Vibroweapon", 1, ALL_VIBROWEAPONS), weaponChoice("Blaster", 1, ALL_BLASTERS)] },
       { name: "One with the Blade", level: 6, text: "Your Echani weapon attacks count as enhanced; Deft Strike lets you spend 1 focus point on a hit for +Martial Arts die damage, once per turn." },
       { name: "Sharpen the Blade", level: 11, text: "Bonus action: expend up to 3 focus points to grant an Echani weapon a matching attack/damage bonus for 1 minute." },
       { name: "Unerring Accuracy", level: 17, text: "Once per turn, reroll a missed monk-weapon attack." },
@@ -349,7 +351,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
     name: "Sharpshooter Practice",
     className: "Operative",
     features: [
-      { name: "Assume the Position", level: 3, text: "No advantage needed for Sneak Attack against targets 30+ feet away with no enemies within 5 feet of you; standing from prone costs only 5 feet; proficiency with two martial blasters." },
+      { name: "Assume the Position", level: 3, text: "No advantage needed for Sneak Attack against targets 30+ feet away with no enemies within 5 feet of you; standing from prone costs only 5 feet; proficiency with two martial blasters.", choices: [weaponChoice("Martial Blaster", 2, MARTIAL_BLASTERS)] },
       { name: "Placed Shots", level: 3, text: "Forgo two Sneak Attack dice for Disarming Shot, Penetrating Shot, or Suppressive Shot (save DC = 8 + proficiency + Dexterity)." },
       { name: "Head Shot", level: 9, text: "Advantage against creatures that haven't yet acted in combat; hits against surprised creatures are critical hits." },
       { name: "Distracting Shot", level: 13, text: "Reaction ranged attack to protect an ally at range, imposing disadvantage on the attacker or granting the ally advantage on a save." },

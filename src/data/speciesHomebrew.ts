@@ -42,6 +42,9 @@ function toolChoice(label: string, options: string[], count = 1): SpeciesTraitCh
 function weaponChoice(label: string, options: string[], count = 1): SpeciesTraitChoice {
   return { kind: "weapon", label, count, options };
 }
+function otherChoice(label: string, options: string[], count = 1): SpeciesTraitChoice {
+  return { kind: "other", label, count, options };
+}
 
 export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
   {
@@ -765,10 +768,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Coercive", text: "You have proficiency with Persuasion or Intimidation (your choice).", choices: [skillChoice("Skill", ["Persuasion", "Intimidation"])] },
       { name: "Nimble Escape", text: "You can take the Disengage or Hide action as a bonus action on each of your turns." },
       { name: "Skittish", text: "You can choose to reroll Initiative checks, but you must use the new roll." },
-      // Unscrupulous grants a choice between any specialist's kit, or a specific pair of weapons --
-      // a mixed-kind choice the SpeciesTraitChoice model can't cleanly represent. Left as plain text
-      // per the "default to plain text when ambiguous" guidance (see speciesEC.ts's Baragwin).
-      { name: "Unscrupulous", text: "You have proficiency in one specialist's kit, or with the light pistol and blaster pistol." },
+      { name: "Unscrupulous", text: "You have proficiency in one specialist's kit, or with the light pistol and blaster pistol.", choices: [otherChoice("Kit or Weapons", [...KITS, "Light pistol and blaster pistol"])] },
       { name: "Victory Lap", text: "When you roll a 1 or 2 on a Hit Die you spend at the end of a short rest, you can reroll the die and must use the new roll." },
     ],
   },
@@ -833,7 +833,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Athletic", text: "You have proficiency in the Athletics skill.", grantsSkills: ["Athletics"] },
       { name: "Enforcer", text: "You have proficiency in the Intimidation skill. When you take the Help action to give an ally advantage on an Intimidation check, they also gain a bonus to the roll equal to your proficiency bonus.", grantsSkills: ["Intimidation"] },
       { name: "Fearless", text: "You have advantage on saving throws against being frightened." },
-      { name: "Military Training", text: "You have proficiency with light and medium armor as well as the slugpistol and slugthrower." },
+      { name: "Military Training", text: "You have proficiency with light and medium armor as well as the slugpistol and slugthrower.", grantsProficiency: "Light armor, medium armor, slugpistol, slugthrower" },
     ],
   },
   {
@@ -863,9 +863,10 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Age", text: "Kerestians reach adulthood in their late teens and live less than a century." },
       { name: "Alignment", text: "Savage mainline kerestians tend toward the dark side, while the cultured, lost kerestians tend toward lawful alignments, though there are exceptions." },
       // Ancestry is a player pick between two distinct bundles of mechanical benefits (Lost vs.
-      // Mainline), not a single-dimension skill/tool/weapon pick the SpeciesTraitChoice model
-      // supports. Left as plain text per the "default to plain text when ambiguous" guidance.
-      { name: "Ancestry", text: "Choose Lost or Mainline ancestry. Lost: proficiency in your choice of Piloting, Technology, or Lore, plus advantage on Dexterity and Intelligence saving throws against tech powers. Mainline: darkvision out to 60 feet, advantage on Constitution saving throws against extreme cold exhaustion, and the ability to gain temporary hit points equal to your Constitution modifier by spending a minute devouring a corpse (once per short or long rest)." },
+      // Mainline); only Lost grants a skill. The SpeciesTraitChoice model can't branch the choice
+      // on an earlier pick within the same trait, so the skill choice is offered unconditionally -
+      // harmless for a Mainline pick (an extra proficiency at worst) and correct for Lost.
+      { name: "Ancestry", text: "Choose Lost or Mainline ancestry. Lost: proficiency in your choice of Piloting, Technology, or Lore, plus advantage on Dexterity and Intelligence saving throws against tech powers. Mainline: darkvision out to 60 feet, advantage on Constitution saving throws against extreme cold exhaustion, and the ability to gain temporary hit points equal to your Constitution modifier by spending a minute devouring a corpse (once per short or long rest).", choices: [skillChoice("Skill (Lost Ancestry only)", ["Piloting", "Technology", "Lore"])] },
       { name: "Darkstick Training", text: "You have proficiency with darksticks, techblades, and vibroswords.", grantsProficiency: "Darkstick, techblade, vibrosword" },
       { name: "Hunter", text: "You have proficiency in the Survival skill.", grantsSkills: ["Survival"] },
       { name: "Into the Abyss", text: "You have advantage on saving throws against being frightened." },
@@ -1354,7 +1355,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Alignment", text: "Patitites' volatile nature causes them to tend toward chaotic alignments, though there are exceptions." },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light." },
       { name: "Fury of the Small", text: "When you damage a creature with an attack or a power and the creature's size is larger than yours, you can deal extra damage equal to your level. Usable once per short or long rest." },
-      { name: "Hunter Training", text: "You have proficiency in your choice of Investigation, Survival, or Stealth, and proficiency with the electrobaton and electroprod.", choices: [skillChoice("Skill", ["Investigation", "Survival", "Stealth"])] },
+      { name: "Hunter Training", text: "You have proficiency in your choice of Investigation, Survival, or Stealth, and proficiency with the electrobaton and electroprod.", grantsProficiency: "Electrobaton, electroprod", choices: [skillChoice("Skill", ["Investigation", "Survival", "Stealth"])] },
       { name: "Pintsized", text: "You can't use medium or heavy shields. You can't wield weapons with the two-handed or versatile property, and can only wield one-handed weapons in two hands unless they have the light property." },
       { name: "Puny", text: "You have disadvantage on Strength saving throws, and when determining your bonus to attack and damage rolls for Strength-based weapon attacks, you can't add more than +3." },
       { name: "Small and Nimble", text: "You have a +1 bonus to AC, and advantage on Dexterity saving throws." },
@@ -1616,7 +1617,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Alignment", text: "S'kytri's benevolent nature causes them to tend toward the light side, though there are exceptions." },
       { name: "Courageous", text: "You have advantage on saving throws against being frightened." },
       { name: "Flight", text: "You have a flying speed equal to your walking speed. While wearing medium or heavy armor, your flying speed is reduced by half." },
-      { name: "Warrior Bard", text: "You have proficiency with the vibrospear, vibroblade, and one musical instrument of your choice.", choices: [instrumentChoice()] },
+      { name: "Warrior Bard", text: "You have proficiency with the vibrospear, vibroblade, and one musical instrument of your choice.", grantsProficiency: "Vibrospear, vibroblade", choices: [instrumentChoice()] },
     ],
   },
   {
@@ -1746,9 +1747,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Alignment", text: "Teedo's \"make do\" attitude causes them to tend toward lawful or neutral balanced, though there are exceptions." },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light." },
       { name: "Desert Protection", text: "You have advantage on saving throws against being blinded." },
-      // Skilled Scavenger's second half (mechanic's kit OR two specific weapons) is a mixed-kind
-      // choice the SpeciesTraitChoice model can't cleanly represent; only the skill pick is modeled.
-      { name: "Skilled Scavenger", text: "You have proficiency in Investigation or Technology (your choice), and proficiency with mechanic's kits or the electrobaton and electroprod (your choice).", choices: [skillChoice("Skill", ["Investigation", "Technology"])] },
+      { name: "Skilled Scavenger", text: "You have proficiency in Investigation or Technology (your choice), and proficiency with mechanic's kits or the electrobaton and electroprod (your choice).", choices: [skillChoice("Skill", ["Investigation", "Technology"]), otherChoice("Kit or Weapons", ["Mechanic's kit", "Electrobaton and electroprod"])] },
       { name: "Survivors of the Sands", text: "You have proficiency in the Survival skill, don't treat desert terrain as difficult terrain, and have advantage on Constitution saving throws against extreme heat exhaustion.", grantsSkills: ["Survival"] },
       { name: "Teedo Telepathy", text: "You can communicate with other teedo within 60 feet without speaking, and can search their memories as if they were your own. Force-attuned individuals can detect but not understand the communication." },
       { name: "Tinker", text: "You have proficiency with tinker's implements, usable to construct a small utility device.", grantsProficiency: "Tinker's implements" },
@@ -1834,7 +1833,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Powerful Build", text: "Your carrying capacity and the weight you can push, drag, or lift doubles (or triples if it would already double)." },
       { name: "Unarmed Combatant", text: "Your unarmed strikes deal 1d6 kinetic damage. As a bonus action, you can make a special shove attack that knocks a Large or smaller target prone on a failed Strength save (DC = 8 + proficiency bonus + Strength modifier). Usable once per short or long rest." },
       { name: "Vengeful Assault", text: "When you take damage from a creature within range of a weapon you're wielding, you can use your reaction to attack it with that weapon (excluding burst or rapid weapon properties). Usable once per short or long rest." },
-      { name: "Weapon Training", text: "You have proficiency with vibroblades and your choice of vibromaces or slugthrowers.", choices: [weaponChoice("Weapon", ["Vibromace", "Slugthrower"])] },
+      { name: "Weapon Training", text: "You have proficiency with vibroblades and your choice of vibromaces or slugthrowers.", grantsProficiency: "Vibroblades", choices: [weaponChoice("Weapon", ["Vibromace", "Slugthrower"])] },
     ],
   },
   {
@@ -2156,10 +2155,11 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Yinchorri reach adulthood in their mid teens and live for about 80 years on average." },
       { name: "Alignment", text: "Yinchorri's \"might makes right\" philosophy causes them to tend toward the dark side, though there are exceptions." },
-      // Caste Specialization grants a choice between one set of artisan's implements or two
-      // vibroweapons/blasters -- a mixed-kind choice the SpeciesTraitChoice model can't cleanly
-      // represent. Left as plain text per the "default to plain text when ambiguous" guidance.
-      { name: "Caste Specialization", text: "You have proficiency with one set of artisan's implements, or two vibroweapons or blasters of your choice." },
+      // Caste Specialization's alternative branch ("two vibroweapons/blasters of your choice")
+      // is a second, differently-sized pick the SpeciesTraitChoice model can't fork into from the
+      // same slot, so only the artisan's implements branch is structured; the weapon alternative
+      // remains text-only.
+      { name: "Caste Specialization", text: "You have proficiency with one set of artisan's implements, or two vibroweapons or blasters of your choice.", choices: [toolChoice("Artisan's Implements", TOOLS)] },
       { name: "Closed Mind", text: "You have advantage on Wisdom and Charisma saving throws against force powers." },
       { name: "Heat Resistance", text: "You have resistance to fire damage, but disadvantage on Constitution saving throws against extreme cold exhaustion." },
       { name: "Hide", text: "While unarmored or wearing light armor, your AC is 12 + your Dexterity modifier." },
