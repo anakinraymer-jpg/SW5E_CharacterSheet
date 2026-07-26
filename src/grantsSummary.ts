@@ -1,6 +1,5 @@
 import type { Character } from "./types";
 import { CLASSES_CATALOG } from "./data/classes";
-import { BACKGROUND_CATALOG } from "./data/backgrounds";
 import { ARCHETYPES_CATALOG as ARCHETYPES_CATALOG_PHB } from "./data/archetypeDetails";
 import { ARCHETYPES_CATALOG_EC } from "./data/archetypeDetailsEC";
 import { grantedLanguagesFromFeat, grantedProficienciesFromFeat } from "./featLogic";
@@ -33,11 +32,6 @@ export function grantedProficiencies(character: Character): string[] {
   out.push(...grantedProficienciesFromSubChoices(character));
   const archetypeEntry = ARCHETYPES_CATALOG.find((a) => a.name === character.archetypeAppliedName);
   out.push(...grantedProficienciesFromArchetypeFeatures(character, archetypeEntry));
-  if (character.backgroundAppliedName) {
-    const bg = BACKGROUND_CATALOG.find((b) => b.name === character.backgroundAppliedName);
-    if (bg?.toolProficienciesText) {
-      out.push(`${bg.toolProficienciesText} (Background Tools)`);
-    }
-  }
+  out.push(...character.backgroundGrantedProficiencies);
   return [...new Set(out)];
 }

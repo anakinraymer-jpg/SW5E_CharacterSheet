@@ -1,7 +1,7 @@
 import type { BackgroundEntry, BackgroundSelections, Character, SkillName } from "./types";
 
 export function backgroundNeedsChoices(bg: BackgroundEntry): boolean {
-  return bg.skillChoice.count > 0 || bg.languages.choiceCount > 0;
+  return bg.skillChoice.count > 0 || bg.languages.choiceCount > 0 || bg.toolChoices.length > 0;
 }
 
 export function revertBackground(character: Character): Character {
@@ -17,6 +17,7 @@ export function revertBackground(character: Character): Character {
     backgroundAppliedName: "",
     backgroundGrantedSkills: [],
     backgroundGrantedLanguages: [],
+    backgroundGrantedProficiencies: [],
     backgroundCreditsApplied: 0,
   };
 }
@@ -38,6 +39,12 @@ export function applyBackground(
 
   const grantedLanguages = [...bg.languages.fixed, ...selections.languageChoice];
 
+  const grantedProficiencies = [...bg.fixedToolProficiencies];
+  bg.toolChoices.forEach((choiceDef, i) => {
+    const chosen = (selections.toolChoice[i] ?? []).filter(Boolean);
+    chosen.forEach((val) => grantedProficiencies.push(`${val} (${choiceDef.label})`));
+  });
+
   return {
     ...base,
     background: bg.name,
@@ -46,6 +53,7 @@ export function applyBackground(
     backgroundAppliedName: bg.name,
     backgroundGrantedSkills: grantedSkills,
     backgroundGrantedLanguages: grantedLanguages,
+    backgroundGrantedProficiencies: grantedProficiencies,
     backgroundCreditsApplied: bg.startingCredits,
     backgroundFeature: `${bg.featureName}. ${bg.featureText}`,
   };

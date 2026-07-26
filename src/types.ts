@@ -134,6 +134,8 @@ export interface BackgroundEntry {
   name: string;
   skillChoice: BackgroundSkillChoice;
   toolProficienciesText: string;
+  fixedToolProficiencies: string[];
+  toolChoices: SpeciesTraitChoice[];
   languages: BackgroundLanguageGrant;
   equipmentText: string;
   startingCredits: number;
@@ -144,6 +146,7 @@ export interface BackgroundEntry {
 export interface BackgroundSelections {
   skillChoice: string[];
   languageChoice: string[];
+  toolChoice: string[][];
 }
 
 export interface ArchetypeEntry {
@@ -298,6 +301,7 @@ export interface Character {
   backgroundAppliedName: string;
   backgroundGrantedSkills: SkillName[];
   backgroundGrantedLanguages: string[];
+  backgroundGrantedProficiencies: string[];
   backgroundCreditsApplied: number;
   level: number;
   alignment: string;
@@ -491,6 +495,7 @@ export function createBlankCharacter(): Character {
     backgroundAppliedName: "",
     backgroundGrantedSkills: [],
     backgroundGrantedLanguages: [],
+    backgroundGrantedProficiencies: [],
     backgroundCreditsApplied: 0,
     level: 1,
     alignment: "",

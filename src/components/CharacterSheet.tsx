@@ -252,7 +252,9 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     if (backgroundNeedsChoices(match)) {
       setPendingBackground(match);
     } else {
-      setCharacter((prev) => applyBackground(prev, match, { skillChoice: [], languageChoice: [] }));
+      setCharacter((prev) =>
+        applyBackground(prev, match, { skillChoice: [], languageChoice: [], toolChoice: [] })
+      );
     }
   }
 

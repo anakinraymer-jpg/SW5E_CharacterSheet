@@ -20,12 +20,18 @@ export default function BackgroundChoiceDialog({ background, skills, onCancel, o
   const [languageChoice, setLanguageChoice] = useState<string[]>(
     Array(background.languages.choiceCount).fill("")
   );
+  const [toolChoice, setToolChoice] = useState<string[][]>(
+    background.toolChoices.map((c) => Array(c.count).fill(""))
+  );
 
   const skillsComplete =
     skillChoice.every(Boolean) && new Set(skillChoice).size === skillChoice.length;
   const languagesComplete =
     languageChoice.every(Boolean) && new Set(languageChoice).size === languageChoice.length;
-  const isComplete = skillsComplete && languagesComplete;
+  const toolsComplete = toolChoice.every(
+    (picks) => picks.every(Boolean) && new Set(picks).size === picks.length
+  );
+  const isComplete = skillsComplete && languagesComplete && toolsComplete;
 
   return (
     <Modal
@@ -39,7 +45,7 @@ export default function BackgroundChoiceDialog({ background, skills, onCancel, o
           <button
             className="btn btn-primary"
             disabled={!isComplete}
-            onClick={() => onConfirm({ skillChoice, languageChoice })}
+            onClick={() => onConfirm({ skillChoice, languageChoice, toolChoice })}
           >
             Apply
           </button>
@@ -47,8 +53,8 @@ export default function BackgroundChoiceDialog({ background, skills, onCancel, o
       }
     >
       <p className="section-hint">
-        Tool proficiencies, starting equipment, credits, and your background feature apply
-        automatically. Choose your starting skills and languages below.
+        Starting equipment, credits, and your background feature apply automatically. Choose your
+        starting skills, languages, and tool proficiencies below.
       </p>
 
       {background.skillChoice.count > 0 && (
@@ -105,12 +111,41 @@ export default function BackgroundChoiceDialog({ background, skills, onCancel, o
         </div>
       )}
 
-      {background.toolProficienciesText && (
+      {background.fixedToolProficiencies.length > 0 && (
         <div className="choice-group">
           <div className="choice-group-label">Tool Proficiencies</div>
-          <div className="choice-group-hint">{background.toolProficienciesText}</div>
+          <div className="choice-group-hint">{background.fixedToolProficiencies.join(", ")}</div>
         </div>
       )}
+
+      {background.toolChoices.map((choiceDef, i) => (
+        <div className="choice-group" key={choiceDef.label + i}>
+          <div className="choice-group-label">
+            {choiceDef.label}
+            {choiceDef.count > 1 ? ` (${choiceDef.count})` : ""}
+          </div>
+          <div className="choice-selects">
+            {toolChoice[i].map((v, j) => (
+              <select
+                key={j}
+                value={v}
+                onChange={(e) => {
+                  const next = toolChoice.map((arr) => [...arr]);
+                  next[i][j] = e.target.value;
+                  setToolChoice(next);
+                }}
+              >
+                <option value="">Choose…</option>
+                {choiceDef.options.map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
+            ))}
+          </div>
+        </div>
+      ))}
 
       <div className="choice-group">
         <div className="choice-group-label">{background.featureName}</div>
