@@ -1,10 +1,9 @@
 import type { AbilityKey, Character, CharacterFeat, FeatEntry, SkillName } from "./types";
-import { SKILL_LIST } from "./types";
+import { isSkillName } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
 import { FEATS_CATALOG } from "./data/feats";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
-const isSkillName = (v: string): v is SkillName => (SKILL_LIST as readonly string[]).includes(v);
 
 export function featNeedsChoices(feat: FeatEntry): boolean {
   if (feat.abilityOptions.length > 1) return true;

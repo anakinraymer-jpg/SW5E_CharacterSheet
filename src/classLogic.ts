@@ -7,7 +7,7 @@ import type {
   ClassSelections,
   SkillName,
 } from "./types";
-import { emptyAbilities0 } from "./types";
+import { emptyAbilities0, isSkillName } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
 
 export function classNeedsChoices(classEntry: ClassEntry): boolean {
@@ -183,11 +183,12 @@ export function revertArchetype(character: Character): Character {
 }
 
 export function applyArchetype(character: Character, archetypeEntry: ArchetypeEntry): Character {
-  const next: Character = {
+  const base: Character = {
     ...character,
     archetype: archetypeEntry.name,
     archetypeAppliedName: archetypeEntry.name,
   };
+  const next = resyncArchetypeFeatureGrantedSkills(base, archetypeEntry);
   next.archetypeTraitsText = buildArchetypeTraitsText(archetypeEntry, next);
   return next;
 }
@@ -275,14 +276,20 @@ function resyncArchetypeFeatureGrantedSkills(character: Character, archetypeEntr
   for (const sk of character.archetypeFeatureGrantedSkills) {
     skills[sk] = { ...skills[sk], proficient: false };
   }
+  const level = Math.max(1, Math.min(20, character.level || 1));
   const granted: SkillName[] = [];
   for (const feature of archetypeEntry.features) {
+    if (feature.level <= level && feature.grantsSkills) {
+      granted.push(...feature.grantsSkills);
+    }
     const selections = character.archetypeFeatureChoiceSelections[feature.name];
     if (!selections) continue;
     feature.choices?.forEach((choiceDef, i) => {
-      if (choiceDef.kind !== "skill") return;
-      const chosen = (selections[i] ?? []) as SkillName[];
-      chosen.forEach((sk) => granted.push(sk));
+      if (choiceDef.kind !== "skill" && choiceDef.kind !== "skillOrTool" && choiceDef.kind !== "skillOrLanguage") return;
+      const chosen = selections[i] ?? [];
+      chosen.forEach((val) => {
+        if (isSkillName(val)) granted.push(val);
+      });
     });
   }
   for (const sk of granted) {
@@ -315,8 +322,13 @@ export function grantedLanguagesFromArchetypeFeatures(character: Character, arch
     const selections = character.archetypeFeatureChoiceSelections[feature.name];
     if (!selections) continue;
     feature.choices?.forEach((choiceDef, i) => {
-      if (choiceDef.kind !== "language") return;
-      out.push(...(selections[i] ?? []));
+      if (choiceDef.kind === "language") {
+        out.push(...(selections[i] ?? []));
+      } else if (choiceDef.kind === "skillOrLanguage") {
+        (selections[i] ?? []).forEach((val) => {
+          if (!isSkillName(val)) out.push(val);
+        });
+      }
     });
   }
   return out;
@@ -334,7 +346,11 @@ export function grantedProficienciesFromArchetypeFeatures(character: Character, 
     feature.choices?.forEach((choiceDef, i) => {
       if (choiceDef.kind === "skill" || choiceDef.kind === "language") return;
       const chosen = selections[i] ?? [];
-      chosen.forEach((val) => out.push(`${val} (${choiceDef.label})`));
+      chosen.forEach((val) => {
+        if (choiceDef.kind === "skillOrTool" && isSkillName(val)) return;
+        if (choiceDef.kind === "skillOrLanguage") return;
+        out.push(`${val} (${choiceDef.label})`);
+      });
     });
   }
   return out;

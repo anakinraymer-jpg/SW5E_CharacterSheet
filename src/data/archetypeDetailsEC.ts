@@ -1,9 +1,36 @@
 // Echoes of the Force (EC) archetypes, sourced from sw5e.com. Two stale duplicate
 // entries ("Cybertech Engineering (Depreciated)" and "(Old)") were excluded. Nested
 // sub-catalogs referenced within feature text (e.g. modification lists, discovery
-// tables) are kept as descriptive text only, consistent with the PHB archetype file.
+// tables) are kept as descriptive text only, consistent with the PHB archetype file -
+// unlike those, the dedicated proficiency-granting features below (usually named
+// "Bonus Proficiencies") are backed by grantsSkills/grantsProficiency/choices so the
+// grant actually lands on the character, matching the PHB archetype file's convention.
 
-import type { ArchetypeEntry } from "../types";
+import type { ArchetypeEntry, SpeciesTraitChoice } from "../types";
+import { GEAR_CATALOG } from "./gear";
+import { LANGUAGES } from "./sw5eData";
+
+const TOOLS = GEAR_CATALOG.filter((g) => g.category === "Tool").map((g) => g.name);
+const KITS = GEAR_CATALOG.filter((g) => g.category === "Kit").map((g) => g.name);
+const GAMING_SETS = GEAR_CATALOG.filter((g) => g.category === "Gaming Set").map((g) => g.name);
+const INSTRUMENTS = GEAR_CATALOG.filter((g) => g.category === "Musical Instrument").map((g) => g.name);
+const ANY_TOOL = [...TOOLS, ...KITS, ...GAMING_SETS, ...INSTRUMENTS];
+
+function skillChoice(label: string, options: string[], count = 1): SpeciesTraitChoice {
+  return { kind: "skill", label, count, options };
+}
+function toolChoice(label: string, options: string[], count = 1): SpeciesTraitChoice {
+  return { kind: "tool", label, count, options };
+}
+function languageChoice(count = 1): SpeciesTraitChoice {
+  return { kind: "language", label: "Language", count, options: LANGUAGES };
+}
+function skillOrToolChoice(label: string, options: string[]): SpeciesTraitChoice {
+  return { kind: "skillOrTool", label, count: 1, options };
+}
+function skillOrLanguageChoice(label: string, skillOptions: string[]): SpeciesTraitChoice {
+  return { kind: "skillOrLanguage", label, count: 1, options: [...skillOptions, ...LANGUAGES] };
+}
 
 export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
   {
@@ -12,7 +39,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Slythmonger Savvy",
-        "text": "You gain proficiency in your choice of brewer's kit or spicer's kit. Additionally, you have advantage on saving throws to avoid the low or addiction to substances. Lastly, you can consume substances as a bonus action, and when you do so, you can also enter a rage as a part of this same bonus action."
+        "text": "You gain proficiency in your choice of brewer's kit or spicer's kit. Additionally, you have advantage on saving throws to avoid the low or addiction to substances. Lastly, you can consume substances as a bonus action, and when you do so, you can also enter a rage as a part of this same bonus action.",
+        "choices": [toolChoice("Tool", ["Brewer's kit", "Spicer's kit"])]
       },
       {
         "level": 3,
@@ -105,7 +133,9 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in astrotech's implements and the Technology skill."
+        "text": "You gain proficiency in astrotech's implements and the Technology skill.",
+        "grantsProficiency": "Astrotech's implements",
+        "grantsSkills": ["Technology"]
       },
       {
         "level": 3,
@@ -146,7 +176,9 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Studious Excavator",
-        "text": "You gain proficiency with archaeologist kits and in the Lore skill. Additionally, you can't have disadvantage on checks you make with them."
+        "text": "You gain proficiency with archaeologist kits and in the Lore skill. Additionally, you can't have disadvantage on checks you make with them.",
+        "grantsProficiency": "Archaeologist kit",
+        "grantsSkills": ["Lore"]
       },
       {
         "level": 3,
@@ -187,6 +219,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Spiked Armor",
+        "grantsProficiency": "Armormech's implements",
         "text": "You gain proficiency in armormech's implements. Over the course of a long rest, you can customize a suit of light or medium armor into spiked armor. You must have the armor and armormech's implements in order to perform this modification. You can only have one suit of spiked armor at a time.\n\nThis armor gains the barbed (1d4) property. If the armor already has the barbed property, the barbed damage increases by one step (from d4 to d6, or from d6 to d8). Additionally, while raging, you add your rage damage bonus to your barbed damage when you successfully initiate or maintain a grapple.\n\nWhile wearing your spiked armor, you can use your Constitution modifier instead of your Dexterity modifier when determining your AC.\n\nAdditionally, while wearing your spiked armor, you can use your spiked armor as an improvised weapon. When you do so, you are considered proficient with it, and if your armor's barbed damage would be higher than your damage with improvised weapons, you use the barbed damage instead. If you take the Attack action on your turn and make at least one attack with your spiked armor, you can use your bonus action to make an additional attack with your spiked armor against the same target."
       },
       {
@@ -213,7 +246,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in artificer's implements, and with the lightsaber simple lightweapon. Additionally, when you engage in crafting with artificer's implements, the rate at which you craft doubles."
+        "text": "You gain proficiency in artificer's implements, and with the lightsaber simple lightweapon. Additionally, when you engage in crafting with artificer's implements, the rate at which you craft doubles.",
+        "grantsProficiency": "Artificer's implements, lightsaber"
       },
       {
         "level": 3,
@@ -285,7 +319,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in artillerist's implements."
+        "text": "You gain proficiency in artillerist's implements.",
+        "grantsProficiency": "Artillerist's implements"
       },
       {
         "level": 3,
@@ -321,7 +356,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in astrotech's implements. Additionally, when you engage in crafting with astrotech's implements, the rate at which you craft doubles."
+        "text": "You gain proficiency in astrotech's implements. Additionally, when you engage in crafting with astrotech's implements, the rate at which you craft doubles.",
+        "grantsProficiency": "Astrotech's implements"
       },
       {
         "level": 3,
@@ -362,7 +398,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in astrotech's implements. Additionally, when you engage in crafting with astrotech's implements, the rate at which you craft doubles."
+        "text": "You gain proficiency in astrotech's implements. Additionally, when you engage in crafting with astrotech's implements, the rate at which you craft doubles.",
+        "grantsProficiency": "Astrotech's implements"
       },
       {
         "level": 3,
@@ -434,7 +471,9 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in three musical instruments and audiotech's implements. Additionally, when you engage in crafting with audiotech�s implements, the rate at which you craft doubles."
+        "text": "You gain proficiency in three musical instruments and audiotech's implements. Additionally, when you engage in crafting with audiotech�s implements, the rate at which you craft doubles.",
+        "grantsProficiency": "Audiotech's implements",
+        "choices": [toolChoice("Musical Instrument", INSTRUMENTS, 3)]
       },
       {
         "level": 3,
@@ -506,7 +545,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in Animal Handling."
+        "text": "You gain proficiency in Animal Handling.",
+        "grantsSkills": ["Animal Handling"]
       },
       {
         "level": 3,
@@ -542,7 +582,9 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in the Medicine skill, biochemist's kits, and poisoner's kits. Additionally, when you engage in crafting with biochemist's kits and poisoner's kits, the rate at which you craft doubles."
+        "text": "You gain proficiency in the Medicine skill, biochemist's kits, and poisoner's kits. Additionally, when you engage in crafting with biochemist's kits and poisoner's kits, the rate at which you craft doubles.",
+        "grantsProficiency": "Biochemist's kit, poisoner's kit",
+        "grantsSkills": ["Medicine"]
       },
       {
         "level": 3,
@@ -583,7 +625,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in biotech's implements. Additionally, when you engage in crafting with biotech's implements, the rate at which you craft doubles."
+        "text": "You gain proficiency in biotech's implements. Additionally, when you engage in crafting with biotech's implements, the rate at which you craft doubles.",
+        "grantsProficiency": "Biotech's implements"
       },
       {
         "level": 3,
@@ -748,7 +791,9 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Culinary Knowledge",
-        "text": "You gain proficiency with chef's kits and your choice of the Nature or Survival skills. Additionally, you can't have disadvantage on checks you make with them."
+        "text": "You gain proficiency with chef's kits and your choice of the Nature or Survival skills. Additionally, you can't have disadvantage on checks you make with them.",
+        "grantsProficiency": "Chef's kit",
+        "choices": [skillChoice("Skill", ["Nature", "Survival"])]
       },
       {
         "level": 3,
@@ -784,7 +829,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in constructor's implements. Additionally, when you engage in crafting with constructor's implements, the rate at which you craft doubles."
+        "text": "You gain proficiency in constructor's implements. Additionally, when you engage in crafting with constructor's implements, the rate at which you craft doubles.",
+        "grantsProficiency": "Constructor's implements"
       },
       {
         "level": 3,
@@ -820,7 +866,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "*Cybertech Engineering: 3rd level* \nYou gain proficiency in cybertech's implements. additionally, when you engage in crafting with cybertech's implements, the rate at which you craft doubles."
+        "text": "*Cybertech Engineering: 3rd level* \nYou gain proficiency in cybertech's implements. additionally, when you engage in crafting with cybertech's implements, the rate at which you craft doubles.",
+        "grantsProficiency": "Cybertech's implements"
       },
       {
         "level": 3,
@@ -892,7 +939,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in demolitions kit. Additionally, when you would install a breaching charge, you can do so in half the time."
+        "text": "You gain proficiency in demolitions kit. Additionally, when you would install a breaching charge, you can do so in half the time.",
+        "grantsProficiency": "Demolitions kit"
       },
       {
         "level": 3,
@@ -928,7 +976,9 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Martial Training",
-        "text": "You gain proficiency in martial vibroweapons and the Investigation skill. Additionally, you can't have disadvantage on checks you make with it."
+        "text": "You gain proficiency in martial vibroweapons and the Investigation skill. Additionally, you can't have disadvantage on checks you make with it.",
+        "grantsProficiency": "Martial vibroweapons",
+        "grantsSkills": ["Investigation"]
       },
       {
         "level": 3,
@@ -1036,7 +1086,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in one Charisma skill of your choice."
+        "text": "You gain proficiency in one Charisma skill of your choice.",
+        "choices": [skillChoice("Charisma Skill", ["Deception", "Intimidation", "Performance", "Persuasion"])]
       },
       {
         "level": 3,
@@ -1077,7 +1128,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Focused Navigator",
-        "text": "You gain proficiency in two of the Perception, Piloting, Survival, and Acrobatics skills. Additionally, you can't have disadvantage on checks you make with them."
+        "text": "You gain proficiency in two of the Perception, Piloting, Survival, and Acrobatics skills. Additionally, you can't have disadvantage on checks you make with them.",
+        "choices": [skillChoice("Skill", ["Perception", "Piloting", "Survival", "Acrobatics"], 2)]
       },
       {
         "level": 3,
@@ -1149,7 +1201,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in your choice of the Persuasion or Intimidation skill."
+        "text": "You gain proficiency in your choice of the Persuasion or Intimidation skill.",
+        "choices": [skillChoice("Skill", ["Persuasion", "Intimidation"])]
       },
       {
         "level": 3,
@@ -1221,7 +1274,9 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Genesplicer's Methods",
-        "text": "You gain proficiency with geneticist's implements and your choice of Medicine or Survival skills. Additionally, you can't have disadvantage on checks you make with them."
+        "text": "You gain proficiency with geneticist's implements and your choice of Medicine or Survival skills. Additionally, you can't have disadvantage on checks you make with them.",
+        "grantsProficiency": "Geneticist's implements",
+        "choices": [skillChoice("Skill", ["Medicine", "Survival"])]
       },
       {
         "level": 3,
@@ -1417,6 +1472,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Mystical Erudition",
+        "choices": [languageChoice(1), skillChoice("Skill", ["Lore", "Medicine", "Nature", "Technology"])],
         "text": "You've undergone extensive training in lore from the Jal Shey's collected knowledge. You learn one language of your choice, and you gain proficiency in your choice of Lore, Medicine, Nature, or Technology. You learn an additional language and an additional skill proficiency from the above list at 11th level.\n\nAdditionally, you can strike multiple pressure points to extract crucial details about your foe. Whenever you hit a creature with an unarmed strike, you can learn learn certain information about its capabilities. The GM tells you if the creature has one of the following characteristics of your choice:\n- Condition immunities\n- Damage vulnerabilities\n- Damage resistances\n- Damage immunities"
       },
       {
@@ -1484,7 +1540,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in heavy armor."
+        "text": "You gain proficiency in heavy armor.",
+        "grantsProficiency": "Heavy armor"
       },
       {
         "level": 3,
@@ -1582,6 +1639,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Intercept",
+        "grantsProficiency": "Vibroweapons with the thrown property",
         "text": "You gain proficiency in vibroweapons with the thrown property and they become monk weapons for you. Additionally, when you throw an improvised weapon, you are considered proficient in it, and it uses your Martial Arts die instead of its 1d4. \n\nAdditionally, you've learned to use thrown weapons to intercept projectiles traveling towards your allies. When you are wielding a weapon with which you are proficient, and a creature within your weapon's normal thrown range is hit by a ranged attack, you can use your reaction to throw your weapon to intercept the projectile. When you do so, the damage the creature takes from the attack is reduced by 1d10 + your Dexterity modifier + your monk level. If the weapon has the returning property, it then returns to your hand."
       },
       {
@@ -1701,7 +1759,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in astrotech�s implements."
+        "text": "You gain proficiency in astrotech�s implements.",
+        "grantsProficiency": "Astrotech's implements"
       },
       {
         "level": 3,
@@ -1737,7 +1796,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in Animal Handling or Piloting."
+        "text": "You gain proficiency in Animal Handling or Piloting.",
+        "choices": [skillChoice("Skill", ["Animal Handling", "Piloting"])]
       },
       {
         "level": 3,
@@ -1778,7 +1838,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Theurgic Research",
-        "text": "You gain proficiency in the Lore and Nature skills. Additionally, you can't have disadvantage on checks you make with them."
+        "text": "You gain proficiency in the Lore and Nature skills. Additionally, you can't have disadvantage on checks you make with them.",
+        "grantsSkills": ["Lore", "Nature"]
       },
       {
         "level": 3,
@@ -1907,11 +1968,13 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Form Combat Training",
-        "text": "You learn one lightsaber form, as detailed in the Customization Options document for Expanded Content. \n\nAdditionally, you gain proficiency in all martial light- and vibro- weapons."
+        "text": "You learn one lightsaber form, as detailed in the Customization Options document for Expanded Content. \n\nAdditionally, you gain proficiency in all martial light- and vibro- weapons.",
+        "grantsProficiency": "Martial lightweapons, martial vibroweapons"
       },
       {
         "level": 3,
         "name": "Physical Conditioning",
+        "grantsProficiency": "Medium armor",
         "text": "You've undergone special training, increasing your physical capabilities. You gain the following benefits: \n- You gain proficiency in medium armor. If you are already proficient in medium armor, you then gain proficiency in heavy armor. While you are wearing light or medium armor, you can use your Wisdom or Charisma modifier (your choice) instead of your Dexterity modifier when determining your AC.\n- Your hit point maximum increases by 3, and it increases by 1 again whenever you gain a level in this class."
       },
       {
@@ -1974,6 +2037,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Synthetic Understanding",
+        "choices": [skillOrToolChoice("Technology or Tool", ["Technology", ...ANY_TOOL])],
         "text": "You've applied your newfound knowledge to broader pursuits. You gain proficiency in Technology or one tool of your choice.\n\nAdditionally, when you make an Intelligence (Technology) check, or a check with a tool, you may use your Wisdom or Charisma modifier (your choice) instead of your Intelligence modifier.\n\nFinally, when you deal damage with a tech power or your Double Strike Force Empowered Self option, you can choose to substitute the damage dealt as ion."
       },
       {
@@ -2062,7 +2126,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in Animal Handling."
+        "text": "You gain proficiency in Animal Handling.",
+        "grantsSkills": ["Animal Handling"]
       },
       {
         "level": 3,
@@ -2098,6 +2163,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Artful Dancer",
+        "grantsSkills": ["Performance"],
+        "choices": [toolChoice("Musical Instrument", INSTRUMENTS)],
         "text": "Your training with music and dancing grants you certain benefits. You gain proficiency in the Performance skill and one musical instrument of your choice.\n\nAdditionally, while you are not wearing armor or wielding a medium or heavy shield, you can add half your Charisma modifier to your AC as long as it doesn't already include that modifier."
       },
       {
@@ -2129,7 +2196,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiency",
-        "text": "You gain proficiency in one of the following skills of your choice: Insight, Lore, Performance, or Persuasion. Alternatively, you learn one language of your choice."
+        "text": "You gain proficiency in one of the following skills of your choice: Insight, Lore, Performance, or Persuasion. Alternatively, you learn one language of your choice.",
+        "choices": [skillOrLanguageChoice("Skill or Language", ["Insight", "Lore", "Performance", "Persuasion"])]
       },
       {
         "level": 3,
@@ -2139,6 +2207,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 7,
         "name": "Resilient Retainer",
+        "grantsSkills": ["Persuasion"],
         "text": "Your discipline and attention to detail allow you to excel in social situations. You gain proficiency in Persuasion.\n\nAdditionally, your self-control also causes you to gain proficiency in Wisdom saving throws. If you already have this proficiency, you instead gain proficiency in Intelligence or Charisma saving throws (your choice)."
       },
       {
@@ -2165,7 +2234,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Careful Steps",
-        "text": "You gain skills that represent your precise movement. You gain proficiency in your choice of Acrobatics or Stealth. While raging, you have advantage on checks you make with the chosen skill."
+        "text": "You gain skills that represent your precise movement. You gain proficiency in your choice of Acrobatics or Stealth. While raging, you have advantage on checks you make with the chosen skill.",
+        "choices": [skillChoice("Skill", ["Acrobatics", "Stealth"])]
       },
       {
         "level": 3,
@@ -2196,7 +2266,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in heavy armor."
+        "text": "You gain proficiency in heavy armor.",
+        "grantsProficiency": "Heavy armor"
       },
       {
         "level": 3,
@@ -2232,6 +2303,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Tools of the Trade",
+        "grantsProficiency": "Medium armor, martial vibroweapons",
         "text": "You've learned to move swiftly while wielding larger armaments. You gain proficiency with medium armor and martial vibroweapons. If you are already proficient in medium armor, you instead gain proficiency in heavy armor. Additionally, you can deal Sneak Attack damage with any weapon, as long as it does not have the heavy or special properties.\n\nLastly, you don't need advantage on your attack roll to use your Sneak Attack if no creature other than your target is within 5 feet of you, as long as the target of the attack is below its hit point maximum. All the other rules for the Sneak Attack class feature still apply to you."
       },
       {
@@ -2320,7 +2392,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in astrotech's implements."
+        "text": "You gain proficiency in astrotech's implements.",
+        "grantsProficiency": "Astrotech's implements"
       },
       {
         "level": 3,
@@ -2356,6 +2429,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "General Practice",
+        "grantsSkills": ["Medicine"],
         "text": "You gain proficiency in Medicine, and you can use your Intelligence modifier instead of your Wisdom modifier for checks made with it.\n\nAdditionally, you can expend one use of a traumakit to help revitalize your wounded allies during a short rest. If you or any friendly creatures within 30 feet of you regain hit points at the end of the short rest by spending one or more Hit Dice, each of those creatures regains an extra 1d6 hit points.\n\nThe extra hit points increase when you reach certain levels in this class: to 1d8 at 9th level, to 1d10 at 13th level, and to 1d12 at 17th level."
       },
       {
@@ -2387,6 +2461,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Back Blast",
+        "grantsProficiency": "Blasters with the burst or rapid property (not two-handed)",
         "text": "You gain proficiency in all blasters with the burst or rapid property that lack the two-handed property. Additionally, when a creature fails a saving throw against the burst or rapid property of a weapon you control and with which you are proficient, you can apply your Sneak Attack damage to one creature dealt damage in this way as long as that creature didn't have advantage on the save.\n\nWhen you reach 9th level in this class, when multiple creatures fail a saving throw against the burst property of a weapon you control and with which you are proficient, you can divide your Sneak Attack dice amongst the targets as you see fit."
       },
       {
@@ -2402,6 +2477,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 13,
         "name": "Hostile Negotiations",
+        "choices": [skillChoice("Skill", ["Intimidation", "Persuasion"])],
         "text": "You gain proficiency in Intimidation or Persuasion. Additionally, while you are wielding a weapon with which you are proficient, you can't have disadvantage on Charisma (Intimidation) and Charisma (Persuasion) checks, and if the target would make a contested check, they can't have advantage on it."
       },
       {
@@ -2418,6 +2494,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Venomous",
+        "grantsProficiency": "Poisoner's kit",
         "text": "You gain proficiency with the poisoner's kit, and you can apply a poison as a bonus action.\n\nAdditionally, you learn to create a number of special poison vials. Over the course of a short or long rest, you can create two doses of poison. You must have a poisoner's kit in order to create these doses. Your doses can only be used by you, and they lose their potency at the end of your next short or long rest.\n\nAs an action, you can use one of your doses to coat one vibroweapon, one slug cartridge, or one wrist launcher dart. A creature hit by the coated weapon must make a Constitution saving throw (DC = 8 + your proficiency bonus + your Intelligence modifier), taking 1d4 + your Intelligence modifier poison damage on a failed save or half as much on a successful one. Once applied, the poison retains potency for 1 minute before drying.\n\nThe quantity and damage of your doses increases at higher levels, to three and 2d4 at 5th level, four and 3d4 at 9th level, five and 4d4 at 13th level, and six and 5d4 at 17th level."
       },
       {
@@ -2485,7 +2562,9 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Hacker's Disposition",
-        "text": "You gain proficiency with slicer's kits and in the Technology skill. Additionally, you can't have disadvantage on checks you make with them."
+        "text": "You gain proficiency with slicer's kits and in the Technology skill. Additionally, you can't have disadvantage on checks you make with them.",
+        "grantsProficiency": "Slicer's kit",
+        "grantsSkills": ["Technology"]
       },
       {
         "level": 3,
@@ -2526,7 +2605,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in heavy armor."
+        "text": "You gain proficiency in heavy armor.",
+        "grantsProficiency": "Heavy armor"
       },
       {
         "level": 3,
@@ -2567,7 +2647,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in tinker's implements."
+        "text": "You gain proficiency in tinker's implements.",
+        "grantsProficiency": "Tinker's implements"
       },
       {
         "level": 3,
@@ -2629,7 +2710,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency with your choice of artist's implements or jeweler's implements."
+        "text": "You gain proficiency with your choice of artist's implements or jeweler's implements.",
+        "choices": [toolChoice("Tool", ["Artist's implements", "Jeweler's implements"])]
       },
       {
         "level": 3,
@@ -2711,6 +2793,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Triage Training",
+        "grantsSkills": ["Medicine"],
         "text": "You gain proficiency in the Medicine skill. \n\nAdditionally, when you would use your action to make an ability check to stabilize a creature, expend a use of a traumakit, or use a medpac, you can instead use your bonus action."
       },
       {
@@ -2742,6 +2825,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bumbling Technique",
+        "grantsSkills": ["Performance"],
         "text": "Your martial arts technique mixes combat training with the precision of a dancer and the antics of a jester. You gain proficiency in Performance.\n\nAdditionally, you learn how to twist and turn quickly. Whenever you use your bonus action to make an unarmed strike, creatures you hit can't make opportunity attacks against you, and your speed increases by 10 feet until the end of your turn."
       },
       {
@@ -2804,7 +2888,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in your choice of Intimidation or Persuasion."
+        "text": "You gain proficiency in your choice of Intimidation or Persuasion.",
+        "choices": [skillChoice("Skill", ["Intimidation", "Persuasion"])]
       },
       {
         "level": 3,
@@ -2845,7 +2930,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Savage Diplomat",
-        "text": "Your path necessitates that you build relationships with others, for the betterment of your tribe or yourself. You gain proficiency in one of the following skills of your choice: Persuasion or Intimidation. You can choose to learn one language in place of the skill proficiency."
+        "text": "Your path necessitates that you build relationships with others, for the betterment of your tribe or yourself. You gain proficiency in one of the following skills of your choice: Persuasion or Intimidation. You can choose to learn one language in place of the skill proficiency.",
+        "choices": [skillOrLanguageChoice("Skill or Language", ["Persuasion", "Intimidation"])]
       },
       {
         "level": 3,
@@ -3000,6 +3086,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Fundamentals of Mechu-deru",
+        "grantsProficiency": "Simple blasters",
+        "grantsSkills": ["Technology"],
         "text": "You've dabbled in adapting your use of the Force, melding it with technology. You gain proficiency in the Technology skill, as well as simple blasters. When you cast a force power that calls for a melee weapon attack, and you are wielding a blaster with which you are proficient, you can instead make a ranged weapon attack.\n\nAdditionally, you've learned to manipulate the Force to be able to manipulate technology when it couldn't previously. When you cast a force power that could not affect droids or constructs, you can choose to have it affect droids or constructs. If it would affect multiple targets, you must expend additional uses of this feature for each additional target. You can use this feature twice. You gain an additional use at 5th, 9th, 13th, and 17th level. You regain all expended uses when you complete a long rest."
       },
       {
@@ -3062,7 +3150,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in your choice of Intimidation or Persuasion."
+        "text": "You gain proficiency in your choice of Intimidation or Persuasion.",
+        "choices": [skillChoice("Skill", ["Intimidation", "Persuasion"])]
       },
       {
         "level": 3,
@@ -3129,6 +3218,7 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Flurry of Light",
+        "grantsProficiency": "Blaster pistols, blaster rifles, ion pistols, ion rifles, lightbow",
         "text": "You gain proficiency in blaster pistols, blaster rifles, ion pistols, ion rifles, and the lightbow, which are your Whills weapons and are monk weapons for you. When you are wielding a Whills weapon, you gain the following benefits:\n- Your Whills weapons count as melee weapons for you, and when you make a melee weapon attack with them, you deal kinetic damage equal to your Martial Arts Damage Die.\n- When you would make an unarmed strike using your Martial Arts bonus action or as a part of your Flurry of Blows, you can instead attack with a Whills weapon you are wielding. You roll a d4 in place of the normal damage of your Whills weapon when attacking in this way. This die changes as you gain monk levels, as shown in the Martial Arts column of the monk table.\n- When you would make a ranged weapon attack with a Whills weapon, you can instead reload the weapon."
       },
       {
@@ -3155,7 +3245,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Bonus Proficiencies",
-        "text": "You gain proficiency in simple blasters and martial blasters that lack the two-handed property."
+        "text": "You gain proficiency in simple blasters and martial blasters that lack the two-handed property.",
+        "grantsProficiency": "Simple blasters, martial blasters (not two-handed)"
       },
       {
         "level": 3,
@@ -3196,7 +3287,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 3,
         "name": "Wilderness Expert",
-        "text": "You gain proficiency in Animal Handling, and you have advantage on Wisdom (Animal Handling) checks. Additionally, you can't have disadvantage on Wisdom (Animal Handling) checks."
+        "text": "You gain proficiency in Animal Handling, and you have advantage on Wisdom (Animal Handling) checks. Additionally, you can't have disadvantage on Wisdom (Animal Handling) checks.",
+        "grantsSkills": ["Animal Handling"]
       },
       {
         "level": 3,

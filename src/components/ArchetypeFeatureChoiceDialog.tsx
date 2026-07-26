@@ -52,10 +52,13 @@ export default function ArchetypeFeatureChoiceDialog({ feature, skills, onCancel
                 }}
               >
                 <option value="">Choose…</option>
-                {(choiceDef.kind === "skill"
-                  ? choiceDef.options.filter(
-                      (o) => !skills[o as SkillName].proficient && !skills[o as SkillName].expertise
-                    )
+                {(choiceDef.kind === "skill" ||
+                choiceDef.kind === "skillOrTool" ||
+                choiceDef.kind === "skillOrLanguage"
+                  ? choiceDef.options.filter((o) => {
+                      const sk = skills[o as SkillName];
+                      return !sk || (!sk.proficient && !sk.expertise);
+                    })
                   : choiceDef.options
                 ).map((o) => (
                   <option key={o} value={o}>

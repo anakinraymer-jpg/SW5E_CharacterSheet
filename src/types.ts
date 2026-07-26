@@ -44,7 +44,8 @@ export type SpeciesChoiceKind =
   | "kit"
   | "weapon"
   | "other"
-  | "skillOrTool"; // a single pick that may be either a skill or a tool (e.g. Practiced)
+  | "skillOrTool" // a single pick that may be either a skill or a tool (e.g. Practiced)
+  | "skillOrLanguage"; // a single pick that may be either a skill or a language (e.g. Bonus Proficiency)
 
 export interface SpeciesTraitChoice {
   kind: SpeciesChoiceKind;
@@ -105,6 +106,7 @@ export interface ClassFeature {
   level: number;
   text: string;
   grantsProficiency?: string; // fixed proficiency this feature grants once its level is reached
+  grantsSkills?: SkillName[]; // fixed skill proficiencies this feature grants once its level is reached
   choices?: SpeciesTraitChoice[]; // reused choice structure (skill/language/tool/weapon picks)
 }
 
@@ -450,6 +452,10 @@ export const SKILL_LIST: SkillName[] = [
   "Performance",
   "Persuasion",
 ];
+
+export function isSkillName(v: string): v is SkillName {
+  return (SKILL_LIST as readonly string[]).includes(v);
+}
 
 export const SKILL_ABILITY: Record<SkillName, AbilityKey> = {
   Athletics: "str",
