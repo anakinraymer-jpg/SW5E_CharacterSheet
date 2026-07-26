@@ -178,6 +178,10 @@ export interface ClassSubChoiceOption {
   text: string;
   prerequisite?: string;
   grantsProficiency?: string; // fixed proficiency this option grants (e.g. "Medium armor"), if any
+  languageChoiceCount?: number; // e.g. Scholar's Ambassador discovery: pick this many languages
+  skillChoice?: boolean; // grants one skill of the player's choice (e.g. Monk's Vow of the Open Mind)
+  skillOrToolFork?: boolean; // "a skill and a tool, or two tools" pattern (Learner's Exploit, etc.)
+  repeatable?: boolean; // option text explicitly allows choosing it again for a fresh grant
 }
 
 export interface ClassSubChoiceDef {
@@ -187,6 +191,14 @@ export interface ClassSubChoiceDef {
   archetypeName?: string; // when set, only applies if character.archetypeAppliedName matches
   countByLevel: number[]; // length 20, index 0 = level 1
   options: ClassSubChoiceOption[];
+}
+
+// Player-chosen detail for one entry of classSubChoicePicks[key], at the same array index.
+// Empty ({}) for picks that don't need any further detail.
+export interface ClassSubChoicePickDetail {
+  languages?: string[];
+  skill?: SkillName;
+  tools?: string[];
 }
 
 export interface FeatEntry {
@@ -315,6 +327,8 @@ export interface Character {
   archetypeTraitsText: string;
   classResources: ClassResourceState[];
   classSubChoicePicks: Record<string, string[]>;
+  classSubChoiceDetails: Record<string, ClassSubChoicePickDetail[]>; // parallel to classSubChoicePicks[key]
+  classSubChoiceGrantedSkills: SkillName[]; // tracked so revert/relevel can cleanly un-proficient
 
   // Feats
   feats: CharacterFeat[];
@@ -500,6 +514,8 @@ export function createBlankCharacter(): Character {
     archetypeTraitsText: "",
     classResources: [],
     classSubChoicePicks: {},
+    classSubChoiceDetails: {},
+    classSubChoiceGrantedSkills: [],
     feats: [],
     featAbilityBonus: emptyAbilities0(),
     abilities: emptyAbilities(),

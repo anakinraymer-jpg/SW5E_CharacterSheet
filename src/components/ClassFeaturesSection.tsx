@@ -147,11 +147,21 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
           <div className="chip-row">
             {subChoiceDefs.map((def) => {
               const chosen = character.classSubChoicePicks[def.key] ?? [];
-              return chosen.map((name) => {
+              const details = character.classSubChoiceDetails[def.key] ?? [];
+              return chosen.map((name, i) => {
                 const option = def.options.find((o) => o.name === name);
                 if (!option) return null;
+                const detail = details[i];
+                const extra: string[] = [];
+                if (detail?.languages?.length) extra.push(`Languages: ${detail.languages.join(", ")}`);
+                if (detail?.skill) extra.push(`Skill: ${detail.skill}`);
+                if (detail?.tools?.length) extra.push(`Tool${detail.tools.length > 1 ? "s" : ""}: ${detail.tools.join(", ")}`);
                 return (
-                  <HoverInfo key={`${def.key}-${name}`} title={option.name} lines={[def.label, option.text]}>
+                  <HoverInfo
+                    key={`${def.key}-${name}-${i}`}
+                    title={option.name}
+                    lines={[def.label, option.text, ...extra]}
+                  >
                     <span className="info-chip">{option.name}</span>
                   </HoverInfo>
                 );

@@ -73,7 +73,7 @@ import {
 } from "../layout";
 import { FEATS_CATALOG } from "../data/feats";
 import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
-import type { ClassSubChoiceDef, FeatEntry } from "../types";
+import type { ClassSubChoiceDef, ClassSubChoicePickDetail, FeatEntry } from "../types";
 import { CLASS_ACCENTS } from "../data/classFeatureChoices";
 import {
   applySubChoicePicks,
@@ -304,9 +304,9 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     setPendingArchetypeClass(null);
   }
 
-  function handleSubChoiceConfirm(names: string[]) {
+  function handleSubChoiceConfirm(names: string[], details: ClassSubChoicePickDetail[]) {
     if (!pendingSubChoiceDef) return;
-    const applied = applySubChoicePicks(character, pendingSubChoiceDef.def.key, names);
+    const applied = applySubChoicePicks(character, pendingSubChoiceDef.def.key, names, details);
     setCharacter(applied);
     // Chain straight to the next pending sub-choice (if any) rather than waiting for a
     // level/class change to re-trigger the reactive effect.
@@ -806,6 +806,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
       {pendingSubChoiceDef && (
         <ClassSubChoiceDialog
+          key={pendingSubChoiceDef.def.key}
           def={pendingSubChoiceDef.def}
           needed={pendingSubChoiceDef.needed}
           alreadyChosen={character.classSubChoicePicks[pendingSubChoiceDef.def.key] ?? []}
