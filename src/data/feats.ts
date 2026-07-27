@@ -15,7 +15,6 @@ const INSTRUMENTS = GEAR_CATALOG.filter((g) => g.category === "Musical Instrumen
 const TOOLS = GEAR_CATALOG.filter((g) => g.category === "Tool").map((g) => g.name);
 const KITS = GEAR_CATALOG.filter((g) => g.category === "Kit").map((g) => g.name);
 const GAMING_SETS = GEAR_CATALOG.filter((g) => g.category === "Gaming Set").map((g) => g.name);
-const TOOLS_AND_KITS = [...TOOLS, ...KITS];
 const ANY_TOOL = [...TOOLS, ...KITS, ...GAMING_SETS, ...INSTRUMENTS];
 const EXOTIC_WEAPONS = WEAPON_CATALOG.filter((w) => /exotic/i.test(w.type)).map((w) => w.name);
 const DAMAGE_TYPES = ["Acid", "Cold", "Fire", "Force", "Lightning", "Necrotic"];
@@ -135,7 +134,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     name: "Competitor",
     prerequisite: null,
     abilityOptions: ALL_ABILITIES,
-    choices: [toolChoice("Gaming Set", TOOLS_AND_KITS)],
+    choices: [toolChoice("Gaming Set", GAMING_SETS)],
     text: "You have a strong aptitude for competing. Select one gaming set. You gain the following benefits:\n- Increase an ability score of your choice by 1, to a maximum of 20.\n- You gain proficiency in the chosen gaming set. If you are already proficient with it, you instead gain expertise with it.\n- As long as you spend at least 1 minute using your gaming set, you can't have disadvantage on Intelligence checks you make to use the gaming set, Charisma (Deception) checks you make to bluff with the gaming set, or Wisdom (Insight) checks you make to read an opponent with whom you are competing with the gaming set.\n\nYou can take this feat multiple times. Each time you do so, you must choose a different gaming set.",
   },
   {
