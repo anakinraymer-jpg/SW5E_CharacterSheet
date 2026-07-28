@@ -1206,24 +1206,34 @@
   border-bottom: 1px solid var(--border);
   padding-bottom: 6px;
   margin-bottom: 2px;
-  opacity: 0;
-  transform: translateX(-14px);
-  animation: holoLineIn 0.3s ease forwards;
 }
 
 .hover-info-line {
   display: block;
   font-size: 0.82rem;
   line-height: 1.42;
-  opacity: 0;
-  transform: translateX(-14px);
-  animation: holoLineIn 0.35s ease forwards;
 }
 
-@keyframes holoLineIn {
-  to {
+.hover-info-hidden-text {
+  visibility: hidden;
+}
+
+.hover-info-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 0.9em;
+  margin-left: 1px;
+  background: var(--accent);
+  vertical-align: text-bottom;
+  animation: hoverCursorBlink 0.8s steps(1) infinite;
+}
+
+@keyframes hoverCursorBlink {
+  0%, 49% {
     opacity: 1;
-    transform: translateX(0);
+  }
+  50%, 100% {
+    opacity: 0;
   }
 }
 

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 interface Props {
@@ -8,6 +8,9 @@ interface Props {
   className?: string;
 }
 
+const TYPE_TICK_MS = 16;
+const TYPE_MAX_TICKS = 90; // caps total typing duration regardless of text length
+
 export default function HoverInfo({ title, lines, children, className }: Props) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLSpanElement>(null);
@@ -15,6 +18,30 @@ export default function HoverInfo({ title, lines, children, className }: Props) 
   const [pos, setPos] = useState({ top: 0, left: 0 });
   const [arrowLeft, setArrowLeft] = useState(14);
   const [placement, setPlacement] = useState<"below" | "above">("below");
+  const [typedCount, setTypedCount] = useState(0);
+
+  const segments = title ? [title, ...lines] : lines;
+  const totalChars = segments.reduce((sum, s) => sum + s.length, 0);
+
+  useEffect(() => {
+    if (!open) {
+      setTypedCount(0);
+      return;
+    }
+    if (totalChars === 0) return;
+    const charsPerTick = Math.max(1, Math.ceil(totalChars / TYPE_MAX_TICKS));
+    const id = setInterval(() => {
+      setTypedCount((prev) => {
+        const next = prev + charsPerTick;
+        if (next >= totalChars) {
+          clearInterval(id);
+          return totalChars;
+        }
+        return next;
+      });
+    }, TYPE_TICK_MS);
+    return () => clearInterval(id);
+  }, [open, totalChars]);
 
   useLayoutEffect(() => {
     if (!open || !wrapRef.current || !panelRef.current) return;
@@ -69,12 +96,31 @@ export default function HoverInfo({ title, lines, children, className }: Props) 
               ["--arrow-left" as string]: `${arrowLeft}px`,
             }}
           >
-            {title && <span className="hover-info-title">{title}</span>}
-            {lines.map((line, i) => (
-              <span key={i} className="hover-info-line" style={{ animationDelay: `${i * 70}ms` }}>
-                {line}
-              </span>
-            ))}
+            {(() => {
+              let offset = 0;
+              let cursorPlaced = false;
+              const renderSegment = (text: string, key: string | number, cls: string) => {
+                const start = offset;
+                offset += text.length;
+                const shown = Math.max(0, Math.min(text.length, typedCount - start));
+                const showCursor =
+                  !cursorPlaced && typedCount < totalChars && typedCount >= start && typedCount < start + text.length;
+                if (showCursor) cursorPlaced = true;
+                return (
+                  <span key={key} className={cls}>
+                    {text.slice(0, shown)}
+                    {showCursor && <span className="hover-info-cursor" />}
+                    <span className="hover-info-hidden-text">{text.slice(shown)}</span>
+                  </span>
+                );
+              };
+              return (
+                <>
+                  {title && renderSegment(title, "title", "hover-info-title")}
+                  {lines.map((line, i) => renderSegment(line, i, "hover-info-line"))}
+                </>
+              );
+            })()}
           </span>,
           document.body
         )}
