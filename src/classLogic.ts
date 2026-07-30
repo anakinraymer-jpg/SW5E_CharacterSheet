@@ -5,10 +5,16 @@ import type {
   ClassEntry,
   ClassFeature,
   ClassSelections,
+  EquipmentItem,
+  EquipmentPart,
   SkillName,
+  Weapon,
 } from "./types";
 import { emptyAbilities0, isSkillName } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
+import { WEAPON_CATALOG, type WeaponCatalogEntry } from "./data/weapons";
+import { ARMOR_CATALOG, type ArmorCatalogEntry } from "./data/armor";
+import { GEAR_CATALOG, type GearCatalogEntry } from "./data/gear";
 
 export function classNeedsChoices(classEntry: ClassEntry): boolean {
   return classEntry.skillChoice.count > 0 || classEntry.toolChoices.length > 0;
@@ -48,6 +54,135 @@ export function rollStartingFunds(formula: StartingFundsFormula): number {
   return total * formula.multiplier;
 }
 
+function extractWeaponRange(property: string): string {
+  const match = property.match(/\((?:range )?(\d+(?:\/\d+)?)\)/i);
+  return match ? `${match[1]} ft` : "Melee";
+}
+
+type CatalogHit =
+  | { kind: "weapon"; entry: WeaponCatalogEntry }
+  | { kind: "armor"; entry: ArmorCatalogEntry }
+  | { kind: "gear"; entry: GearCatalogEntry };
+
+function findCatalogItem(name: string): CatalogHit | null {
+  const key = name.toLowerCase();
+  const weapon = WEAPON_CATALOG.find((w) => w.name.toLowerCase() === key);
+  if (weapon) return { kind: "weapon", entry: weapon };
+  const armor = ARMOR_CATALOG.find((a) => a.name.toLowerCase() === key);
+  if (armor) return { kind: "armor", entry: armor };
+  const gear = GEAR_CATALOG.find((g) => g.name.toLowerCase() === key);
+  if (gear) return { kind: "gear", entry: gear };
+  return null;
+}
+
+// Resolves one class equipmentText branch's EquipmentPart[] into real Weapon/EquipmentItem rows.
+// `itemChoices` supplies the player's pick for each part with a choiceLabel, in order.
+function resolveEquipmentParts(
+  parts: EquipmentPart[],
+  itemChoices: string[],
+  toolChoice: string[][]
+): { weapons: Weapon[]; equipment: EquipmentItem[] } {
+  const weapons: Weapon[] = [];
+  const equipment: EquipmentItem[] = [];
+  let choiceIndex = 0;
+
+  for (const part of parts) {
+    const quantity = part.quantity ?? 1;
+
+    if (part.freeText) {
+      equipment.push({
+        id: crypto.randomUUID(),
+        name: part.freeText,
+        quantity,
+        weight: 0,
+        notes: "",
+        location: "Backpack",
+        equipped: false,
+      });
+      continue;
+    }
+
+    let resolvedName: string | null;
+    if (part.proficientTool) {
+      resolvedName = toolChoice[0]?.[0] || null;
+    } else if (part.choiceLabel) {
+      resolvedName = itemChoices[choiceIndex] || null;
+      choiceIndex++;
+    } else {
+      resolvedName = part.item ?? null;
+    }
+    if (!resolvedName) continue;
+
+    const hit = findCatalogItem(resolvedName);
+    if (!hit) {
+      equipment.push({
+        id: crypto.randomUUID(),
+        name: resolvedName,
+        quantity,
+        weight: 0,
+        notes: "",
+        location: "Backpack",
+        equipped: false,
+      });
+      continue;
+    }
+
+    if (hit.kind === "weapon") {
+      for (let i = 0; i < quantity; i++) {
+        weapons.push({
+          id: crypto.randomUUID(),
+          name: hit.entry.name,
+          attackBonus: "",
+          damage: hit.entry.damage,
+          range: extractWeaponRange(hit.entry.property),
+          weight: hit.entry.weight,
+          ammo: "",
+        });
+      }
+    } else if (hit.kind === "armor") {
+      equipment.push({
+        id: crypto.randomUUID(),
+        name: hit.entry.name,
+        quantity,
+        weight: hit.entry.weight,
+        notes: "",
+        location: "Donned",
+        equipped: true,
+      });
+    } else {
+      equipment.push({
+        id: crypto.randomUUID(),
+        name: hit.entry.name,
+        quantity,
+        weight: hit.entry.weight,
+        notes: "",
+        location: "Backpack",
+        equipped: false,
+      });
+    }
+  }
+
+  return { weapons, equipment };
+}
+
+// Resolves every chosen equipmentText branch for a class into real inventory rows.
+function resolveClassEquipmentGrants(
+  classEntry: ClassEntry,
+  selections: ClassSelections
+): { weapons: Weapon[]; equipment: EquipmentItem[] } {
+  const weapons: Weapon[] = [];
+  const equipment: EquipmentItem[] = [];
+  selections.equipmentChoice.forEach((branchKey, lineIndex) => {
+    const parts = classEntry.equipmentGrants[branchKey];
+    if (!parts) return;
+    const itemChoices = selections.equipmentItemChoices[lineIndex] ?? [];
+    const resolved = resolveEquipmentParts(parts, itemChoices, selections.toolChoice);
+    weapons.push(...resolved.weapons);
+    equipment.push(...resolved.equipment);
+  });
+  return { weapons, equipment };
+}
+
 export function revertClass(character: Character): Character {
   if (!character.classAppliedName) return character;
   const savingThrows = { ...character.savingThrows };
@@ -58,17 +193,23 @@ export function revertClass(character: Character): Character {
   for (const skillName of character.classGrantedSkills) {
     skills[skillName] = { ...skills[skillName], proficient: false };
   }
+  const grantedEquipmentIds = new Set(character.classGrantedEquipmentIds);
+  const grantedWeaponIds = new Set(character.classGrantedWeaponIds);
   return {
     ...character,
     savingThrows,
     skills,
     credits: character.credits - character.classCreditsApplied,
+    equipment: character.equipment.filter((item) => !grantedEquipmentIds.has(item.id)),
+    weapons: character.weapons.filter((w) => !grantedWeaponIds.has(w.id)),
     classAppliedName: "",
     classSavingThrowsApplied: [],
     classGrantedSkills: [],
     classGrantedProficiencies: [],
     classTraitsText: "",
     classEquipmentText: [],
+    classGrantedEquipmentIds: [],
+    classGrantedWeaponIds: [],
     classCreditsApplied: 0,
   };
 }
@@ -105,6 +246,10 @@ export function applyClass(
     chosen.forEach((val) => grantedProficiencies.push(`${val} (${choiceDef.label})`));
   });
 
+  const grantedItems = selections.useStartingFunds
+    ? { weapons: [], equipment: [] }
+    : resolveClassEquipmentGrants(classEntry, selections);
+
   const next: Character = {
     ...base,
     characterClass: classEntry.name,
@@ -120,7 +265,11 @@ export function applyClass(
     classGrantedSkills: grantedSkills,
     classGrantedProficiencies: grantedProficiencies,
     classEquipmentText: equipmentText,
+    classGrantedEquipmentIds: grantedItems.equipment.map((i) => i.id),
+    classGrantedWeaponIds: grantedItems.weapons.map((w) => w.id),
     classCreditsApplied: creditsApplied,
+    equipment: [...base.equipment, ...grantedItems.equipment],
+    weapons: [...base.weapons, ...grantedItems.weapons],
   };
   next.classTraitsText = buildClassTraitsText(classEntry, next);
   return next;

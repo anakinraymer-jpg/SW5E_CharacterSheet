@@ -281,6 +281,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           skillChoice: [],
           toolChoice: [],
           equipmentChoice: [],
+          equipmentItemChoices: [],
           useStartingFunds: false,
           rolledFunds: 0,
         })

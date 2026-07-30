@@ -3,8 +3,9 @@
 // are intentionally summarized rather than fully enumerated — see the linked
 // archetype/class pages on sw5e.com for the complete option lists.
 
-import type { ClassEntry, SpeciesTraitChoice } from "../types";
+import type { ClassEntry, EquipmentPart, SpeciesTraitChoice } from "../types";
 import { GEAR_CATALOG } from "./gear";
+import { WEAPON_CATALOG } from "./weapons";
 
 const TOOLS = GEAR_CATALOG.filter((g) => g.category === "Tool").map((g) => g.name);
 const KITS = GEAR_CATALOG.filter((g) => g.category === "Kit").map((g) => g.name);
@@ -15,6 +16,45 @@ const ANY_TOOL = [...TOOLS, ...KITS, ...GAMING_SETS, ...INSTRUMENTS];
 function toolChoice(label: string, options: string[], count = 1): SpeciesTraitChoice {
   return { kind: "tool", label, count, options };
 }
+
+// Starting-equipment weapon-category helpers: filter WEAPON_CATALOG by exact type and, where a
+// class's proficiency is narrower than "all", by required/excluded property tags.
+function weaponNamesByType(pattern: RegExp, opts?: { requireProp?: RegExp; excludeProps?: RegExp[] }): string[] {
+  return WEAPON_CATALOG.filter((w) => {
+    if (!pattern.test(w.type)) return false;
+    const tags = w.property.split(",").map((t) => t.trim());
+    if (opts?.requireProp && !tags.some((t) => opts.requireProp!.test(t))) return false;
+    if (opts?.excludeProps?.some((re) => tags.some((t) => re.test(t)))) return false;
+    return true;
+  }).map((w) => w.name);
+}
+
+const SIMPLE_BLASTERS = weaponNamesByType(/^Simple Blaster$/);
+const SIMPLE_LIGHTWEAPONS = weaponNamesByType(/^Simple Lightweapon$/);
+const SIMPLE_VIBROWEAPONS = weaponNamesByType(/^Simple Vibroweapon$/);
+const SIMPLE_LIGHT_OR_VIBRO_WEAPONS = [...SIMPLE_LIGHTWEAPONS, ...SIMPLE_VIBROWEAPONS];
+const ALL_VIBROWEAPONS = weaponNamesByType(/Vibroweapon$/);
+const ALL_LIGHTWEAPONS = weaponNamesByType(/Lightweapon$/);
+const ALL_LIGHT_OR_VIBRO_WEAPONS = [...ALL_LIGHTWEAPONS, ...ALL_VIBROWEAPONS];
+// Monk: proficient with all simple vibroweapons plus martial vibroweapons lacking dexterity/heavy/special/two-handed.
+const MONK_PROFICIENT_VIBROWEAPONS = [
+  ...SIMPLE_VIBROWEAPONS,
+  ...weaponNamesByType(/^Martial Vibroweapon$/, {
+    excludeProps: [/^Dexterity/, /^Heavy$/, /^Special$/, /^Two-handed$/],
+  }),
+];
+// Operative: proficient with all simple vibroweapons plus finesse martial vibroweapons.
+const OPERATIVE_PROFICIENT_VIBROWEAPONS = [
+  ...SIMPLE_VIBROWEAPONS,
+  ...weaponNamesByType(/^Martial Vibroweapon$/, { requireProp: /^Finesse$/ }),
+];
+// Sentinel: proficient with all simple lightweapons/vibroweapons plus finesse martial lightweapons/vibroweapons.
+const SENTINEL_PROFICIENT_LIGHT_OR_VIBRO_WEAPONS = [
+  ...SIMPLE_LIGHT_OR_VIBRO_WEAPONS,
+  ...weaponNamesByType(/^Martial Lightweapon$/, { requireProp: /^Finesse$/ }),
+  ...weaponNamesByType(/^Martial Vibroweapon$/, { requireProp: /^Finesse$/ }),
+];
+const SHIELD_LIGHT_OR_MEDIUM = ["Light Physical Shield", "Medium Physical Shield"];
 
 export const CLASSES_CATALOG: ClassEntry[] = [
   {
@@ -35,6 +75,20 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "(a) two techaxes or (b) two vibrospears",
       "(a) a dungeoneer's pack or (b) an explorer's pack",
     ],
+    equipmentGrants: {
+      "a vibroweapon and a light or medium physical shield": [
+        { choiceLabel: "Vibroweapon", choiceOptions: ALL_VIBROWEAPONS },
+        { choiceLabel: "Shield", choiceOptions: SHIELD_LIGHT_OR_MEDIUM },
+      ],
+      "two vibroweapons": [
+        { choiceLabel: "Vibroweapon (1 of 2)", choiceOptions: ALL_VIBROWEAPONS },
+        { choiceLabel: "Vibroweapon (2 of 2)", choiceOptions: ALL_VIBROWEAPONS },
+      ],
+      "two techaxes": [{ item: "Techaxe", quantity: 2 }],
+      "two vibrospears": [{ item: "Vibrospear", quantity: 2 }],
+      "a dungeoneer's pack": [{ freeText: "Dungeoneer's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "5d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Ballistic Approach", "Cyclone Approach", "Juggernaut Approach", "Marauder Approach"],
@@ -95,6 +149,13 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "(a) a simple lightweapon or (b) a simple vibroweapon",
       "(a) a scholar's pack, (b) an explorer's pack, or (c) a diplomat's pack",
     ],
+    equipmentGrants: {
+      "a simple lightweapon": [{ choiceLabel: "Simple Lightweapon", choiceOptions: SIMPLE_LIGHTWEAPONS }],
+      "a simple vibroweapon": [{ choiceLabel: "Simple Vibroweapon", choiceOptions: SIMPLE_VIBROWEAPONS }],
+      "a scholar's pack": [{ freeText: "Scholar's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+      "a diplomat's pack": [{ freeText: "Diplomat's Pack" }],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "5d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Way of Balance", "Way of Lightning", "Way of Suggestion", "Way of the Sage"],
@@ -150,6 +211,21 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "(a) a dungeoneer's pack or (b) an explorer's pack",
       "A combat suit, a set of tinker's implements, a vibrodagger, and a wristpad",
     ],
+    equipmentGrants: {
+      "a simple vibroweapon": [{ choiceLabel: "Simple Vibroweapon", choiceOptions: SIMPLE_VIBROWEAPONS }],
+      "a simple blaster and two power cells": [
+        { choiceLabel: "Simple Blaster", choiceOptions: SIMPLE_BLASTERS },
+        { item: "Power cell", quantity: 2 },
+      ],
+      "a dungeoneer's pack": [{ freeText: "Dungeoneer's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+      "A combat suit, a set of tinker's implements, a vibrodagger, and a wristpad": [
+        { item: "Combat Suit" },
+        { item: "Tinker's implements" },
+        { item: "Vibrodagger" },
+        { item: "Wristpad" },
+      ],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "6d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Armormech Engineering", "Armstech Engineering", "Gadgeteer Engineering", "Unstable Engineering"],
@@ -205,6 +281,26 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "(a) a light pistol and a power cell or (b) two vibrodaggers",
       "(a) a dungeoneer's pack or (b) an explorer's pack",
     ],
+    equipmentGrants: {
+      "mesh armor": [{ item: "Mesh Armor" }],
+      "a combat suit, blaster rifle or simple blaster, and two power cells": [
+        { item: "Combat Suit" },
+        { choiceLabel: "Blaster Rifle or Simple Blaster", choiceOptions: ["Blaster rifle", ...SIMPLE_BLASTERS] },
+        { item: "Power cell", quantity: 2 },
+      ],
+      "a vibroweapon or heavy pistol and a light or medium physical shield": [
+        { choiceLabel: "Vibroweapon or Heavy Pistol", choiceOptions: [...ALL_VIBROWEAPONS, "Heavy pistol"] },
+        { choiceLabel: "Shield", choiceOptions: SHIELD_LIGHT_OR_MEDIUM },
+      ],
+      "two vibroweapons": [
+        { choiceLabel: "Vibroweapon (1 of 2)", choiceOptions: ALL_VIBROWEAPONS },
+        { choiceLabel: "Vibroweapon (2 of 2)", choiceOptions: ALL_VIBROWEAPONS },
+      ],
+      "a light pistol and a power cell": [{ item: "Light pistol" }, { item: "Power cell" }],
+      "two vibrodaggers": [{ item: "Vibrodagger", quantity: 2 }],
+      "a dungeoneer's pack": [{ freeText: "Dungeoneer's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "8d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Assault Specialist", "Blademaster Specialist", "Shield Specialist", "Tactical Specialist"],
@@ -263,6 +359,20 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "(a) a lightweapon or vibroweapon and a light or medium physical shield or (b) two lightweapons or vibroweapons",
       "(a) a priest's pack or (b) an explorer's pack",
     ],
+    equipmentGrants: {
+      "mesh armor": [{ item: "Mesh Armor" }],
+      "a combat suit, and a light physical shield": [{ item: "Combat Suit" }, { item: "Light Physical Shield" }],
+      "a lightweapon or vibroweapon and a light or medium physical shield": [
+        { choiceLabel: "Lightweapon or Vibroweapon", choiceOptions: ALL_LIGHT_OR_VIBRO_WEAPONS },
+        { choiceLabel: "Shield", choiceOptions: SHIELD_LIGHT_OR_MEDIUM },
+      ],
+      "two lightweapons or vibroweapons": [
+        { choiceLabel: "Lightweapon or Vibroweapon (1 of 2)", choiceOptions: ALL_LIGHT_OR_VIBRO_WEAPONS },
+        { choiceLabel: "Lightweapon or Vibroweapon (2 of 2)", choiceOptions: ALL_LIGHT_OR_VIBRO_WEAPONS },
+      ],
+      "a priest's pack": [{ freeText: "Priest's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "8d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Makashi Form", "Niman Form", "Shien/Djem So Form", "Soresu Form"],
@@ -325,6 +435,18 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "(a) a dungeoneer's pack or (b) an explorer's pack",
       "10 vibrodarts",
     ],
+    equipmentGrants: {
+      "a vibroweapon with which you are proficient": [
+        { choiceLabel: "Vibroweapon", choiceOptions: MONK_PROFICIENT_VIBROWEAPONS },
+      ],
+      "a simple blaster and a power cell": [
+        { choiceLabel: "Simple Blaster", choiceOptions: SIMPLE_BLASTERS },
+        { item: "Power cell" },
+      ],
+      "a dungeoneer's pack": [{ freeText: "Dungeoneer's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+      "10 vibrodarts": [{ item: "Vibrodart", quantity: 10 }],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "4d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Crimson Order", "Echani Order", "Matukai Order", "Nightsister Order"],
@@ -398,6 +520,28 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "A tool with which you are proficient",
       "A combat suit and a vibrodagger",
     ],
+    equipmentGrants: {
+      "a vibroweapon with which you are proficient": [
+        { choiceLabel: "Vibroweapon", choiceOptions: OPERATIVE_PROFICIENT_VIBROWEAPONS },
+      ],
+      "a simple blaster and a power cell": [
+        { choiceLabel: "Simple Blaster", choiceOptions: SIMPLE_BLASTERS },
+        { item: "Power cell" },
+      ],
+      "a simple blaster and two power cells": [
+        { choiceLabel: "Simple Blaster", choiceOptions: SIMPLE_BLASTERS },
+        { item: "Power cell", quantity: 2 },
+      ],
+      "a simple vibroweapon and a light physical shield": [
+        { choiceLabel: "Simple Vibroweapon", choiceOptions: SIMPLE_VIBROWEAPONS },
+        { item: "Light Physical Shield" },
+      ],
+      "a burglar's pack": [{ freeText: "Burglar's Pack" }],
+      "a dungeoneer's pack": [{ freeText: "Dungeoneer's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+      "A tool with which you are proficient": [{ proficientTool: true }],
+      "A combat suit and a vibrodagger": [{ item: "Combat Suit" }, { item: "Vibrodagger" }],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "7d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Acquisitions Practice", "Beguiler Practice", "Lethality Practice", "Sharpshooter Practice"],
@@ -464,6 +608,18 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "A tool with which you are proficient",
       "A combat suit",
     ],
+    equipmentGrants: {
+      "a simple vibroweapon": [{ choiceLabel: "Simple Vibroweapon", choiceOptions: SIMPLE_VIBROWEAPONS }],
+      "a simple blaster and two power cells": [
+        { choiceLabel: "Simple Blaster", choiceOptions: SIMPLE_BLASTERS },
+        { item: "Power cell", quantity: 2 },
+      ],
+      "an entertainer's pack": [{ freeText: "Entertainer's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+      "a scholar's pack": [{ freeText: "Scholar's Pack" }],
+      "A tool with which you are proficient": [{ proficientTool: true }],
+      "A combat suit": [{ item: "Combat Suit" }],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "6d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Gambler Pursuit", "Physician Pursuit", "Politician Pursuit", "Tactician Pursuit"],
@@ -524,6 +680,27 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "(a) a dungeoneer's pack or (b) an explorer's pack",
       "A wristpad",
     ],
+    equipmentGrants: {
+      "mesh armor": [{ item: "Mesh Armor" }],
+      "a combat suit, blaster rifle or simple blaster, and two power cells": [
+        { item: "Combat Suit" },
+        { choiceLabel: "Blaster Rifle or Simple Blaster", choiceOptions: ["Blaster rifle", ...SIMPLE_BLASTERS] },
+        { item: "Power cell", quantity: 2 },
+      ],
+      "a vibroweapon and a light physical shield": [
+        { choiceLabel: "Vibroweapon", choiceOptions: ALL_VIBROWEAPONS },
+        { item: "Light Physical Shield" },
+      ],
+      "two simple vibroweapons": [
+        { choiceLabel: "Simple Vibroweapon (1 of 2)", choiceOptions: SIMPLE_VIBROWEAPONS },
+        { choiceLabel: "Simple Vibroweapon (2 of 2)", choiceOptions: SIMPLE_VIBROWEAPONS },
+      ],
+      "a hold-out and a power cell": [{ item: "Hold-out" }, { item: "Power cell" }],
+      "two vibrodaggers": [{ item: "Vibrodagger", quantity: 2 }],
+      "a dungeoneer's pack": [{ freeText: "Dungeoneer's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+      "A wristpad": [{ item: "Wristpad" }],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "8d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Bulwark Technique", "Hunter Technique", "Slayer Technique", "Stalker Technique"],
@@ -590,6 +767,25 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       "A specialist's kit with which you are proficient",
       "A combat suit and a light physical shield",
     ],
+    equipmentGrants: {
+      "two simple lightweapons or vibroweapons": [
+        {
+          choiceLabel: "Simple Lightweapon or Vibroweapon (1 of 2)",
+          choiceOptions: SIMPLE_LIGHT_OR_VIBRO_WEAPONS,
+        },
+        {
+          choiceLabel: "Simple Lightweapon or Vibroweapon (2 of 2)",
+          choiceOptions: SIMPLE_LIGHT_OR_VIBRO_WEAPONS,
+        },
+      ],
+      "one lightweapon or vibroweapon with which you are proficient": [
+        { choiceLabel: "Lightweapon or Vibroweapon", choiceOptions: SENTINEL_PROFICIENT_LIGHT_OR_VIBRO_WEAPONS },
+      ],
+      "a dungeoneer's pack": [{ freeText: "Dungeoneer's Pack" }],
+      "an explorer's pack": [{ freeText: "Explorer's Pack" }],
+      "A specialist's kit with which you are proficient": [{ proficientTool: true }],
+      "A combat suit and a light physical shield": [{ item: "Combat Suit" }, { item: "Light Physical Shield" }],
+    } satisfies Record<string, EquipmentPart[]>,
     startingFunds: "6d4 x 100 cr",
     archetypeLevel: 3,
     archetypeNames: ["Path of Focus", "Path of Shadows", "Path of the Corsair", "Path of the Forceblade"],

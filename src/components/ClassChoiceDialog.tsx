@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { ClassEntry, ClassSelections, SkillName, SkillState } from "../types";
+import type { ClassEntry, ClassSelections, EquipmentPart, SkillName, SkillState } from "../types";
 import { parseEquipmentOptions, parseStartingFunds, rollStartingFunds } from "../classLogic";
 import Modal from "./Modal";
 
@@ -8,6 +8,11 @@ interface Props {
   skills: Record<SkillName, SkillState>;
   onCancel: () => void;
   onConfirm: (selections: ClassSelections) => void;
+}
+
+// Parts that need a secondary disambiguation select (abstract weapon categories, etc.).
+function choiceParts(parts: EquipmentPart[] | undefined): EquipmentPart[] {
+  return (parts ?? []).filter((p) => p.choiceLabel);
 }
 
 export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConfirm }: Props) {
@@ -25,16 +30,37 @@ export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConf
   const [equipmentChoice, setEquipmentChoice] = useState<string[]>(
     equipmentLines.map((opts) => opts[0] ?? "")
   );
+  const [equipmentItemChoices, setEquipmentItemChoices] = useState<string[][]>(
+    equipmentChoice.map((branch) => choiceParts(classEntry.equipmentGrants[branch]).map(() => ""))
+  );
   const [useStartingFunds, setUseStartingFunds] = useState(false);
   const fundsFormula = parseStartingFunds(classEntry.startingFunds);
   const [rolledFunds, setRolledFunds] = useState<number>(0);
+
+  function setEquipmentBranch(lineIndex: number, branch: string) {
+    const nextChoice = [...equipmentChoice];
+    nextChoice[lineIndex] = branch;
+    setEquipmentChoice(nextChoice);
+    const nextItemChoices = [...equipmentItemChoices];
+    nextItemChoices[lineIndex] = choiceParts(classEntry.equipmentGrants[branch]).map(() => "");
+    setEquipmentItemChoices(nextItemChoices);
+  }
+
+  function setEquipmentItemChoice(lineIndex: number, partIndex: number, value: string) {
+    const next = equipmentItemChoices.map((arr) => [...arr]);
+    next[lineIndex][partIndex] = value;
+    setEquipmentItemChoices(next);
+  }
 
   const skillsComplete =
     skillChoice.every(Boolean) && new Set(skillChoice).size === skillChoice.length;
   const toolsComplete = toolChoice.every(
     (picks) => picks.every(Boolean) && new Set(picks).size === picks.length
   );
-  const equipmentComplete = useStartingFunds ? rolledFunds > 0 : equipmentChoice.every(Boolean);
+  const equipmentItemsComplete = equipmentItemChoices.every((picks) => picks.every(Boolean));
+  const equipmentComplete = useStartingFunds
+    ? rolledFunds > 0
+    : equipmentChoice.every(Boolean) && equipmentItemsComplete;
   const isComplete = skillsComplete && toolsComplete && equipmentComplete;
 
   function roll() {
@@ -54,7 +80,14 @@ export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConf
             className="btn btn-primary"
             disabled={!isComplete}
             onClick={() =>
-              onConfirm({ skillChoice, toolChoice, equipmentChoice, useStartingFunds, rolledFunds })
+              onConfirm({
+                skillChoice,
+                toolChoice,
+                equipmentChoice,
+                equipmentItemChoices,
+                useStartingFunds,
+                rolledFunds,
+              })
             }
           >
             Apply
@@ -150,11 +183,7 @@ export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConf
             <div key={i} className="choice-selects">
               <select
                 value={equipmentChoice[i] ?? ""}
-                onChange={(e) => {
-                  const next = [...equipmentChoice];
-                  next[i] = e.target.value;
-                  setEquipmentChoice(next);
-                }}
+                onChange={(e) => setEquipmentBranch(i, e.target.value)}
               >
                 <option value="">Choose…</option>
                 {opts.map((o) => (
@@ -163,6 +192,20 @@ export default function ClassChoiceDialog({ classEntry, skills, onCancel, onConf
                   </option>
                 ))}
               </select>
+              {choiceParts(classEntry.equipmentGrants[equipmentChoice[i]]).map((part, j) => (
+                <select
+                  key={j}
+                  value={equipmentItemChoices[i]?.[j] ?? ""}
+                  onChange={(e) => setEquipmentItemChoice(i, j, e.target.value)}
+                >
+                  <option value="">{part.choiceLabel}…</option>
+                  {(part.choiceOptions ?? []).map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
+                </select>
+              ))}
             </div>
           ))
         )}

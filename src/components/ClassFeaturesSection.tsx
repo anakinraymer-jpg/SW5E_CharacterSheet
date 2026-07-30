@@ -192,7 +192,8 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
             </p>
           ))}
           <p className="section-hint" style={{ marginTop: 6, marginBottom: 0 }}>
-            Add the specific items to your Equipment list once chosen.
+            Weapons and armor from these choices are added to your Weapons and Combat sections
+            automatically. Starting packs are added as a single item — see sw5e.com for contents.
           </p>
         </div>
       )}

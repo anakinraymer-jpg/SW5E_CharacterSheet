@@ -124,6 +124,7 @@ export interface ClassEntry {
   toolChoices: SpeciesTraitChoice[];
   skillChoice: { count: number; options: string[] };
   equipmentText: string[];
+  equipmentGrants: Record<string, EquipmentPart[]>; // keyed by the exact parseEquipmentOptions() branch string (or full line text for unlettered lines)
   startingFunds: string;
   archetypeLevel: number;
   archetypeNames: string[];
@@ -171,6 +172,7 @@ export interface ClassSelections {
   skillChoice: string[];
   toolChoice: string[][];
   equipmentChoice: string[];
+  equipmentItemChoices: string[][]; // indexed [lineIndex][partIndex], one entry per EquipmentPart with choiceLabel in that line's equipmentGrants
   useStartingFunds: boolean;
   rolledFunds: number;
 }
@@ -263,6 +265,16 @@ export interface Power {
   prepared: boolean;
 }
 
+// One concrete grant produced by resolving a class equipmentText branch into real inventory.
+export interface EquipmentPart {
+  quantity?: number; // default 1
+  item?: string; // exact catalog name (WEAPON_CATALOG / ARMOR_CATALOG / GEAR_CATALOG)
+  choiceLabel?: string; // present => player must pick one of choiceOptions via a nested select
+  choiceOptions?: string[]; // concrete catalog names offered for the choiceLabel select
+  proficientTool?: boolean; // resolve to the class's own already-chosen toolChoice[0][0] selection
+  freeText?: string; // literal display name when no catalog entry exists (e.g. a named starting pack)
+}
+
 export type ItemLocation = "Donned" | "Backpack" | "Pouch" | "Storage";
 
 export interface EquipmentItem {
@@ -352,6 +364,8 @@ export interface Character {
   asiChoices: Record<number, AbilityKey[]>;
   classTraitsText: string;
   classEquipmentText: string[];
+  classGrantedEquipmentIds: string[]; // EquipmentItem ids created by applyClass, so revert only removes class-granted items
+  classGrantedWeaponIds: string[]; // Weapon ids created by applyClass, so revert only removes class-granted weapons
   classCreditsApplied: number;
   archetypeAppliedName: string;
   archetypeTraitsText: string;
@@ -547,6 +561,8 @@ export function createBlankCharacter(): Character {
     asiChoices: {},
     classTraitsText: "",
     classEquipmentText: [],
+    classGrantedEquipmentIds: [],
+    classGrantedWeaponIds: [],
     classCreditsApplied: 0,
     archetypeAppliedName: "",
     archetypeTraitsText: "",
