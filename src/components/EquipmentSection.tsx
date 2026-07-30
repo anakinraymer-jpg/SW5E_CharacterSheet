@@ -1,5 +1,5 @@
 import type { Character, EquipmentItem, ItemLocation, Valuable } from "../types";
-import { carryingCapacity } from "../utils";
+import { carryingCapacity, formatModifier } from "../utils";
 import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
 import { ARMOR_CATALOG } from "../data/armor";
@@ -68,18 +68,34 @@ export default function EquipmentSection({
 
   const capacity = carryingCapacity(character.abilities.str, character.size);
 
+  const creditSources = [
+    character.classCreditsApplied !== 0
+      ? `${character.classAppliedName || "Class"} starting funds: ${formatModifier(character.classCreditsApplied)} cr`
+      : null,
+    character.backgroundCreditsApplied !== 0
+      ? `${character.backgroundAppliedName || "Background"} starting credits: ${formatModifier(character.backgroundCreditsApplied)} cr`
+      : null,
+    character.speciesCreditsApplied !== 0
+      ? `Wealthy (${character.speciesAppliedName || "Species"}): ${formatModifier(character.speciesCreditsApplied)} cr`
+      : null,
+  ].filter((l): l is string => Boolean(l));
+  const creditLines =
+    creditSources.length > 0 ? creditSources : ["No automatic bonuses applied — this total is fully manual."];
+
   return (
     <section className="sheet-section equipment-section">
       <h2>Equipment</h2>
 
       <div className="field field-credits">
         <label htmlFor="credits">Credits</label>
-        <input
-          id="credits"
-          type="number"
-          value={character.credits}
-          onChange={(e) => update("credits", Number(e.target.value) || 0)}
-        />
+        <HoverInfo title="Credits Breakdown" lines={creditLines}>
+          <input
+            id="credits"
+            type="number"
+            value={character.credits}
+            onChange={(e) => update("credits", Number(e.target.value) || 0)}
+          />
+        </HoverInfo>
       </div>
 
       <datalist id="gear-catalog-list">
