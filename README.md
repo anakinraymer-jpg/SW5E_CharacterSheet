@@ -12,3 +12,5 @@ A character sheet web app for Star Wars 5e (SW5E), the D&D 5e conversion ruleset
 npm install
 npm run dev
 ```
+
+See [CLAUDE.md](CLAUDE.md) for development/working notes on this repo — data-catalog conventions, testing workflow, and tips for keeping context/token spend down on the larger reference files.
