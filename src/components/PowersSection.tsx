@@ -3,6 +3,8 @@ import type { Character, Power, PowerAlignment } from "../types";
 import { FORCE_POWERS, TECH_POWERS, type ForcePowerEntry, type TechPowerEntry } from "../data/powers";
 import PowerNameField, { type PowerPickerOption } from "./PowerNameField";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
+import { ABILITY_LABEL } from "../speciesLogic";
+import HoverInfo from "./HoverInfo";
 
 const FORCE_POWER_LOOKUP = new Map(FORCE_POWERS.map((p) => [p.name.toLowerCase(), p]));
 const TECH_POWER_LOOKUP = new Map(TECH_POWERS.map((p) => [p.name.toLowerCase(), p]));
@@ -65,12 +67,19 @@ export default function PowersSection({
   const [activeType, setActiveType] = useState<Power["type"]>("Force");
 
   const pb = proficiencyBonus(character.level);
+  const forceAbilityLabel = `${ABILITY_LABEL[character.forceCastingAbility]} (${
+    character.forceCastingAbility === "wis" ? "Light side" : "Dark side"
+  })`;
   const forceMod = abilityModifier(character.abilities[character.forceCastingAbility]);
   const forceAttack = pb + forceMod;
   const forceDC = 8 + pb + forceMod;
+  const forceAttackLines = [`Proficiency Bonus: ${formatModifier(pb)}`, `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`];
+  const forceDCLines = [`Base: 8`, `Proficiency Bonus: ${formatModifier(pb)}`, `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`];
   const techMod = abilityModifier(character.abilities.int);
   const techAttack = pb + techMod;
   const techDC = 8 + pb + techMod;
+  const techAttackLines = [`Proficiency Bonus: ${formatModifier(pb)}`, `Intelligence modifier: ${formatModifier(techMod)}`];
+  const techDCLines = [`Base: 8`, `Proficiency Bonus: ${formatModifier(pb)}`, `Intelligence modifier: ${formatModifier(techMod)}`];
 
   const techCounts = countByAlignment(character.powers, "Tech");
   const forceCounts = countByAlignment(character.powers, "Force");
@@ -191,15 +200,19 @@ export default function PowersSection({
           </div>
           <div className="field">
             <label htmlFor="force-attack">Force Attack</label>
-            <div id="force-attack" className="readonly-box">
-              {formatModifier(forceAttack)}
-            </div>
+            <HoverInfo title="Force Attack Breakdown" lines={forceAttackLines}>
+              <div id="force-attack" className="readonly-box">
+                {formatModifier(forceAttack)}
+              </div>
+            </HoverInfo>
           </div>
           <div className="field">
             <label htmlFor="force-dc">Force Save DC</label>
-            <div id="force-dc" className="readonly-box">
-              {forceDC}
-            </div>
+            <HoverInfo title="Force Save DC Breakdown" lines={forceDCLines}>
+              <div id="force-dc" className="readonly-box">
+                {forceDC}
+              </div>
+            </HoverInfo>
           </div>
         </div>
       ) : (
@@ -233,15 +246,19 @@ export default function PowersSection({
           </div>
           <div className="field">
             <label htmlFor="tech-attack">Tech Attack</label>
-            <div id="tech-attack" className="readonly-box">
-              {formatModifier(techAttack)}
-            </div>
+            <HoverInfo title="Tech Attack Breakdown" lines={techAttackLines}>
+              <div id="tech-attack" className="readonly-box">
+                {formatModifier(techAttack)}
+              </div>
+            </HoverInfo>
           </div>
           <div className="field">
             <label htmlFor="tech-dc">Tech Save DC</label>
-            <div id="tech-dc" className="readonly-box">
-              {techDC}
-            </div>
+            <HoverInfo title="Tech Save DC Breakdown" lines={techDCLines}>
+              <div id="tech-dc" className="readonly-box">
+                {techDC}
+              </div>
+            </HoverInfo>
           </div>
         </div>
       )}
