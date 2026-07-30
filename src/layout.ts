@@ -18,8 +18,8 @@ export type SectionId =
 // dragged between columns. Wide sections always span the full width and only reorder
 // among themselves.
 export const STAT_SECTIONS: SectionId[] = ["proficiencyBonus", "defense", "speedBase", "initiative"];
-export const NARROW_SECTIONS: SectionId[] = ["abilities", "combat", "skills", "weapons", "powers", "feats"];
-export const WIDE_SECTIONS: SectionId[] = ["classFeatures", "equipment", "backstory"];
+export const NARROW_SECTIONS: SectionId[] = ["abilities", "combat", "skills", "powers", "feats"];
+export const WIDE_SECTIONS: SectionId[] = ["classFeatures", "weapons", "equipment", "backstory"];
 
 const ALL_SECTIONS = new Set<SectionId>([...STAT_SECTIONS, ...NARROW_SECTIONS, ...WIDE_SECTIONS]);
 
@@ -31,8 +31,8 @@ export interface SheetLayout {
 
 export const DEFAULT_LAYOUT: SheetLayout = {
   statRow: ["proficiencyBonus", "defense", "speedBase", "initiative"],
-  columns: [["abilities", "combat"], ["skills", "weapons"], ["powers", "feats"]],
-  wide: ["classFeatures", "equipment", "backstory"],
+  columns: [["abilities", "combat"], ["skills"], ["powers", "feats"]],
+  wide: ["classFeatures", "weapons", "equipment", "backstory"],
 };
 
 function cloneLayout(layout: SheetLayout): SheetLayout {
