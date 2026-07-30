@@ -30,6 +30,24 @@ Reference data (species, classes, archetypes, powers, weapons, armor, gear, feat
 
 When pulling data from this API for a catalog update: fetch via browser `fetch()`, transform to the target TS literal syntax in JS, and pull the result out via the tool's return value — don't paste it into a PowerShell heredoc or write it from memory. Always cross-check the transformed output against the raw fetched data (e.g. diff line-by-line) before writing it to a file; entries have been hand-typed from memory by mistake before and it produced fabricated data.
 
+**Reusable weapon-category filters:** `classes.ts` already derives common proficiency/category pools from `WEAPON_CATALOG` via `weaponNamesByType()` — `ALL_VIBROWEAPONS`, `ALL_LIGHTWEAPONS`, `ALL_LIGHT_OR_VIBRO_WEAPONS`, `SIMPLE_BLASTERS`, `SIMPLE_LIGHTWEAPONS`, `SIMPLE_VIBROWEAPONS`, `SIMPLE_LIGHT_OR_VIBRO_WEAPONS`, `MONK_PROFICIENT_VIBROWEAPONS`, `OPERATIVE_PROFICIENT_VIBROWEAPONS`, `SENTINEL_PROFICIENT_LIGHT_OR_VIBRO_WEAPONS`, `SHIELD_LIGHT_OR_MEDIUM`. Before re-deriving a "which weapons match X property/type" list by reading the full catalog, check whether one of these (or `weaponNamesByType` itself) already covers it.
+
+## Keeping context/token spend down on catalog work
+
+Catalog files (`weapons.ts`, `armor.ts`, `feats.ts`, `species.ts`, `archetypeDetails*.ts`, etc.) are large and mostly irrelevant to any one task. To avoid burning context/credits on them:
+
+- **Grep for specific names/patterns, don't Read the whole file**, when only a handful of entries are needed (e.g. looking up 5 weapon stat blocks). A full-file Read dumps every irrelevant line into context too.
+- **Delegate open-ended catalog research to the `Explore` subagent** (e.g. "find every weapon with the Auto property", "list all class tool-choice defs") rather than doing several sequential Read/Grep calls directly in the main conversation — the subagent's full search stays out of main context and only the distilled answer comes back.
+- **Check for an existing derived constant/helper first** (see above) before re-fetching or re-filtering catalog data that's likely already been computed once.
+
+## Where things live (quick index)
+
+- Class starting-equipment resolution: parsing → `classLogic.ts`'s `parseEquipmentOptions`; hand-authored grants → `classes.ts`'s `equipmentGrants` (keyed by the exact parsed branch string); resolving grants into real items → `classLogic.ts`'s `resolveClassEquipmentGrants`/`resolveEquipmentParts`, called from `applyClass`/`revertClass`.
+- Auto AC calculation: `utils.ts`'s `armorCatalogMatch` + `computeDefense`, consumed by `StatBoxes.tsx`'s `DefenseBox`. Only `EquipmentItem.equipped` + an exact `ARMOR_CATALOG` name match matter — `location` is cosmetic.
+- Weapons & Ammunitions table: `WeaponsSection.tsx`, backed by `character.weapons: Weapon[]` (separate array from `EquipmentItem`, no linking field).
+- "Armor, Shield, Protections" panel: not a separate field — it's `CombatSection.tsx` filtering `character.equipment` through `armorCatalogMatch`.
+- Nested/secondary choice UI pattern (skill/tool/weapon/fighting-style/lightsaber-form picks, and now equipment-category disambiguation): `SpeciesTraitChoice` / `ClassSubChoiceOption` in `types.ts`, rendered by `ClassSubChoiceDialog.tsx` / `ClassChoiceDialog.tsx`.
+
 ## Testing workflow
 
 After any change observable in the browser:
