@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Character, Power, PowerAlignment } from "../types";
 import { FORCE_POWERS, TECH_POWERS, type ForcePowerEntry, type TechPowerEntry } from "../data/powers";
 import PowerNameField, { type PowerPickerOption } from "./PowerNameField";
+import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 
 const FORCE_POWER_LOOKUP = new Map(FORCE_POWERS.map((p) => [p.name.toLowerCase(), p]));
 const TECH_POWER_LOOKUP = new Map(TECH_POWERS.map((p) => [p.name.toLowerCase(), p]));
@@ -62,6 +63,14 @@ export default function PowersSection({
   removePower,
 }: Props) {
   const [activeType, setActiveType] = useState<Power["type"]>("Force");
+
+  const pb = proficiencyBonus(character.level);
+  const forceMod = abilityModifier(character.abilities[character.forceCastingAbility]);
+  const forceAttack = pb + forceMod;
+  const forceDC = 8 + pb + forceMod;
+  const techMod = abilityModifier(character.abilities.int);
+  const techAttack = pb + techMod;
+  const techDC = 8 + pb + techMod;
 
   const techCounts = countByAlignment(character.powers, "Tech");
   const forceCounts = countByAlignment(character.powers, "Force");
@@ -162,22 +171,35 @@ export default function PowersSection({
             />
           </div>
           <div className="field">
+            <label>Force Casting Ability</label>
+            <div className="power-type-toggle">
+              <button
+                type="button"
+                className={`btn btn-small ${character.forceCastingAbility === "wis" ? "btn-primary" : "btn-secondary"}`}
+                onClick={() => update("forceCastingAbility", "wis")}
+              >
+                Light side (Wisdom)
+              </button>
+              <button
+                type="button"
+                className={`btn btn-small ${character.forceCastingAbility === "cha" ? "btn-primary" : "btn-secondary"}`}
+                onClick={() => update("forceCastingAbility", "cha")}
+              >
+                Dark side (Charisma)
+              </button>
+            </div>
+          </div>
+          <div className="field">
             <label htmlFor="force-attack">Force Attack</label>
-            <input
-              id="force-attack"
-              type="number"
-              value={character.forceAttackModifier}
-              onChange={(e) => update("forceAttackModifier", Number(e.target.value) || 0)}
-            />
+            <div id="force-attack" className="readonly-box">
+              {formatModifier(forceAttack)}
+            </div>
           </div>
           <div className="field">
             <label htmlFor="force-dc">Force Save DC</label>
-            <input
-              id="force-dc"
-              type="number"
-              value={character.forceSaveDC}
-              onChange={(e) => update("forceSaveDC", Number(e.target.value) || 0)}
-            />
+            <div id="force-dc" className="readonly-box">
+              {forceDC}
+            </div>
           </div>
         </div>
       ) : (
@@ -211,21 +233,15 @@ export default function PowersSection({
           </div>
           <div className="field">
             <label htmlFor="tech-attack">Tech Attack</label>
-            <input
-              id="tech-attack"
-              type="number"
-              value={character.techAttackModifier}
-              onChange={(e) => update("techAttackModifier", Number(e.target.value) || 0)}
-            />
+            <div id="tech-attack" className="readonly-box">
+              {formatModifier(techAttack)}
+            </div>
           </div>
           <div className="field">
             <label htmlFor="tech-dc">Tech Save DC</label>
-            <input
-              id="tech-dc"
-              type="number"
-              value={character.techSaveDC}
-              onChange={(e) => update("techSaveDC", Number(e.target.value) || 0)}
-            />
+            <div id="tech-dc" className="readonly-box">
+              {techDC}
+            </div>
           </div>
         </div>
       )}

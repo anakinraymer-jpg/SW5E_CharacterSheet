@@ -416,10 +416,7 @@ export interface Character {
   forcePoints: { current: number; max: number };
   techPoints: { current: number; max: number };
   forceDie: string;
-  techAttackModifier: number;
-  techSaveDC: number;
-  forceAttackModifier: number;
-  forceSaveDC: number;
+  forceCastingAbility: "wis" | "cha"; // light side (Wisdom) vs dark side (Charisma); used for Universal-alignment powers too
   powers: Power[];
 
   // Equipment
@@ -606,10 +603,7 @@ export function createBlankCharacter(): Character {
     forcePoints: { current: 0, max: 0 },
     techPoints: { current: 0, max: 0 },
     forceDie: "d6",
-    techAttackModifier: 0,
-    techSaveDC: 8,
-    forceAttackModifier: 0,
-    forceSaveDC: 8,
+    forceCastingAbility: "wis",
     powers: [],
     credits: 0,
     equipment: [],
