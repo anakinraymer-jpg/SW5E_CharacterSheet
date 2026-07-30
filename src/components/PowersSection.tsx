@@ -5,6 +5,7 @@ import PowerNameField, { type PowerPickerOption } from "./PowerNameField";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import { ABILITY_LABEL } from "../speciesLogic";
 import HoverInfo from "./HoverInfo";
+import SectionHeader from "./SectionHeader";
 
 const FORCE_POWER_LOOKUP = new Map(FORCE_POWERS.map((p) => [p.name.toLowerCase(), p]));
 const TECH_POWER_LOOKUP = new Map(TECH_POWERS.map((p) => [p.name.toLowerCase(), p]));
@@ -47,6 +48,8 @@ interface Props {
   addPower: (type: Power["type"]) => void;
   updatePower: (id: string, patch: Partial<Power>) => void;
   removePower: (id: string) => void;
+  collapsedSections: Record<string, boolean>;
+  onToggleSection: (id: string) => void;
 }
 
 function countByAlignment(powers: Power[], type: Power["type"]) {
@@ -63,7 +66,10 @@ export default function PowersSection({
   addPower,
   updatePower,
   removePower,
+  collapsedSections,
+  onToggleSection,
 }: Props) {
+  const collapsed = !!collapsedSections["powers"];
   const [activeType, setActiveType] = useState<Power["type"]>("Force");
 
   const pb = proficiencyBonus(character.level);
@@ -122,8 +128,9 @@ export default function PowersSection({
 
   return (
     <section className="sheet-section powers-section">
-      <h2>Force &amp; Tech Powers</h2>
-
+      <SectionHeader title="Force & Tech Powers" collapsed={collapsed} onToggle={() => onToggleSection("powers")} />
+      {!collapsed && (
+      <>
       <div className="power-type-toggle">
         <button
           type="button"
@@ -321,6 +328,8 @@ export default function PowersSection({
       <button className="btn btn-secondary" onClick={() => addPower(activeType)}>
         + Add {activeType} Power
       </button>
+      </>
+      )}
     </section>
   );
 }

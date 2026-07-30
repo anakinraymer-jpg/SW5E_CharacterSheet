@@ -1,20 +1,31 @@
 import type { Character } from "../types";
 import { ALLEGIANCES } from "../data/sw5eData";
 import { grantedLanguages, grantedProficiencies } from "../grantsSummary";
+import SectionHeader from "./SectionHeader";
 
 interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
+  collapsedSections: Record<string, boolean>;
+  onToggleSection: (id: string) => void;
 }
 
-export default function BackstorySection({ character, update }: Props) {
+export default function BackstorySection({ character, update, collapsedSections, onToggleSection }: Props) {
   const languages = grantedLanguages(character);
   const proficiencies = grantedProficiencies(character);
+  const characterDataCollapsed = !!collapsedSections["characterData"];
+  const backstoryNotesCollapsed = !!collapsedSections["backstoryNotes"];
 
   return (
     <>
       <section className="sheet-section backstory-section">
-        <h2>Character Data</h2>
+        <SectionHeader
+          title="Character Data"
+          collapsed={characterDataCollapsed}
+          onToggle={() => onToggleSection("characterData")}
+        />
+        {!characterDataCollapsed && (
+        <>
         <div className="field-grid">
           <div className="field">
             <label htmlFor="proficiencies">Proficiencies</label>
@@ -129,10 +140,18 @@ export default function BackstorySection({ character, update }: Props) {
             onChange={(e) => update("backgroundFeature", e.target.value)}
           />
         </div>
+        </>
+        )}
       </section>
 
       <section className="sheet-section notes-section">
-        <h2>Features, Backstory &amp; Notes</h2>
+        <SectionHeader
+          title="Features, Backstory & Notes"
+          collapsed={backstoryNotesCollapsed}
+          onToggle={() => onToggleSection("backstoryNotes")}
+        />
+        {!backstoryNotesCollapsed && (
+        <>
 
         <div className="field">
           <label htmlFor="feats">Feats &amp; Class Features</label>
@@ -198,6 +217,8 @@ export default function BackstorySection({ character, update }: Props) {
             onChange={(e) => update("notes", e.target.value)}
           />
         </div>
+        </>
+        )}
       </section>
     </>
   );

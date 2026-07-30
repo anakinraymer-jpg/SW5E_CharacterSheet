@@ -3,6 +3,7 @@ import type { Character } from "../types";
 import { FEATS_CATALOG } from "../data/feats";
 import { buildFeatText } from "../featLogic";
 import HoverInfo from "./HoverInfo";
+import SectionHeader from "./SectionHeader";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 const FEAT_NAMES = FEATS_CATALOG.map((f) => f.name);
@@ -11,9 +12,18 @@ interface Props {
   character: Character;
   onAddFeat: (name: string) => void;
   onRemoveFeat: (id: string) => void;
+  collapsedSections: Record<string, boolean>;
+  onToggleSection: (id: string) => void;
 }
 
-export default function FeatsSection({ character, onAddFeat, onRemoveFeat }: Props) {
+export default function FeatsSection({
+  character,
+  onAddFeat,
+  onRemoveFeat,
+  collapsedSections,
+  onToggleSection,
+}: Props) {
+  const collapsed = !!collapsedSections["feats"];
   const [pendingName, setPendingName] = useState("");
 
   function handleAdd() {
@@ -25,7 +35,9 @@ export default function FeatsSection({ character, onAddFeat, onRemoveFeat }: Pro
 
   return (
     <section className="sheet-section feats-section">
-      <h2>Feats</h2>
+      <SectionHeader title="Feats" collapsed={collapsed} onToggle={() => onToggleSection("feats")} />
+      {!collapsed && (
+      <>
       <p className="section-hint">
         Choose a feat to add it to your character. Fixed benefits (ability increases, granted
         skills) apply automatically; feats with choices will prompt you.
@@ -70,6 +82,8 @@ export default function FeatsSection({ character, onAddFeat, onRemoveFeat }: Pro
           );
         })}
       </div>
+      </>
+      )}
     </section>
   );
 }

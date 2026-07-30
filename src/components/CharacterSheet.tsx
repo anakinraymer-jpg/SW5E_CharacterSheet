@@ -75,6 +75,7 @@ import {
   type SectionId,
   type SheetLayout,
 } from "../layout";
+import { getStoredCollapsedSections, saveCollapsedSections } from "../collapsibleSections";
 import { FEATS_CATALOG } from "../data/feats";
 import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
 import type { ClassFeature, ClassSubChoiceDef, ClassSubChoicePickDetail, FeatEntry } from "../types";
@@ -107,6 +108,13 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [editLayout, setEditLayout] = useState(false);
   const [layout, setLayout] = useState<SheetLayout>(() => getStoredLayout());
   const [draggedId, setDraggedId] = useState<SectionId | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() =>
+    getStoredCollapsedSections()
+  );
+
+  function toggleSection(id: string) {
+    setCollapsedSections((prev) => ({ ...prev, [id]: !prev[id] }));
+  }
 
   useEffect(() => {
     setCharacter(initial);
@@ -116,6 +124,10 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     saveCharacter(character);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [character]);
+
+  useEffect(() => {
+    saveCollapsedSections(collapsedSections);
+  }, [collapsedSections]);
 
   // Reactive level engine: recompute class/archetype resources & feature text,
   // revert any ASI above the new level, and surface a pending ASI prompt.
@@ -646,9 +658,24 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       case "speedBase":
         return <SpeedBaseBox character={character} update={update} />;
       case "abilities":
-        return <AbilityScores character={character} updateAbility={updateAbility} />;
+        return (
+          <AbilityScores
+            character={character}
+            updateAbility={updateAbility}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
+          />
+        );
       case "combat":
-        return <CombatSection character={character} update={update} updateItem={updateItem} />;
+        return (
+          <CombatSection
+            character={character}
+            update={update}
+            updateItem={updateItem}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
+          />
+        );
       case "skills":
         return (
           <SkillsSection
@@ -656,6 +683,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             toggleSkillProficiency={toggleSkillProficiency}
             toggleSkillExpertise={toggleSkillExpertise}
             toggleSavingThrow={toggleSavingThrow}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
           />
         );
       case "weapons":
@@ -669,6 +698,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             addCombatFeature={addCombatFeature}
             updateCombatFeature={updateCombatFeature}
             removeCombatFeature={removeCombatFeature}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
           />
         );
       case "powers":
@@ -679,12 +710,29 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             addPower={addPower}
             updatePower={updatePower}
             removePower={removePower}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
           />
         );
       case "classFeatures":
-        return <ClassFeaturesSection character={character} onUpdateResource={handleUpdateResource} />;
+        return (
+          <ClassFeaturesSection
+            character={character}
+            onUpdateResource={handleUpdateResource}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
+          />
+        );
       case "feats":
-        return <FeatsSection character={character} onAddFeat={handleAddFeat} onRemoveFeat={handleRemoveFeat} />;
+        return (
+          <FeatsSection
+            character={character}
+            onAddFeat={handleAddFeat}
+            onRemoveFeat={handleRemoveFeat}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
+          />
+        );
       case "equipment":
         return (
           <EquipmentSection
@@ -696,10 +744,19 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             addValuable={addValuable}
             updateValuable={updateValuable}
             removeValuable={removeValuable}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
           />
         );
       case "backstory":
-        return <BackstorySection character={character} update={update} />;
+        return (
+          <BackstorySection
+            character={character}
+            update={update}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
+          />
+        );
     }
   }
 

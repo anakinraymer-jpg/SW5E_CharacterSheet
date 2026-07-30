@@ -2,11 +2,14 @@ import type { Character, EquipmentItem } from "../types";
 import { SKILL_ABILITY } from "../types";
 import type { ArmorCatalogEntry } from "../data/armor";
 import { abilityModifier, armorCatalogMatch, passivePerception, proficiencyBonus } from "../utils";
+import SectionHeader from "./SectionHeader";
 
 interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
   updateItem: (id: string, patch: Partial<EquipmentItem>) => void;
+  collapsedSections: Record<string, boolean>;
+  onToggleSection: (id: string) => void;
 }
 
 function DeathSavePips({
@@ -31,7 +34,8 @@ function DeathSavePips({
   );
 }
 
-export default function CombatSection({ character, update, updateItem }: Props) {
+export default function CombatSection({ character, update, updateItem, collapsedSections, onToggleSection }: Props) {
+  const collapsed = !!collapsedSections["combat"];
   const pb = proficiencyBonus(character.level);
 
   const armorItems = character.equipment
@@ -48,7 +52,9 @@ export default function CombatSection({ character, update, updateItem }: Props) 
 
   return (
     <section className="sheet-section combat-section">
-      <h2>Combat</h2>
+      <SectionHeader title="Combat" collapsed={collapsed} onToggle={() => onToggleSection("combat")} />
+      {!collapsed && (
+      <>
       <div className="combat-grid">
         <div className="field">
           <label>Passive Perception</label>
@@ -207,6 +213,8 @@ export default function CombatSection({ character, update, updateItem }: Props) 
           onChange={(e) => update("resistances", e.target.value)}
         />
       </div>
+      </>
+      )}
     </section>
   );
 }

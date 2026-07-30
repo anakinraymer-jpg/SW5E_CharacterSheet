@@ -2,10 +2,13 @@ import type { Character } from "../types";
 import { CLASS_RESOURCES_BY_CLASS, CLASS_SUB_CHOICES_BY_CLASS } from "../data/classFeatureChoices";
 import { CLASSES_CATALOG } from "../data/classes";
 import HoverInfo from "./HoverInfo";
+import SectionHeader from "./SectionHeader";
 
 interface Props {
   character: Character;
   onUpdateResource: (key: string, current: number) => void;
+  collapsedSections: Record<string, boolean>;
+  onToggleSection: (id: string) => void;
 }
 
 interface ParsedFeature {
@@ -87,7 +90,13 @@ function ProficiencyNodes({
   );
 }
 
-export default function ClassFeaturesSection({ character, onUpdateResource }: Props) {
+export default function ClassFeaturesSection({
+  character,
+  onUpdateResource,
+  collapsedSections,
+  onToggleSection,
+}: Props) {
+  const collapsed = !!collapsedSections["classFeatures"];
   const resources = CLASS_RESOURCES_BY_CLASS.get(character.classAppliedName) ?? [];
   const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
   const subChoiceDefs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
@@ -101,7 +110,13 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
 
   return (
     <section className="sheet-section class-features-section">
-      <h2>Class Features</h2>
+      <SectionHeader
+        title="Class Features"
+        collapsed={collapsed}
+        onToggle={() => onToggleSection("classFeatures")}
+      />
+      {!collapsed && (
+      <>
       <p className="section-hint">
         Features unlocked by your class and archetype at your current level. Hover a title for
         details. Level up to reveal more.
@@ -210,6 +225,8 @@ export default function ClassFeaturesSection({ character, onUpdateResource }: Pr
           <div className="species-traits-header">{character.archetypeAppliedName} Features</div>
           <FeatureChips text={character.archetypeTraitsText} />
         </div>
+      )}
+      </>
       )}
     </section>
   );

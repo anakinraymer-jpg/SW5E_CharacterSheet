@@ -4,6 +4,7 @@ import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
 import { ARMOR_CATALOG } from "../data/armor";
 import HoverInfo from "./HoverInfo";
+import SectionHeader from "./SectionHeader";
 
 const ITEM_LOOKUP = new Map<string, { name: string; weight: number }>([
   ...GEAR_CATALOG.map((g) => [g.name.toLowerCase(), { name: g.name, weight: g.weight }] as const),
@@ -44,6 +45,8 @@ interface Props {
   addValuable: () => void;
   updateValuable: (id: string, patch: Partial<Valuable>) => void;
   removeValuable: (id: string) => void;
+  collapsedSections: Record<string, boolean>;
+  onToggleSection: (id: string) => void;
 }
 
 const LOCATIONS: ItemLocation[] = ["Donned", "Backpack", "Pouch", "Storage"];
@@ -57,7 +60,10 @@ export default function EquipmentSection({
   addValuable,
   updateValuable,
   removeValuable,
+  collapsedSections,
+  onToggleSection,
 }: Props) {
+  const collapsed = !!collapsedSections["equipment"];
   const totalWeight = character.equipment.reduce(
     (sum, item) => sum + item.weight * item.quantity,
     0
@@ -84,8 +90,9 @@ export default function EquipmentSection({
 
   return (
     <section className="sheet-section equipment-section">
-      <h2>Equipment</h2>
-
+      <SectionHeader title="Equipment" collapsed={collapsed} onToggle={() => onToggleSection("equipment")} />
+      {!collapsed && (
+      <>
       <div className="field field-credits">
         <label htmlFor="credits">Credits</label>
         <HoverInfo title="Credits Breakdown" lines={creditLines}>
@@ -308,6 +315,8 @@ export default function EquipmentSection({
       <button className="btn btn-secondary" onClick={addValuable}>
         + Add Valuable
       </button>
+      </>
+      )}
     </section>
   );
 }

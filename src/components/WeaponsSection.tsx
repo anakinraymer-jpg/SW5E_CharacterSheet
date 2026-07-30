@@ -1,5 +1,6 @@
 import type { CombatFeature, RefreshType, Weapon } from "../types";
 import { WEAPON_CATALOG } from "../data/weapons";
+import SectionHeader from "./SectionHeader";
 
 function extractRange(property: string): string {
   const match = property.match(/\((?:range )?(\d+(?:\/\d+)?)\)/i);
@@ -17,6 +18,8 @@ interface Props {
   addCombatFeature: () => void;
   updateCombatFeature: (id: string, patch: Partial<CombatFeature>) => void;
   removeCombatFeature: (id: string) => void;
+  collapsedSections: Record<string, boolean>;
+  onToggleSection: (id: string) => void;
 }
 
 const REFRESH_OPTIONS: RefreshType[] = ["At Will", "Short Rest", "Long Rest"];
@@ -30,10 +33,19 @@ export default function WeaponsSection({
   addCombatFeature,
   updateCombatFeature,
   removeCombatFeature,
+  collapsedSections,
+  onToggleSection,
 }: Props) {
+  const collapsed = !!collapsedSections["weapons"];
   return (
     <section className="sheet-section weapons-section">
-      <h2>Weapons &amp; Ammunitions</h2>
+      <SectionHeader
+        title="Weapons & Ammunitions"
+        collapsed={collapsed}
+        onToggle={() => onToggleSection("weapons")}
+      />
+      {!collapsed && (
+      <>
       <datalist id="weapon-catalog-list">
         {WEAPON_CATALOG.map((w) => (
           <option key={w.name} value={w.name} />
@@ -179,6 +191,8 @@ export default function WeaponsSection({
       <button className="btn btn-secondary" onClick={addCombatFeature}>
         + Add Combat Feature
       </button>
+      </>
+      )}
     </section>
   );
 }

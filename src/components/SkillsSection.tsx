@@ -1,6 +1,7 @@
 import type { AbilityKey, Character, SkillName } from "../types";
 import { SKILL_LIST, SKILL_ABILITY, ARMOR_PENALTY_SKILLS } from "../types";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
+import SectionHeader from "./SectionHeader";
 
 const ABILITY_SHORT: Record<AbilityKey, string> = {
   str: "STR",
@@ -16,6 +17,8 @@ interface Props {
   toggleSkillProficiency: (skill: SkillName) => void;
   toggleSkillExpertise: (skill: SkillName) => void;
   toggleSavingThrow: (key: AbilityKey) => void;
+  collapsedSections: Record<string, boolean>;
+  onToggleSection: (id: string) => void;
 }
 
 export default function SkillsSection({
@@ -23,7 +26,10 @@ export default function SkillsSection({
   toggleSkillProficiency,
   toggleSkillExpertise,
   toggleSavingThrow,
+  collapsedSections,
+  onToggleSection,
 }: Props) {
+  const collapsed = !!collapsedSections["skills"];
   const pb = proficiencyBonus(character.level);
 
   function skillBonus(skill: SkillName): number {
@@ -43,7 +49,9 @@ export default function SkillsSection({
 
   return (
     <section className="sheet-section skills-section">
-      <h2>Skills</h2>
+      <SectionHeader title="Skills" collapsed={collapsed} onToggle={() => onToggleSection("skills")} />
+      {!collapsed && (
+      <>
       <div className="proficiency-bonus">
         Proficiency Bonus: <strong>{formatModifier(pb)}</strong>
       </div>
@@ -112,6 +120,8 @@ export default function SkillsSection({
           ))}
         </tbody>
       </table>
+      </>
+      )}
     </section>
   );
 }

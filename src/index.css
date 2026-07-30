@@ -151,6 +151,27 @@ h2::before {
   flex: none;
 }
 
+h2.collapsible-header {
+  cursor: pointer;
+  user-select: none;
+}
+
+h2.collapsible-header:hover {
+  color: var(--accent);
+}
+
+.collapse-chevron {
+  margin-left: auto;
+  font-size: 0.85em;
+  line-height: 1;
+  transition: transform 0.15s ease;
+  flex: none;
+}
+
+.collapse-chevron.is-collapsed {
+  transform: rotate(-90deg);
+}
+
 h3 {
   font-size: 0.9rem;
   margin: 16px 0 8px;
