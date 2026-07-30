@@ -80,7 +80,11 @@ body::before {
 }
 
 .theme-toggle {
-  position: fixed;
+  /* Absolute (not fixed) so it scrolls away with the page instead of staying pinned to the
+     viewport, where it could sit on top of collapsible section headers further down a long
+     character sheet. `body` is position: relative, so this still anchors to the top-right
+     corner on initial load. */
+  position: absolute;
   top: 16px;
   right: 16px;
   z-index: 10000;
