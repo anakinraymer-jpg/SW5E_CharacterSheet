@@ -6,6 +6,7 @@ import type {
   SpeciesSelections,
 } from "./types";
 import { emptyAbilities0 } from "./types";
+import { proficiencyBonus } from "./utils";
 
 export const ABILITY_LABEL: Record<AbilityKey, string> = {
   str: "Strength",
@@ -15,6 +16,15 @@ export const ABILITY_LABEL: Record<AbilityKey, string> = {
   wis: "Wisdom",
   cha: "Charisma",
 };
+
+// Sums bonus credits from traits like Wealthy: level * proficiency bonus * the trait's multiplier.
+function computeSpeciesCredits(species: SpeciesEntry, level: number): number {
+  const bonus = proficiencyBonus(level);
+  return species.traits.reduce(
+    (sum, trait) => sum + (trait.grantsCreditsMultiplier ? level * bonus * trait.grantsCreditsMultiplier : 0),
+    0
+  );
+}
 
 export function speciesNeedsChoices(species: SpeciesEntry): boolean {
   if (species.abilityIncrease.humanVariant) return true;
@@ -38,12 +48,14 @@ export function revertSpecies(character: Character): Character {
     ...character,
     abilities,
     skills,
+    credits: character.credits - character.speciesCreditsApplied,
     speciesAppliedName: "",
     speciesAbilityBonus: emptyAbilities0(),
     speciesGrantedSkills: [],
     speciesGrantedLanguages: [],
     speciesGrantedProficiencies: [],
     speciesTraitsText: "",
+    speciesCreditsApplied: 0,
   };
 }
 
@@ -118,6 +130,8 @@ export function applySpecies(
     });
   }
 
+  const creditsApplied = computeSpeciesCredits(species, base.level || 1);
+
   return {
     ...base,
     species: species.name,
@@ -125,12 +139,25 @@ export function applySpecies(
     speedBase: species.speed,
     abilities,
     skills,
+    credits: base.credits + creditsApplied,
     speciesAppliedName: species.name,
     speciesAbilityBonus: bonus,
     speciesGrantedSkills: grantedSkills,
     speciesGrantedLanguages: grantedLanguages,
     speciesGrantedProficiencies: grantedProficiencies,
     speciesTraitsText: buildTraitsText(species, selections),
+    speciesCreditsApplied: creditsApplied,
+  };
+}
+
+// Recomputes Wealthy-style credit bonuses when level changes (they scale with proficiency bonus).
+export function recalcSpeciesForLevel(character: Character, species: SpeciesEntry): Character {
+  const creditsApplied = computeSpeciesCredits(species, character.level || 1);
+  if (creditsApplied === character.speciesCreditsApplied) return character;
+  return {
+    ...character,
+    credits: character.credits - character.speciesCreditsApplied + creditsApplied,
+    speciesCreditsApplied: creditsApplied,
   };
 }
 

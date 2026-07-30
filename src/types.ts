@@ -59,6 +59,7 @@ export interface SpeciesTrait {
   text: string;
   grantsSkills?: SkillName[];
   grantsProficiency?: string; // fixed non-skill proficiency this trait grants (armor/weapon/tool)
+  grantsCreditsMultiplier?: number; // e.g. Wealthy: bonus credits = level * proficiency bonus * this multiplier
   choices?: SpeciesTraitChoice[];
 }
 
@@ -359,6 +360,7 @@ export interface Character {
   speciesGrantedLanguages: string[];
   speciesGrantedProficiencies: string[];
   speciesTraitsText: string;
+  speciesCreditsApplied: number; // bonus credits from traits like Wealthy, so revert/relevel can cleanly adjust
 
   // Class/archetype trait application state
   classAppliedName: string;
@@ -560,6 +562,7 @@ export function createBlankCharacter(): Character {
     speciesGrantedLanguages: [],
     speciesGrantedProficiencies: [],
     speciesTraitsText: "",
+    speciesCreditsApplied: 0,
     classAppliedName: "",
     classSavingThrowsApplied: [],
     classGrantedSkills: [],

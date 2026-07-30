@@ -719,7 +719,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Sharp Wit", text: "Whenever you make a Charisma ability check, attack roll, or saving throw, you can add 1d4 to the result. Usable once per short or long rest." },
       { name: "Shrewd", text: "You have proficiency in Insight and your choice of Deception or Persuasion.", grantsSkills: ["Insight"], choices: [skillChoice("Skill", ["Deception", "Persuasion"])] },
       { name: "Undersized", text: "You can't use heavy shields. You can't use two-handed martial weapons unless they're also light, and versatile weapons can only be wielded two-handed." },
-      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr." },
+      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr.", grantsCreditsMultiplier: 1000 },
     ],
   },
   {
@@ -998,7 +998,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Colonist Versatility", text: "You gain proficiency in one skill of your choice.", choices: [skillChoice("Skill", ALL_SKILLS)] },
       { name: "Discerning", text: "You have proficiency in the Insight skill.", grantsSkills: ["Insight"] },
       { name: "Inscrutable", text: "Your calm demeanor makes you hard to read. Wisdom (Insight) checks made against you have disadvantage, and you have advantage on saving throws against effects that would read your thoughts." },
-      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr." },
+      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr.", grantsCreditsMultiplier: 1000 },
     ],
   },
   {
@@ -1507,7 +1507,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Jewelers", text: "You have proficiency with jeweler's implements.", grantsProficiency: "Jeweler's implements" },
       { name: "Naturalist", text: "You have proficiency in the Nature skill.", grantsSkills: ["Nature"] },
       { name: "Powerful Tail", text: "Your tail and teeth are natural weapons; your unarmed strikes deal 1d6 kinetic damage." },
-      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr." },
+      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr.", grantsCreditsMultiplier: 1000 },
     ],
   },
   {
@@ -1904,7 +1904,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Keen Hearing and Smell", text: "You have advantage on Wisdom (Perception) checks that involve hearing or smell." },
       { name: "Swim", text: "You have a swimming speed of 25 feet." },
       { name: "Undersized", text: "You can't use heavy shields. You can't use two-handed martial weapons unless they're also light, and versatile weapons can only be wielded two-handed." },
-      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr." },
+      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr.", grantsCreditsMultiplier: 1000 },
     ],
   },
   {
@@ -2093,7 +2093,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Seafaring", text: "You have a swimming speed of 20 feet." },
       { name: "Smooth Talker", text: "You have proficiency with Persuasion or Deception (your choice).", choices: [skillChoice("Skill", ["Persuasion", "Deception"])] },
       { name: "Storyteller", text: "Whenever you make a Charisma (Performance) check to tell a story, you are considered to have expertise in the Performance skill." },
-      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr." },
+      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level times your proficiency bonus times 1,000 cr.", grantsCreditsMultiplier: 1000 },
     ],
   },
   {

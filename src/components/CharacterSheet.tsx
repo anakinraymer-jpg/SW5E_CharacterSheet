@@ -27,7 +27,7 @@ import { ARCHETYPES_CATALOG_EC } from "../data/archetypeDetailsEC";
 
 const ARCHETYPES_CATALOG = [...ARCHETYPES_CATALOG_PHB, ...ARCHETYPES_CATALOG_EC];
 const SPECIES_CATALOG = [...SPECIES_CATALOG_PHB, ...SPECIES_CATALOG_EC, ...SPECIES_CATALOG_HOMEBREW];
-import { applySpecies, revertSpecies, speciesNeedsChoices } from "../speciesLogic";
+import { applySpecies, recalcSpeciesForLevel, revertSpecies, speciesNeedsChoices } from "../speciesLogic";
 import { applyBackground, backgroundNeedsChoices, revertBackground } from "../backgroundLogic";
 import {
   applyArchetype,
@@ -120,6 +120,10 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   // Reactive level engine: recompute class/archetype resources & feature text,
   // revert any ASI above the new level, and surface a pending ASI prompt.
   useEffect(() => {
+    const speciesEntry = SPECIES_CATALOG.find((s) => s.name === character.speciesAppliedName);
+    if (speciesEntry) {
+      setCharacter((prev) => recalcSpeciesForLevel(prev, speciesEntry));
+    }
     const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
     if (classEntry) {
       setCharacter((prev) => {
@@ -164,7 +168,13 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       setPendingSubChoiceDef(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [character.level, character.classAppliedName, character.archetypeAppliedName, character.asiChoices]);
+  }, [
+    character.level,
+    character.classAppliedName,
+    character.archetypeAppliedName,
+    character.asiChoices,
+    character.speciesAppliedName,
+  ]);
 
   function update<K extends keyof Character>(key: K, value: Character[K]) {
     setCharacter((prev) => ({ ...prev, [key]: value }));

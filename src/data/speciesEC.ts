@@ -126,7 +126,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Tech Resistance", text: "Growing up around technology leaves an impact on anomid. You have advantage on Dexterity and Intelligence saving throws against tech powers." },
       { name: "Tech Savant", text: "You have proficiency in the Technology skill.", grantsSkills: ["Technology"] },
       { name: "Vocalizer", text: "Anomid have no vocal cords, and rely on a vocalizer to communicate with other species. If your vocalizer is removed or destroyed, you cannot speak." },
-      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level x your proficiency bonus x 1,000 cr." },
+      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level x your proficiency bonus x 1,000 cr.", grantsCreditsMultiplier: 1000 },
     ],
   },
   {
@@ -834,7 +834,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Prehensile Tail", text: "You have supreme control over your tail and can use it to manipulate objects as well as your hands." },
       { name: "Shrewd Demeanor", text: "You have proficiency in two Intelligence, Wisdom, or Charisma skills of your choice.", choices: [skillChoice("Skills", MENTAL_SKILLS, 2)] },
       { name: "Slow and Lethargic", text: "Hutts are slow and generally incapable of moving quickly. You have disadvantage on Dexterity saving throws, and when determining your bonus to AC from your Dexterity, you can't add more than +3." },
-      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level x your proficiency bonus x 1,000 cr." },
+      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level x your proficiency bonus x 1,000 cr.", grantsCreditsMultiplier: 1000 },
     ],
   },
   {
@@ -1186,7 +1186,7 @@ export const SPECIES_CATALOG_EC: SpeciesEntry[] = [
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light. You can't discern color in darkness, only shades of gray." },
       { name: "Grovel, Cower, and Beg", text: "As an action on your turn, you can cower pathetically to distract nearby foes. Until the end of your next turn, your allies gain advantage on attack rolls against enemies within 10 feet of you that can see you. Once you use this trait, you can't use it again until you finish a short or long rest." },
       { name: "Smooth Talker", text: "You have proficiency in Deception and Persuasion.", grantsSkills: ["Deception", "Persuasion"] },
-      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level x your proficiency bonus x 1,000 cr." },
+      { name: "Wealthy", text: "During character creation, you start with additional credits equal to your level x your proficiency bonus x 1,000 cr.", grantsCreditsMultiplier: 1000 },
     ],
   },
   {
