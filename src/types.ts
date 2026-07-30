@@ -151,6 +151,7 @@ export interface BackgroundEntry {
   toolChoices: SpeciesTraitChoice[];
   languages: BackgroundLanguageGrant;
   equipmentText: string;
+  equipmentGrants: EquipmentPart[];
   startingCredits: number;
   featureName: string;
   featureText: string;
@@ -265,13 +266,15 @@ export interface Power {
   prepared: boolean;
 }
 
-// One concrete grant produced by resolving a class equipmentText branch into real inventory.
+// One concrete grant produced by resolving a class/background equipmentText branch into real inventory.
 export interface EquipmentPart {
   quantity?: number; // default 1
   item?: string; // exact catalog name (WEAPON_CATALOG / ARMOR_CATALOG / GEAR_CATALOG)
   choiceLabel?: string; // present => player must pick one of choiceOptions via a nested select
   choiceOptions?: string[]; // concrete catalog names offered for the choiceLabel select
-  proficientTool?: boolean; // resolve to the class's own already-chosen toolChoice[0][0] selection
+  proficientTool?: boolean; // resolve to one of the entry's own already-chosen toolChoice selections
+  proficientToolChoiceIndex?: number; // which toolChoices[] def to read from; default 0
+  proficientToolPickIndex?: number; // which pick within that def's selections; default 0
   freeText?: string; // literal display name when no catalog entry exists (e.g. a named starting pack)
 }
 
@@ -334,6 +337,8 @@ export interface Character {
   backgroundGrantedSkills: SkillName[];
   backgroundGrantedLanguages: string[];
   backgroundGrantedProficiencies: string[];
+  backgroundGrantedEquipmentIds: string[]; // EquipmentItem ids created by applyBackground, so revert only removes background-granted items
+  backgroundGrantedWeaponIds: string[]; // Weapon ids created by applyBackground, so revert only removes background-granted weapons
   backgroundCreditsApplied: number;
   level: number;
   alignment: string;
@@ -535,6 +540,8 @@ export function createBlankCharacter(): Character {
     backgroundGrantedSkills: [],
     backgroundGrantedLanguages: [],
     backgroundGrantedProficiencies: [],
+    backgroundGrantedEquipmentIds: [],
+    backgroundGrantedWeaponIds: [],
     backgroundCreditsApplied: 0,
     level: 1,
     alignment: "",

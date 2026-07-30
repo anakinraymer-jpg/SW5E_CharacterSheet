@@ -1,4 +1,5 @@
 import type { BackgroundEntry, BackgroundSelections, Character, SkillName } from "./types";
+import { resolveEquipmentParts } from "./equipmentLogic";
 
 export function backgroundNeedsChoices(bg: BackgroundEntry): boolean {
   return bg.skillChoice.count > 0 || bg.languages.choiceCount > 0 || bg.toolChoices.length > 0;
@@ -10,14 +11,20 @@ export function revertBackground(character: Character): Character {
   for (const skillName of character.backgroundGrantedSkills) {
     skills[skillName] = { ...skills[skillName], proficient: false };
   }
+  const grantedEquipmentIds = new Set(character.backgroundGrantedEquipmentIds);
+  const grantedWeaponIds = new Set(character.backgroundGrantedWeaponIds);
   return {
     ...character,
     skills,
     credits: character.credits - character.backgroundCreditsApplied,
+    equipment: character.equipment.filter((item) => !grantedEquipmentIds.has(item.id)),
+    weapons: character.weapons.filter((w) => !grantedWeaponIds.has(w.id)),
     backgroundAppliedName: "",
     backgroundGrantedSkills: [],
     backgroundGrantedLanguages: [],
     backgroundGrantedProficiencies: [],
+    backgroundGrantedEquipmentIds: [],
+    backgroundGrantedWeaponIds: [],
     backgroundCreditsApplied: 0,
   };
 }
@@ -45,6 +52,8 @@ export function applyBackground(
     chosen.forEach((val) => grantedProficiencies.push(`${val} (${choiceDef.label})`));
   });
 
+  const grantedItems = resolveEquipmentParts(bg.equipmentGrants, [], selections.toolChoice);
+
   return {
     ...base,
     background: bg.name,
@@ -54,7 +63,11 @@ export function applyBackground(
     backgroundGrantedSkills: grantedSkills,
     backgroundGrantedLanguages: grantedLanguages,
     backgroundGrantedProficiencies: grantedProficiencies,
+    backgroundGrantedEquipmentIds: grantedItems.equipment.map((i) => i.id),
+    backgroundGrantedWeaponIds: grantedItems.weapons.map((w) => w.id),
     backgroundCreditsApplied: bg.startingCredits,
     backgroundFeature: `${bg.featureName}. ${bg.featureText}`,
+    equipment: [...base.equipment, ...grantedItems.equipment],
+    weapons: [...base.weapons, ...grantedItems.weapons],
   };
 }
