@@ -85,11 +85,12 @@ export function resolveEquipmentParts(
         weapons.push({
           id: crypto.randomUUID(),
           name: hit.entry.name,
-          attackBonus: "",
+          proficient: true,
           damage: hit.entry.damage,
           range: extractWeaponRange(hit.entry.property),
           weight: hit.entry.weight,
-          ammo: "",
+          ammoCount: 0,
+          ammoType: "",
         });
       }
     } else if (hit.kind === "armor") {

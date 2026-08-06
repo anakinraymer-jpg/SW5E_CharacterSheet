@@ -12,6 +12,49 @@ import type {
 import { emptyAbilities0, isSkillName } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
 import { resolveEquipmentParts } from "./equipmentLogic";
+import { abilityModifier } from "./utils";
+
+export interface UnarmoredDefenseBonus {
+  modifier: number; // the class's secondary ability modifier, added on top of 10 + Dex
+  allowShield: boolean; // whether wearing a shield still permits this formula
+  sourceLabel: string; // e.g. "Berserker Unarmored Defense"
+  abilityLabel: string; // e.g. "Constitution"
+}
+
+// Class/archetype-granted alternatives to the flat "10 + Dex" unarmored AC. Only one applies at
+// a time in practice (a character only has one class), so the first match wins.
+export function computeUnarmoredDefenseBonus(character: Character): UnarmoredDefenseBonus | null {
+  if (character.classAppliedName === "Berserker") {
+    return {
+      modifier: abilityModifier(character.abilities.con),
+      allowShield: true,
+      sourceLabel: "Berserker Unarmored Defense",
+      abilityLabel: "Constitution",
+    };
+  }
+  if (character.classAppliedName === "Monk") {
+    const ability = character.monkUnarmoredDefenseAbility;
+    return {
+      modifier: abilityModifier(character.abilities[ability]),
+      allowShield: false,
+      sourceLabel: "Monk Unarmored Defense",
+      abilityLabel: ability === "wis" ? "Wisdom" : "Charisma",
+    };
+  }
+  if (
+    character.classAppliedName === "Fighter" &&
+    character.archetypeAppliedName === "Blademaster Specialist" &&
+    character.level >= 3
+  ) {
+    return {
+      modifier: abilityModifier(character.abilities.str),
+      allowShield: false,
+      sourceLabel: "Blademaster Unarmored Defense",
+      abilityLabel: "Strength",
+    };
+  }
+  return null;
+}
 
 export function classNeedsChoices(classEntry: ClassEntry): boolean {
   return classEntry.skillChoice.count > 0 || classEntry.toolChoices.length > 0;
@@ -136,6 +179,9 @@ export function applyClass(
     ? { weapons: [], equipment: [] }
     : resolveClassEquipmentGrants(classEntry, selections);
 
+  const forceMod = abilityModifier(base.abilities[base.forceCastingAbility]);
+  const techMod = abilityModifier(base.abilities.int);
+
   const next: Character = {
     ...base,
     characterClass: classEntry.name,
@@ -144,8 +190,10 @@ export function applyClass(
     credits: base.credits + creditsApplied,
     hitDiceTotal: `${level}d${classEntry.hitDie}`,
     hitDiceRemaining: `${level}d${classEntry.hitDie}`,
-    forcePoints: row?.forcePoints !== undefined ? { ...base.forcePoints, max: row.forcePoints } : base.forcePoints,
-    techPoints: row?.techPoints !== undefined ? { ...base.techPoints, max: row.techPoints } : base.techPoints,
+    forcePoints:
+      row?.forcePoints !== undefined ? { ...base.forcePoints, max: row.forcePoints + forceMod } : base.forcePoints,
+    techPoints:
+      row?.techPoints !== undefined ? { ...base.techPoints, max: row.techPoints + techMod } : base.techPoints,
     classAppliedName: classEntry.name,
     classSavingThrowsApplied: [...classEntry.savingThrows],
     classGrantedSkills: grantedSkills,
@@ -164,13 +212,19 @@ export function applyClass(
 export function recalcClassForLevel(character: Character, classEntry: ClassEntry): Character {
   const level = Math.max(1, Math.min(20, character.level || 1));
   const row = classEntry.levels[level - 1];
+  const forceMod = abilityModifier(character.abilities[character.forceCastingAbility]);
+  const techMod = abilityModifier(character.abilities.int);
   const next: Character = {
     ...character,
     hitDiceTotal: `${level}d${classEntry.hitDie}`,
     forcePoints:
-      row?.forcePoints !== undefined ? { ...character.forcePoints, max: row.forcePoints } : character.forcePoints,
+      row?.forcePoints !== undefined
+        ? { ...character.forcePoints, max: row.forcePoints + forceMod }
+        : character.forcePoints,
     techPoints:
-      row?.techPoints !== undefined ? { ...character.techPoints, max: row.techPoints } : character.techPoints,
+      row?.techPoints !== undefined
+        ? { ...character.techPoints, max: row.techPoints + techMod }
+        : character.techPoints,
   };
   next.classTraitsText = buildClassTraitsText(classEntry, next);
   return next;

@@ -186,6 +186,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     character.archetypeAppliedName,
     character.asiChoices,
     character.speciesAppliedName,
+    character.abilities,
+    character.forceCastingAbility,
   ]);
 
   function update<K extends keyof Character>(key: K, value: Character[K]) {
@@ -455,11 +457,12 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     const newWeapon: Weapon = {
       id: crypto.randomUUID(),
       name: "",
-      attackBonus: "",
+      proficient: true,
       damage: "",
       range: "",
       weight: 0,
-      ammo: "",
+      ammoCount: 0,
+      ammoType: "",
     };
     setCharacter((prev) => ({ ...prev, weapons: [...prev.weapons, newWeapon] }));
   }
@@ -690,6 +693,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       case "weapons":
         return (
           <WeaponsSection
+            character={character}
             weapons={character.weapons}
             addWeapon={addWeapon}
             updateWeapon={updateWeapon}

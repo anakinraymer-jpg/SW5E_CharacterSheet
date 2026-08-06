@@ -65,22 +65,44 @@ export function armorCatalogMatch(itemName: string): ArmorCatalogEntry | undefin
   return ARMOR_CATALOG.find((a) => a.name.toLowerCase() === name);
 }
 
+export interface UnarmoredDefenseInput {
+  modifier: number;
+  allowShield: boolean;
+}
+
 export interface EquippedDefense {
   total: number;
   armor: ArmorCatalogEntry | null;
   shields: ArmorCatalogEntry[];
+  unarmoredDefenseApplied: boolean;
 }
 
-export function computeDefense(equipment: EquipmentItem[], dexModifier: number): EquippedDefense | null {
+export function computeDefense(
+  equipment: EquipmentItem[],
+  dexModifier: number,
+  unarmoredDefense?: UnarmoredDefenseInput | null
+): EquippedDefense | null {
   const equippedMatches = equipment
     .filter((item) => item.equipped)
     .map((item) => armorCatalogMatch(item.name))
     .filter((a): a is ArmorCatalogEntry => Boolean(a));
   const shields = equippedMatches.filter((a) => a.type === "Shield");
   const armor = equippedMatches.find((a) => a.type !== "Shield") ?? null;
-  if (!armor && shields.length === 0) return null;
+  if (!armor && shields.length === 0 && !unarmoredDefense) return null;
 
-  const base = armor ? armorClassFromFormula(armor.ac, dexModifier) : 10 + dexModifier;
+  const usesUnarmoredDefense = Boolean(
+    !armor && unarmoredDefense && (unarmoredDefense.allowShield || shields.length === 0)
+  );
+  const base = armor
+    ? armorClassFromFormula(armor.ac, dexModifier)
+    : usesUnarmoredDefense
+      ? 10 + dexModifier + (unarmoredDefense?.modifier ?? 0)
+      : 10 + dexModifier;
   const shieldBonus = shields.reduce((sum, s) => sum + armorClassFromFormula(s.ac, dexModifier), 0);
-  return { total: base + shieldBonus, armor, shields };
+  return {
+    total: base + shieldBonus,
+    armor,
+    shields,
+    unarmoredDefenseApplied: usesUnarmoredDefense,
+  };
 }

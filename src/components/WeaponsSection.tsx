@@ -1,6 +1,10 @@
-import type { CombatFeature, RefreshType, Weapon } from "../types";
-import { WEAPON_CATALOG } from "../data/weapons";
+import type { Character, CombatFeature, RefreshType, Weapon } from "../types";
+import { WEAPON_CATALOG, type WeaponCatalogEntry } from "../data/weapons";
+import { GEAR_CATALOG } from "../data/gear";
+import { CLASSES_CATALOG } from "../data/classes";
+import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import SectionHeader from "./SectionHeader";
+import HoverInfo from "./HoverInfo";
 
 function extractRange(property: string): string {
   const match = property.match(/\((?:range )?(\d+(?:\/\d+)?)\)/i);
@@ -8,8 +12,50 @@ function extractRange(property: string): string {
 }
 
 const WEAPON_LOOKUP = new Map(WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), w]));
+const AMMO_TYPES = GEAR_CATALOG.filter((g) => g.category === "Ammunition").map((g) => g.name);
+
+// Best-effort default for a newly-picked catalog weapon: does the applied class's broad
+// proficiency list (e.g. "All Vibroweapons", "Simple Blasters") cover this weapon's type?
+// Ignores per-entry exclusion notes (e.g. Monk's "lacking heavy/dex/special/two-handed") since
+// this is only a starting point — the Proficient checkbox is always player-editable.
+function classProficientWithType(weaponType: string, label: string): boolean {
+  const normLabel = label.toLowerCase();
+  const normType = weaponType.toLowerCase();
+  const category = normType.includes("blaster")
+    ? "blaster"
+    : normType.includes("vibroweapon")
+      ? "vibroweapon"
+      : normType.includes("lightweapon")
+        ? "lightweapon"
+        : null;
+  if (!category || !normLabel.includes(category)) return false;
+  if (normLabel.startsWith("all")) return true;
+  if (normLabel.startsWith("simple")) return normType.startsWith("simple");
+  if (normLabel.startsWith("martial")) return normType.startsWith("martial");
+  return false;
+}
+
+function defaultProficient(className: string, entry: WeaponCatalogEntry): boolean {
+  const classEntry = CLASSES_CATALOG.find((c) => c.name === className);
+  if (!classEntry) return false;
+  return classEntry.weaponProficiencies.some((wp) => classProficientWithType(entry.type, wp.label));
+}
+
+// Blasters use Dexterity; melee weapons use Strength unless Finesse allows the better of the two.
+function toHitAbilityInfo(character: Character, weaponName: string): { mod: number; label: string } {
+  const strMod = abilityModifier(character.abilities.str);
+  const dexMod = abilityModifier(character.abilities.dex);
+  const entry = WEAPON_LOOKUP.get(weaponName.trim().toLowerCase());
+  if (!entry) return { mod: strMod, label: "Strength" };
+  const isRanged = /blaster/i.test(entry.type);
+  const isFinesse = /finesse/i.test(entry.property);
+  if (isRanged) return { mod: dexMod, label: "Dexterity" };
+  if (isFinesse && dexMod > strMod) return { mod: dexMod, label: "Dexterity (Finesse)" };
+  return { mod: strMod, label: "Strength" };
+}
 
 interface Props {
+  character: Character;
   weapons: Weapon[];
   addWeapon: () => void;
   updateWeapon: (id: string, patch: Partial<Weapon>) => void;
@@ -25,6 +71,7 @@ interface Props {
 const REFRESH_OPTIONS: RefreshType[] = ["At Will", "Short Rest", "Long Rest"];
 
 export default function WeaponsSection({
+  character,
   weapons,
   addWeapon,
   updateWeapon,
@@ -37,6 +84,7 @@ export default function WeaponsSection({
   onToggleSection,
 }: Props) {
   const collapsed = !!collapsedSections["weapons"];
+  const pb = proficiencyBonus(character.level);
   return (
     <section className="sheet-section weapons-section">
       <SectionHeader
@@ -51,21 +99,35 @@ export default function WeaponsSection({
           <option key={w.name} value={w.name} />
         ))}
       </datalist>
+      <datalist id="ammo-type-list">
+        {AMMO_TYPES.map((a) => (
+          <option key={a} value={a} />
+        ))}
+      </datalist>
       <div className="table-scroll">
       <table className="weapons-table">
         <thead>
           <tr>
             <th>Weapon</th>
-            <th>Attack</th>
+            <th>Prof.</th>
+            <th>To Hit Bonus</th>
             <th>Damage/Type</th>
             <th>Range</th>
             <th>Weight</th>
-            <th>Ammo</th>
+            <th>Ammo Count</th>
+            <th>Ammo Type</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {weapons.map((w) => (
+          {weapons.map((w) => {
+            const { mod: abilityMod, label: abilityLabel } = toHitAbilityInfo(character, w.name);
+            const toHit = abilityMod + (w.proficient ? pb : 0);
+            const toHitLines = [
+              `${abilityLabel} modifier: ${formatModifier(abilityMod)}`,
+              w.proficient ? `Proficiency Bonus: ${formatModifier(pb)}` : "Not proficient",
+            ];
+            return (
             <tr key={w.id}>
               <td>
                 <input
@@ -81,6 +143,7 @@ export default function WeaponsSection({
                         damage: known.damage,
                         weight: known.weight,
                         range: extractRange(known.property),
+                        proficient: defaultProficient(character.classAppliedName, known),
                       });
                     } else {
                       updateWeapon(w.id, { name });
@@ -90,11 +153,15 @@ export default function WeaponsSection({
               </td>
               <td>
                 <input
-                  type="text"
-                  className="attack-input"
-                  value={w.attackBonus}
-                  onChange={(e) => updateWeapon(w.id, { attackBonus: e.target.value })}
+                  type="checkbox"
+                  checked={w.proficient}
+                  onChange={(e) => updateWeapon(w.id, { proficient: e.target.checked })}
                 />
+              </td>
+              <td>
+                <HoverInfo title="To Hit Bonus Breakdown" lines={toHitLines}>
+                  <div className="readonly-box to-hit-box">{formatModifier(toHit)}</div>
+                </HoverInfo>
               </td>
               <td>
                 <input
@@ -124,10 +191,20 @@ export default function WeaponsSection({
               </td>
               <td>
                 <input
+                  type="number"
+                  min={0}
+                  className="ammo-count-input"
+                  value={w.ammoCount}
+                  onChange={(e) => updateWeapon(w.id, { ammoCount: Number(e.target.value) || 0 })}
+                />
+              </td>
+              <td>
+                <input
                   type="text"
-                  className="ammo-input"
-                  value={w.ammo}
-                  onChange={(e) => updateWeapon(w.id, { ammo: e.target.value })}
+                  list="ammo-type-list"
+                  className="ammo-type-input"
+                  value={w.ammoType}
+                  onChange={(e) => updateWeapon(w.id, { ammoType: e.target.value })}
                 />
               </td>
               <td>
@@ -139,7 +216,8 @@ export default function WeaponsSection({
                 </button>
               </td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
       </div>

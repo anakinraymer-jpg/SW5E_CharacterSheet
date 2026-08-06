@@ -171,6 +171,28 @@ export default function CombatSection({ character, update, updateItem, collapsed
         </div>
       </div>
 
+      {character.classAppliedName === "Monk" && (
+        <div className="field">
+          <label>Unarmored Defense Ability</label>
+          <div className="power-type-toggle">
+            <button
+              type="button"
+              className={`btn btn-small ${character.monkUnarmoredDefenseAbility === "wis" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => update("monkUnarmoredDefenseAbility", "wis")}
+            >
+              Wisdom
+            </button>
+            <button
+              type="button"
+              className={`btn btn-small ${character.monkUnarmoredDefenseAbility === "cha" ? "btn-primary" : "btn-secondary"}`}
+              onClick={() => update("monkUnarmoredDefenseAbility", "cha")}
+            >
+              Charisma
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="field field-wide">
         <label>Armor, Shield, Protections</label>
         {armorItems.length > 0 ? (

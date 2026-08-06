@@ -892,10 +892,22 @@
   text-align: left;
 }
 
-.attack-input,
-.range-input,
-.ammo-input {
-  width: 70px;
+.range-input {
+  width: 110px;
+}
+
+.ammo-count-input {
+  width: 60px;
+}
+
+.ammo-type-input {
+  width: 110px;
+}
+
+.to-hit-box {
+  width: 55px;
+  text-align: center;
+  padding: 4px 6px;
 }
 
 /* Combat features */

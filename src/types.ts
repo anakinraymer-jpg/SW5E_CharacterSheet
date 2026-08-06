@@ -294,11 +294,12 @@ export interface EquipmentItem {
 export interface Weapon {
   id: string;
   name: string;
-  attackBonus: string;
+  proficient: boolean; // whether to add proficiency bonus to the computed To Hit Bonus
   damage: string;
   range: string;
   weight: number;
-  ammo: string;
+  ammoCount: number;
+  ammoType: string;
 }
 
 export type RefreshType = "Short Rest" | "Long Rest" | "At Will";
@@ -399,6 +400,7 @@ export interface Character {
   currentHp: number;
   tempHp: number;
   defense: number;
+  monkUnarmoredDefenseAbility: "wis" | "cha"; // Monk's Unarmored Defense: Wisdom or Charisma (player's choice)
   armorNotes: string;
   resistances: string;
   hitDiceTotal: string;
@@ -588,6 +590,7 @@ export function createBlankCharacter(): Character {
     currentHp: 10,
     tempHp: 0,
     defense: 10,
+    monkUnarmoredDefenseAbility: "wis",
     armorNotes: "",
     resistances: "",
     hitDiceTotal: "1d8",
