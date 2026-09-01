@@ -1,4 +1,11 @@
-import type { Character, ClassResourceState, ClassSubChoiceDef, ClassSubChoicePickDetail, SkillName } from "./types";
+import type {
+  Character,
+  ClassResourceState,
+  ClassSubChoiceDef,
+  ClassSubChoiceOption,
+  ClassSubChoicePickDetail,
+  SkillName,
+} from "./types";
 import { CLASS_RESOURCES_BY_CLASS, CLASS_SUB_CHOICES_BY_CLASS, FIGHTING_STYLES, FIGHTING_MASTERIES } from "./data/classFeatureChoices";
 
 const FIGHTING_STYLES_BY_NAME = new Map(FIGHTING_STYLES.map((s) => [s.name, s]));
@@ -11,6 +18,56 @@ function levelIndex(character: Character): number {
 export function applicableSubChoiceDefs(character: Character): ClassSubChoiceDef[] {
   const defs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
   return defs.filter((d) => !d.archetypeName || d.archetypeName === character.archetypeAppliedName);
+}
+
+// Every option the character has picked across all applicable sub-choice defs (e.g. all chosen
+// Berserker Instincts), used for generic effects like passiveBuffText/rageBuffText/speedBonus.
+export function allChosenSubChoiceOptions(character: Character): ClassSubChoiceOption[] {
+  const out: ClassSubChoiceOption[] = [];
+  for (const def of applicableSubChoiceDefs(character)) {
+    const chosen = character.classSubChoicePicks[def.key] ?? [];
+    for (const name of chosen) {
+      const option = def.options.find((o) => o.name === name);
+      if (option) out.push(option);
+    }
+  }
+  return out;
+}
+
+export function activeSpeedBonus(character: Character): number {
+  return allChosenSubChoiceOptions(character).reduce((sum, o) => sum + (o.speedBonus ?? 0), 0);
+}
+
+export function activeCarryingCapacityMultiplier(character: Character): number {
+  return allChosenSubChoiceOptions(character).reduce((mult, o) => mult * (o.carryingCapacityMultiplier ?? 1), 1);
+}
+
+export function activeTravelPaceMultiplier(character: Character): number {
+  return allChosenSubChoiceOptions(character).reduce((mult, o) => mult * (o.travelPaceMultiplier ?? 1), 1);
+}
+
+// The stored damage-type pick(s) for a specific sub-choice option (e.g. Dewback's Instinct),
+// found by scanning classSubChoiceDetails at the same index as the matching pick.
+export function chosenDamageTypesFor(character: Character, optionName: string): string[] {
+  for (const def of applicableSubChoiceDefs(character)) {
+    const chosen = character.classSubChoicePicks[def.key] ?? [];
+    const idx = chosen.indexOf(optionName);
+    if (idx === -1) continue;
+    const detail = (character.classSubChoiceDetails[def.key] ?? [])[idx];
+    if (detail?.damageTypes) return detail.damageTypes;
+  }
+  return [];
+}
+
+// Class resources filtered to those the character currently qualifies for — either unconditional,
+// or gated behind a specific sub-choice pick (e.g. Fyrnock's Leap only once that instinct is chosen).
+export function applicableClassResources(character: Character) {
+  const defs = CLASS_RESOURCES_BY_CLASS.get(character.classAppliedName) ?? [];
+  return defs.filter((def) => {
+    if (!def.requiresSubChoicePick) return true;
+    const { defKey, optionName } = def.requiresSubChoicePick;
+    return (character.classSubChoicePicks[defKey] ?? []).includes(optionName);
+  });
 }
 
 export function grantedProficienciesFromSubChoices(character: Character): string[] {
@@ -69,7 +126,7 @@ function resyncSubChoiceGrantedSkills(character: Character): Character {
 // from a previous class. When a resource's max grows (leveling up), current grows by the same
 // delta (newly available uses start unspent); when max shrinks, current is clamped down.
 export function recalcClassResources(character: Character): Character {
-  const defs = CLASS_RESOURCES_BY_CLASS.get(character.classAppliedName) ?? [];
+  const defs = applicableClassResources(character);
   const idx = levelIndex(character);
   const existingByKey = new Map(character.classResources.map((r) => [r.key, r]));
   const next: ClassResourceState[] = defs.map((def) => {

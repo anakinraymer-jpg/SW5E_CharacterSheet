@@ -1,5 +1,6 @@
 import type { Character, EquipmentItem, ItemLocation, Valuable } from "../types";
 import { carryingCapacity, formatModifier } from "../utils";
+import { activeCarryingCapacityMultiplier } from "../classFeatureLogic";
 import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
 import { ARMOR_CATALOG } from "../data/armor";
@@ -72,7 +73,11 @@ export default function EquipmentSection({
     .filter((item) => item.location !== "Storage")
     .reduce((sum, item) => sum + item.weight * item.quantity, 0);
 
-  const capacity = carryingCapacity(character.abilities.str, character.size);
+  const capacity = carryingCapacity(
+    character.abilities.str,
+    character.size,
+    activeCarryingCapacityMultiplier(character)
+  );
 
   const creditSources = [
     character.classCreditsApplied !== 0
@@ -234,6 +239,11 @@ export default function EquipmentSection({
         + Add Item
       </button>
 
+      {activeCarryingCapacityMultiplier(character) > 1 && (
+        <p className="section-hint" style={{ marginBottom: 4 }}>
+          Carrying capacity below is already doubled for Bantha's Instinct.
+        </p>
+      )}
       <div className="carrying-capacity">
         <div className="capacity-box">
           <div className="capacity-label">Encumbered</div>

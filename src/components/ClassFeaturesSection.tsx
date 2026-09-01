@@ -1,10 +1,7 @@
 import type { Character } from "../types";
-import {
-  BERSERKER_RAGE_DAMAGE_BY_LEVEL,
-  CLASS_RESOURCES_BY_CLASS,
-  CLASS_SUB_CHOICES_BY_CLASS,
-} from "../data/classFeatureChoices";
+import { BERSERKER_RAGE_DAMAGE_BY_LEVEL, CLASS_SUB_CHOICES_BY_CLASS } from "../data/classFeatureChoices";
 import { CLASSES_CATALOG } from "../data/classes";
+import { allChosenSubChoiceOptions, applicableClassResources, chosenDamageTypesFor } from "../classFeatureLogic";
 import { formatModifier } from "../utils";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
@@ -104,12 +101,18 @@ export default function ClassFeaturesSection({
   onToggleSection,
 }: Props) {
   const collapsed = !!collapsedSections["classFeatures"];
-  const resources = CLASS_RESOURCES_BY_CLASS.get(character.classAppliedName) ?? [];
+  const resources = applicableClassResources(character);
   const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
   const subChoiceDefs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
   const hasChosenSubChoices = subChoiceDefs.some(
     (def) => (character.classSubChoicePicks[def.key] ?? []).length > 0
   );
+  const chosenOptions = allChosenSubChoiceOptions(character);
+  const passiveBuffOptions = chosenOptions.filter((o) => o.passiveBuffText);
+  const rageBuffOptions = chosenOptions.filter((o) => o.rageBuffText);
+  const dewbackTypes = chosenOptions.some((o) => o.name === "Dewback's Instinct")
+    ? chosenDamageTypesFor(character, "Dewback's Instinct")
+    : [];
 
   if (!character.classTraitsText && !character.archetypeTraitsText && resources.length === 0) {
     return null;
@@ -204,8 +207,34 @@ export default function ClassFeaturesSection({
               <HoverInfo title="Casting" lines={["You can't cast or concentrate on powers while raging."]}>
                 <span className="info-chip">No casting/concentration</span>
               </HoverInfo>
+              {rageBuffOptions.map((o) => (
+                <HoverInfo key={o.name} title={o.name} lines={[o.rageBuffText!]}>
+                  <span className="info-chip">{o.rageBuffText}</span>
+                </HoverInfo>
+              ))}
+              {dewbackTypes.length > 0 && (
+                <HoverInfo
+                  title="Dewback's Instinct"
+                  lines={[`Resistance to ${dewbackTypes.join(", ")} damage while raging.`]}
+                >
+                  <span className="info-chip">Resistance: {dewbackTypes.join(", ")}</span>
+                </HoverInfo>
+              )}
             </div>
           )}
+        </div>
+      )}
+
+      {passiveBuffOptions.length > 0 && (
+        <div className="species-traits-box">
+          <div className="species-traits-header">{character.classAppliedName} Instinct Effects</div>
+          <div className="chip-row">
+            {passiveBuffOptions.map((o) => (
+              <HoverInfo key={o.name} title={o.name} lines={[o.passiveBuffText!]}>
+                <span className="info-chip">{o.passiveBuffText}</span>
+              </HoverInfo>
+            ))}
+          </div>
         </div>
       )}
 

@@ -33,8 +33,8 @@ export interface CarryingCapacity {
   pushDragLift: number;
 }
 
-export function carryingCapacity(strength: number, size: string): CarryingCapacity {
-  const mult = sizeMultiplier(size);
+export function carryingCapacity(strength: number, size: string, bonusMultiplier = 1): CarryingCapacity {
+  const mult = sizeMultiplier(size) * bonusMultiplier;
   return {
     encumbered: Math.floor(strength * 5 * mult),
     heavilyEncumbered: Math.floor(strength * 10 * mult),

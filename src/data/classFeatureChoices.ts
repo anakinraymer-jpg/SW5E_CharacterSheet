@@ -11,6 +11,22 @@
 
 import type { ClassResourceDef, ClassSubChoiceDef, ClassSubChoiceOption } from "../types";
 
+// Damage types resistance/vulnerability choices can be made from (e.g. Dewback's Instinct).
+// "True damage" is deliberately excluded — it's explicitly unresistable in the rules text.
+export const DAMAGE_TYPES = [
+  "Acid",
+  "Cold",
+  "Energy",
+  "Fire",
+  "Ion",
+  "Kinetic",
+  "Lightning",
+  "Necrotic",
+  "Poison",
+  "Psychic",
+  "Sonic",
+];
+
 export const FIGHTING_STYLES: ClassSubChoiceOption[] = [
   { name: "Area Style", text: "When a creature successfully saves against your projector canister, you can use your bonus action to force them to repeat the save. When a creature rolls a 1 on the saving throw against a projector canister you control, they treat the effect's damage as if it had rolled the maximum." },
   { name: "Assisting Style", text: "You can take the Help action as a bonus action (or as a reaction on your turn if you already could). Creatures benefiting from your Help action can't have disadvantage on the affected ability check or attack roll." },
@@ -277,6 +293,14 @@ export const CLASS_RESOURCES: ClassResourceDef[] = [
     maxByLevel: [2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 6, 6, 99],
   },
   {
+    key: "berserker-fyrnocks-leap",
+    label: "Fyrnock's Leap",
+    className: "Berserker",
+    refresh: "Long Rest",
+    maxByLevel: [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
+    requiresSubChoicePick: { defKey: "berserker-instincts", optionName: "Fyrnock's Instinct" },
+  },
+  {
     key: "fighter-superiority-dice",
     label: "Superiority Dice",
     className: "Fighter",
@@ -389,23 +413,102 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     className: "Berserker",
     countByLevel: [0, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5],
     options: [
-      { name: "Acklay's Instinct", text: "While raging, you have advantage on Constitution saving throws." },
-      { name: "Bantha's Instinct", text: "Your carrying capacity and push/drag/lift weight doubles (triples if already doubled). Advantage on Strength checks to push, pull, lift, or break objects.", prerequisite: "7th level" },
-      { name: "Blurrg's Instinct", text: "Your travel pace (mounted or on foot) is doubled, as is that of up to ten companions within 60 feet of you while you're not incapacitated." },
-      { name: "Boggdo's Instinct", text: "While raging, you have a flying speed equal to your walking speed, though you fall if you end your turn airborne with nothing else holding you up.", prerequisite: "13th level" },
-      { name: "Chirodactyl's Instinct", text: "While raging, you have blindsight to 30 feet and advantage on Wisdom (Perception) checks relying on sound, as long as you aren't deafened.", prerequisite: "7th level" },
-      { name: "Dewback's Instinct", text: "Choose three damage types other than true damage. While raging, you have resistance to those types." },
-      { name: "Fighter's Instinct", text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options.", fightingStyleChoice: true },
-      { name: "Fyrnock's Instinct", text: "While raging, use your bonus action to leap up to 30 feet, dealing kinetic damage equal to your Strength modifier to each creature within 5 feet of where you land. Usable twice, more at 5th/9th/13th/17th level; regains on long rest." },
-      { name: "Hawk's Instinct", text: "You can see up to 1 mile away without difficulty, discerning fine details as if within 100 feet. Dim light no longer imposes disadvantage on Perception checks.", prerequisite: "7th level" },
-      { name: "Katarn's Instinct", text: "You gain a climbing speed equal to your movement speed." },
-      { name: "Loth-cat's Instinct", text: "While raging, other creatures have disadvantage on opportunity attacks against you, and you can take the Dash action as a bonus action." },
-      { name: "Predator's Instinct", text: "Your speed increases by 10 feet." },
-      { name: "Rancor's Instinct", text: "While raging, hostile creatures within 5 feet of you have disadvantage on attack rolls against targets other than you (or another creature with this feature), unless they can't see/hear you or can't be frightened.", prerequisite: "13th level" },
-      { name: "Tactician's Instinct", text: "When you use Reckless Attack, you can forgo your own advantage so that friendly creatures within 5 feet of a hostile creature within 5 feet of you have advantage against that creature instead." },
-      { name: "Tracker's Instinct", text: "You can track creatures while traveling at a fast pace, and move stealthily while traveling at a normal pace.", prerequisite: "7th level" },
-      { name: "Terentatek's Instinct", text: "When forced to save against a force power, use your reaction to move up to half your speed toward the caster; ending within 5 feet lets you make one melee weapon attack as part of the reaction.", prerequisite: "13th level" },
-      { name: "Varactyl's Instinct", text: "While raging, you have advantage on Dexterity checks, your attack rolls can't suffer disadvantage, and each slowed level only reduces your speed by 5 feet (unless it would reduce it to 0).", prerequisite: "13th level" },
+      {
+        name: "Acklay's Instinct",
+        text: "While raging, you have advantage on Constitution saving throws.",
+        rageBuffText: "Advantage on Constitution saving throws.",
+      },
+      {
+        name: "Bantha's Instinct",
+        text: "Your carrying capacity and push/drag/lift weight doubles (triples if already doubled). Advantage on Strength checks to push, pull, lift, or break objects.",
+        prerequisite: "7th level",
+        carryingCapacityMultiplier: 2,
+        passiveBuffText: "Carrying capacity & push/drag/lift doubled. Advantage on Strength checks to push, pull, lift, or break objects.",
+      },
+      {
+        name: "Blurrg's Instinct",
+        text: "Your travel pace (mounted or on foot) is doubled, as is that of up to ten companions within 60 feet of you while you're not incapacitated.",
+        travelPaceMultiplier: 2,
+        passiveBuffText: "Travel pace doubled (yours and up to ten companions within 60 ft).",
+      },
+      {
+        name: "Boggdo's Instinct",
+        text: "While raging, you have a flying speed equal to your walking speed, though you fall if you end your turn airborne with nothing else holding you up.",
+        prerequisite: "13th level",
+        rageBuffText: "Flying speed equal to walking speed (fall if airborne at turn's end).",
+      },
+      {
+        name: "Chirodactyl's Instinct",
+        text: "While raging, you have blindsight to 30 feet and advantage on Wisdom (Perception) checks relying on sound, as long as you aren't deafened.",
+        prerequisite: "7th level",
+        rageBuffText: "Blindsight 30 ft; advantage on Perception checks relying on sound.",
+      },
+      {
+        name: "Dewback's Instinct",
+        text: "Choose three damage types other than true damage. While raging, you have resistance to those types.",
+        damageTypeChoiceCount: 3,
+      },
+      {
+        name: "Fighter's Instinct",
+        text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options.",
+        fightingStyleChoice: true,
+      },
+      {
+        name: "Fyrnock's Instinct",
+        text: "While raging, use your bonus action to leap up to 30 feet, dealing kinetic damage equal to your Strength modifier to each creature within 5 feet of where you land. Usable twice, more at 5th/9th/13th/17th level; regains on long rest.",
+        rageBuffText: "Bonus action: leap 30 ft, dealing Strength-modifier kinetic damage to creatures within 5 ft of landing (see Fyrnock's Leap uses).",
+      },
+      {
+        name: "Hawk's Instinct",
+        text: "You can see up to 1 mile away without difficulty, discerning fine details as if within 100 feet. Dim light no longer imposes disadvantage on Perception checks.",
+        prerequisite: "7th level",
+        passiveBuffText: "See up to 1 mile away (fine detail as if within 100 ft). No dim-light Perception disadvantage.",
+      },
+      {
+        name: "Katarn's Instinct",
+        text: "You gain a climbing speed equal to your movement speed.",
+        passiveBuffText: "Climbing speed equal to your movement speed.",
+      },
+      {
+        name: "Loth-cat's Instinct",
+        text: "While raging, other creatures have disadvantage on opportunity attacks against you, and you can take the Dash action as a bonus action.",
+        rageBuffText: "Others have disadvantage on opportunity attacks against you; Dash as a bonus action.",
+      },
+      {
+        name: "Predator's Instinct",
+        text: "Your speed increases by 10 feet.",
+        speedBonus: 10,
+        passiveBuffText: "Speed +10 ft.",
+      },
+      {
+        name: "Rancor's Instinct",
+        text: "While raging, hostile creatures within 5 feet of you have disadvantage on attack rolls against targets other than you (or another creature with this feature), unless they can't see/hear you or can't be frightened.",
+        prerequisite: "13th level",
+        rageBuffText: "Hostile creatures within 5 ft have disadvantage attacking anyone but you.",
+      },
+      {
+        name: "Tactician's Instinct",
+        text: "When you use Reckless Attack, you can forgo your own advantage so that friendly creatures within 5 feet of a hostile creature within 5 feet of you have advantage against that creature instead.",
+        passiveBuffText: "Reckless Attack: forgo your own advantage to grant it to nearby allies instead.",
+      },
+      {
+        name: "Tracker's Instinct",
+        text: "You can track creatures while traveling at a fast pace, and move stealthily while traveling at a normal pace.",
+        prerequisite: "7th level",
+        passiveBuffText: "Track at a fast pace; move stealthily at a normal pace.",
+      },
+      {
+        name: "Terentatek's Instinct",
+        text: "When forced to save against a force power, use your reaction to move up to half your speed toward the caster; ending within 5 feet lets you make one melee weapon attack as part of the reaction.",
+        prerequisite: "13th level",
+        passiveBuffText: "Reaction vs. a force power save: move half speed toward the caster, melee attack if you end within 5 ft.",
+      },
+      {
+        name: "Varactyl's Instinct",
+        text: "While raging, you have advantage on Dexterity checks, your attack rolls can't suffer disadvantage, and each slowed level only reduces your speed by 5 feet (unless it would reduce it to 0).",
+        prerequisite: "13th level",
+        rageBuffText: "Advantage on Dexterity checks; attacks can't have disadvantage; slowed levels only cost 5 ft each.",
+      },
     ],
   },
   fightingStyleChoice("Fighter", [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),

@@ -188,6 +188,7 @@ export interface ClassResourceDef {
   refresh: ClassResourceRefresh;
   maxByLevel: number[]; // length 20, index 0 = level 1
   dieByLevel?: (string | null)[]; // parallel die-size text, e.g. "d4"
+  requiresSubChoicePick?: { defKey: string; optionName: string }; // only shown once this specific sub-choice option is picked (e.g. Fyrnock's Instinct)
 }
 
 export interface ClassResourceState {
@@ -209,6 +210,12 @@ export interface ClassSubChoiceOption {
   fightingMasteryChoice?: boolean; // nested pick of one FIGHTING_MASTERIES option (e.g. Fighter's Mastery Strategist)
   lightsaberFormChoiceCount?: number; // e.g. Formfighting Style/Mastery: learn this many LIGHTSABER_FORMS
   repeatable?: boolean; // option text explicitly allows choosing it again for a fresh grant
+  damageTypeChoiceCount?: number; // e.g. Dewback's Instinct: pick this many damage types for its resistance
+  rageBuffText?: string; // shown as a chip only while raging (e.g. Berserker Instinct effects that require raging)
+  passiveBuffText?: string; // shown as a chip whenever this option is picked, regardless of raging
+  speedBonus?: number; // flat bonus to walking speed while this option is picked (e.g. Predator's Instinct)
+  carryingCapacityMultiplier?: number; // multiplies carrying-capacity figures (e.g. Bantha's Instinct)
+  travelPaceMultiplier?: number; // multiplies travel-pace speeds (e.g. Blurrg's Instinct)
 }
 
 export interface ClassSubChoiceDef {
@@ -230,6 +237,7 @@ export interface ClassSubChoicePickDetail {
   fightingStyle?: string;
   fightingMastery?: string;
   lightsaberForms?: string[];
+  damageTypes?: string[];
 }
 
 export interface FeatEntry {

@@ -4,7 +4,7 @@ import { SKILL_LIST } from "../types";
 import { LANGUAGES } from "../data/sw5eData";
 import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
-import { FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS } from "../data/classFeatureChoices";
+import { DAMAGE_TYPES, FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS } from "../data/classFeatureChoices";
 import Modal from "./Modal";
 
 const TOOL_OPTIONS = GEAR_CATALOG.filter((g) => g.category === "Tool" || g.category === "Kit").map((g) => g.name);
@@ -57,6 +57,14 @@ function detailComplete(option: ClassSubChoiceDef["options"][number] | undefined
       forms.length === option.lightsaberFormChoiceCount &&
       forms.every(Boolean) &&
       new Set(forms).size === forms.length
+    );
+  }
+  if (option.damageTypeChoiceCount) {
+    const types = detail.damageTypes ?? [];
+    return (
+      types.length === option.damageTypeChoiceCount &&
+      types.every(Boolean) &&
+      new Set(types).size === types.length
     );
   }
   if (option.skillOrToolFork) {
@@ -229,6 +237,29 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
                         {LIGHTSABER_FORM_NAMES.map((f) => (
                           <option key={f} value={f}>
                             {f}
+                          </option>
+                        ))}
+                      </select>
+                    ))}
+                  </div>
+                )}
+
+                {option?.damageTypeChoiceCount && (
+                  <div className="choice-selects" style={{ marginTop: 4 }}>
+                    {Array.from({ length: option.damageTypeChoiceCount }).map((_, di) => (
+                      <select
+                        key={di}
+                        value={detail.damageTypes?.[di] ?? ""}
+                        onChange={(e) => {
+                          const types = [...(detail.damageTypes ?? Array(option.damageTypeChoiceCount).fill(""))];
+                          types[di] = e.target.value;
+                          updateDetail(i, { ...detail, damageTypes: types });
+                        }}
+                      >
+                        <option value="">Choose damage type…</option>
+                        {DAMAGE_TYPES.map((dt) => (
+                          <option key={dt} value={dt}>
+                            {dt}
                           </option>
                         ))}
                       </select>

@@ -1,6 +1,7 @@
 import type { Character } from "../types";
 import { abilityModifier, computeDefense, formatModifier, proficiencyBonus } from "../utils";
 import { computeUnarmoredDefenseBonus } from "../classLogic";
+import { activeSpeedBonus } from "../classFeatureLogic";
 import HoverInfo from "./HoverInfo";
 
 interface Props {
@@ -80,6 +81,7 @@ export function ProficiencyBonusBox({ character }: Props) {
 }
 
 export function SpeedBaseBox({ character, update }: Props) {
+  const bonus = activeSpeedBonus(character);
   return (
     <section className="sheet-section stat-box-section">
       <div className="field">
@@ -90,6 +92,14 @@ export function SpeedBaseBox({ character, update }: Props) {
           value={character.speedBase}
           onChange={(e) => update("speedBase", Number(e.target.value) || 0)}
         />
+        {bonus > 0 && (
+          <HoverInfo
+            title="Speed Bonus"
+            lines={[`Effective speed: ${character.speedBase + bonus} ft (${character.speedBase} + ${bonus} from Predator's Instinct).`]}
+          >
+            <span className="rage-damage-note">Effective {character.speedBase + bonus} ft (Predator's Instinct)</span>
+          </HoverInfo>
+        )}
       </div>
     </section>
   );

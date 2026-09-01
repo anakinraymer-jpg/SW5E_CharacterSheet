@@ -2,7 +2,9 @@ import type { Character, EquipmentItem } from "../types";
 import { SKILL_ABILITY } from "../types";
 import type { ArmorCatalogEntry } from "../data/armor";
 import { abilityModifier, armorCatalogMatch, passivePerception, proficiencyBonus } from "../utils";
+import { activeTravelPaceMultiplier } from "../classFeatureLogic";
 import SectionHeader from "./SectionHeader";
+import HoverInfo from "./HoverInfo";
 
 interface Props {
   character: Character;
@@ -37,6 +39,7 @@ function DeathSavePips({
 export default function CombatSection({ character, update, updateItem, collapsedSections, onToggleSection }: Props) {
   const collapsed = !!collapsedSections["combat"];
   const pb = proficiencyBonus(character.level);
+  const travelPaceMultiplier = activeTravelPaceMultiplier(character);
 
   const armorItems = character.equipment
     .map((item) => ({ item, catalog: armorCatalogMatch(item.name) }))
@@ -71,6 +74,16 @@ export default function CombatSection({ character, update, updateItem, collapsed
             value={character.speedHour}
             onChange={(e) => update("speedHour", Number(e.target.value) || 0)}
           />
+          {travelPaceMultiplier > 1 && (
+            <HoverInfo
+              title="Travel Pace"
+              lines={[`Effective: ${character.speedHour * travelPaceMultiplier} (Blurrg's Instinct doubles travel pace).`]}
+            >
+              <span className="rage-damage-note">
+                Effective {character.speedHour * travelPaceMultiplier} (Blurrg's Instinct)
+              </span>
+            </HoverInfo>
+          )}
         </div>
         <div className="field">
           <label htmlFor="speed-day">Speed (day)</label>
@@ -80,6 +93,16 @@ export default function CombatSection({ character, update, updateItem, collapsed
             value={character.speedDay}
             onChange={(e) => update("speedDay", Number(e.target.value) || 0)}
           />
+          {travelPaceMultiplier > 1 && (
+            <HoverInfo
+              title="Travel Pace"
+              lines={[`Effective: ${character.speedDay * travelPaceMultiplier} (Blurrg's Instinct doubles travel pace).`]}
+            >
+              <span className="rage-damage-note">
+                Effective {character.speedDay * travelPaceMultiplier} (Blurrg's Instinct)
+              </span>
+            </HoverInfo>
+          )}
         </div>
         <div className="field">
           <label htmlFor="vision">Vision</label>
