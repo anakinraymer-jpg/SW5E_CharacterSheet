@@ -1,11 +1,17 @@
 import type { Character } from "../types";
-import { CLASS_RESOURCES_BY_CLASS, CLASS_SUB_CHOICES_BY_CLASS } from "../data/classFeatureChoices";
+import {
+  BERSERKER_RAGE_DAMAGE_BY_LEVEL,
+  CLASS_RESOURCES_BY_CLASS,
+  CLASS_SUB_CHOICES_BY_CLASS,
+} from "../data/classFeatureChoices";
 import { CLASSES_CATALOG } from "../data/classes";
+import { formatModifier } from "../utils";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
 
 interface Props {
   character: Character;
+  update: <K extends keyof Character>(key: K, value: Character[K]) => void;
   onUpdateResource: (key: string, current: number) => void;
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
@@ -92,6 +98,7 @@ function ProficiencyNodes({
 
 export default function ClassFeaturesSection({
   character,
+  update,
   onUpdateResource,
   collapsedSections,
   onToggleSection,
@@ -153,6 +160,52 @@ export default function ClassFeaturesSection({
               </div>
             );
           })}
+        </div>
+      )}
+
+      {character.classAppliedName === "Berserker" && (
+        <div className="species-traits-box">
+          <div className="species-traits-header">Rage</div>
+          <button
+            type="button"
+            className={`btn btn-small ${character.isRaging ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => update("isRaging", !character.isRaging)}
+          >
+            {character.isRaging ? "Raging — Click to End" : "Start Raging"}
+          </button>
+          {character.isRaging && (
+            <div className="chip-row" style={{ marginTop: 8 }}>
+              <HoverInfo
+                title="Advantage on Strength"
+                lines={["Advantage on Strength checks and saving throws while raging."]}
+              >
+                <span className="info-chip">Advantage: Strength checks &amp; saves</span>
+              </HoverInfo>
+              <HoverInfo
+                title="Damage Resistance"
+                lines={["Resistance to kinetic and energy damage while raging."]}
+              >
+                <span className="info-chip">Resistance: Kinetic &amp; Energy</span>
+              </HoverInfo>
+              <HoverInfo
+                title="Rage Damage"
+                lines={[
+                  `+${BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1]} to melee damage rolls using Strength.`,
+                  "Shown automatically next to qualifying weapons in the Weapons & Ammunitions table.",
+                ]}
+              >
+                <span className="info-chip">
+                  {formatModifier(
+                    BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1]
+                  )}{" "}
+                  melee damage (Str)
+                </span>
+              </HoverInfo>
+              <HoverInfo title="Casting" lines={["You can't cast or concentrate on powers while raging."]}>
+                <span className="info-chip">No casting/concentration</span>
+              </HoverInfo>
+            </div>
+          )}
         </div>
       )}
 

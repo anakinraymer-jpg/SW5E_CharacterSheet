@@ -401,6 +401,7 @@ export interface Character {
   tempHp: number;
   defense: number;
   monkUnarmoredDefenseAbility: "wis" | "cha"; // Monk's Unarmored Defense: Wisdom or Charisma (player's choice)
+  isRaging: boolean; // Berserker's Rage: toggles the advantage/resistance/damage buffs on and off
   armorNotes: string;
   resistances: string;
   hitDiceTotal: string;
@@ -591,6 +592,7 @@ export function createBlankCharacter(): Character {
     tempHp: 0,
     defense: 10,
     monkUnarmoredDefenseAbility: "wis",
+    isRaging: false,
     armorNotes: "",
     resistances: "",
     hitDiceTotal: "1d8",

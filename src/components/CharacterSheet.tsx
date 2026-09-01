@@ -722,6 +722,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         return (
           <ClassFeaturesSection
             character={character}
+            update={update}
             onUpdateResource={handleUpdateResource}
             collapsedSections={collapsedSections}
             onToggleSection={toggleSection}

@@ -2,6 +2,7 @@ import type { Character, CombatFeature, RefreshType, Weapon } from "../types";
 import { WEAPON_CATALOG, type WeaponCatalogEntry } from "../data/weapons";
 import { GEAR_CATALOG } from "../data/gear";
 import { CLASSES_CATALOG } from "../data/classes";
+import { BERSERKER_RAGE_DAMAGE_BY_LEVEL } from "../data/classFeatureChoices";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
@@ -85,6 +86,8 @@ export default function WeaponsSection({
 }: Props) {
   const collapsed = !!collapsedSections["weapons"];
   const pb = proficiencyBonus(character.level);
+  const isRaging = character.classAppliedName === "Berserker" && character.isRaging;
+  const rageDamageBonus = BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
   return (
     <section className="sheet-section weapons-section">
       <SectionHeader
@@ -169,6 +172,14 @@ export default function WeaponsSection({
                   value={w.damage}
                   onChange={(e) => updateWeapon(w.id, { damage: e.target.value })}
                 />
+                {isRaging && abilityLabel === "Strength" && (
+                  <HoverInfo
+                    title="Rage Damage"
+                    lines={[`+${rageDamageBonus} to this melee damage roll while raging (Strength-based).`]}
+                  >
+                    <span className="rage-damage-note">+{rageDamageBonus} Rage</span>
+                  </HoverInfo>
+                )}
               </td>
               <td>
                 <input

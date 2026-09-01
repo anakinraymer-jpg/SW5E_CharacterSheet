@@ -265,6 +265,9 @@ function maneuverChoice(className: string, countByLevel: number[]): ClassSubChoi
   return { key: `${className.toLowerCase()}-maneuvers`, label: "Maneuvers", className, countByLevel, options: MANEUVERS };
 }
 
+// Berserker's Rage: bonus to Strength-based melee damage while raging, by level (index 0 = level 1).
+export const BERSERKER_RAGE_DAMAGE_BY_LEVEL = [2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5];
+
 export const CLASS_RESOURCES: ClassResourceDef[] = [
   {
     key: "berserker-rages",

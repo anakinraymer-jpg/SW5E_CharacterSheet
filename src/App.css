@@ -910,6 +910,15 @@
   padding: 4px 6px;
 }
 
+.rage-damage-note {
+  display: inline-block;
+  margin-top: 3px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-2, var(--accent));
+  cursor: default;
+}
+
 /* Combat features */
 
 .combat-features-list {
