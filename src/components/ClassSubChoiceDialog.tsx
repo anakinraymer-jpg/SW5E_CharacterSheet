@@ -371,16 +371,22 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
 
                 {option?.skillOrToolFork && (
                   <div style={{ marginTop: 4 }}>
-                    <label className="choice-group-hint" style={{ display: "block", marginBottom: 4 }}>
-                      <input
-                        type="checkbox"
-                        checked={!detail.skill}
-                        onChange={(e) =>
-                          updateDetail(i, e.target.checked ? { tools: ["", ""] } : { skill: undefined, tools: [""] })
-                        }
-                      />{" "}
-                      Two tools instead of a skill and a tool
-                    </label>
+                    <div className="choice-selects" style={{ marginBottom: 4 }}>
+                      <button
+                        type="button"
+                        className={`btn btn-small ${!(detail.tools?.length === 2) ? "btn-primary" : "btn-secondary"}`}
+                        onClick={() => updateDetail(i, { skill: undefined, tools: [""] })}
+                      >
+                        Skill + Tool
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn btn-small ${detail.tools?.length === 2 ? "btn-primary" : "btn-secondary"}`}
+                        onClick={() => updateDetail(i, { skill: undefined, tools: ["", ""] })}
+                      >
+                        Two Tools
+                      </button>
+                    </div>
                     <div className="choice-selects">
                       {!(detail.tools && detail.tools.length === 2) && (
                         <select
