@@ -547,7 +547,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
       { name: "Enduring Strategist", text: "You only need 3 hours of sleep for a long rest's benefits, an interrupted long rest just needs completing rather than restarting, and you have advantage on saves against exhaustion.", passiveBuffText: "Only 3 hrs sleep for a long rest; interrupted long rests just resume; advantage on saves vs. exhaustion." },
       { name: "Mastery Strategist", text: "You've mastered a particular style of fighting. Choose one of the Fighting Mastery options.", fightingMasteryChoice: true },
       { name: "Lightweapon Strategist", text: "You gain proficiency in all lightweapons, no longer need force-casting ability to learn lightsaber-form-granting features, and learn one lightsaber form of your choice.", grantsProficiency: "All lightweapons", lightsaberFormChoiceCount: 1 },
-      { name: "Maneuver Strategist", text: "You learn two additional maneuvers, replaceable one at a short rest or both at a long rest.", passiveBuffText: "+2 maneuvers known (already added to your Maneuvers Known count); swap one at a short rest, or both at a long rest." },
+      { name: "Maneuver Strategist", text: "You learn two additional maneuvers, replaceable one at a short rest or both at a long rest.", passiveBuffText: "+2 maneuvers known (already added to your Maneuvers Known count); swap one at a short rest, or both at a long rest.", allowsManeuverSwap: true },
       { name: "Skilled Strategist", text: "You gain proficiency in a skill and a tool, or two tools.", skillOrToolFork: true },
       { name: "Style Strategist", text: "You adopt a second fighting style (choose one of the Fighting Style options), swappable at the end of a long rest.", fightingStyleChoice: true },
     ],

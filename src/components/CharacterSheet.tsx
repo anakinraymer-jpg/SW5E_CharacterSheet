@@ -63,6 +63,7 @@ import FeatChoiceDialog from "./FeatChoiceDialog";
 import ArchetypeChoiceDialog from "./ArchetypeChoiceDialog";
 import ArchetypeFeatureChoiceDialog from "./ArchetypeFeatureChoiceDialog";
 import ClassSubChoiceDialog from "./ClassSubChoiceDialog";
+import ManeuverSwapDialog from "./ManeuverSwapDialog";
 import SectionBlock from "./SectionBlock";
 import HealthBar from "./HealthBar";
 import { DefenseBox, InitiativeBox, ProficiencyBonusBox, SpeedBaseBox } from "./StatBoxes";
@@ -82,9 +83,11 @@ import type { ClassFeature, ClassSubChoiceDef, ClassSubChoicePickDetail, FeatEnt
 import { CLASS_ACCENTS } from "../data/classFeatureChoices";
 import {
   applySubChoicePicks,
+  maneuverSwapDef,
   pendingSubChoice,
   recalcClassResources,
   recalcClassSubChoices,
+  swapSubChoicePick,
   updateClassResource,
 } from "../classFeatureLogic";
 
@@ -105,6 +108,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     null
   );
   const [pendingArchetypeFeature, setPendingArchetypeFeature] = useState<ClassFeature | null>(null);
+  const [maneuverSwapOpen, setManeuverSwapOpen] = useState(false);
   const [editLayout, setEditLayout] = useState(false);
   const [layout, setLayout] = useState<SheetLayout>(() => getStoredLayout());
   const [draggedId, setDraggedId] = useState<SectionId | null>(null);
@@ -357,6 +361,13 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     // Chain straight to the next pending sub-choice (if any) rather than waiting for a
     // level/class change to re-trigger the reactive effect.
     setPendingSubChoiceDef(pendingSubChoice(applied));
+  }
+
+  function handleManeuverSwapConfirm(index: number, newName: string) {
+    const def = maneuverSwapDef(character);
+    if (!def) return;
+    setCharacter((prev) => swapSubChoicePick(prev, def.key, index, newName));
+    setManeuverSwapOpen(false);
   }
 
   function handleArchetypeFeatureChoiceConfirm(selections: string[][]) {
@@ -724,6 +735,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             character={character}
             update={update}
             onUpdateResource={handleUpdateResource}
+            onOpenManeuverSwap={() => setManeuverSwapOpen(true)}
             collapsedSections={collapsedSections}
             onToggleSection={toggleSection}
           />
@@ -932,6 +944,21 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           onConfirm={handleSubChoiceConfirm}
         />
       )}
+
+      {maneuverSwapOpen &&
+        (() => {
+          const def = maneuverSwapDef(character);
+          if (!def) return null;
+          return (
+            <ManeuverSwapDialog
+              def={def}
+              knownPicks={character.classSubChoicePicks[def.key] ?? []}
+              skills={character.skills}
+              onCancel={() => setManeuverSwapOpen(false)}
+              onConfirm={handleManeuverSwapConfirm}
+            />
+          );
+        })()}
     </div>
   );
 }

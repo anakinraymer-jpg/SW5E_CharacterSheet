@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ClassSubChoiceDef, ClassSubChoiceOption, ClassSubChoicePickDetail, SkillName, SkillState } from "../types";
-import { SKILL_LIST, isSkillName } from "../types";
+import { SKILL_LIST } from "../types";
 import { LANGUAGES } from "../data/sw5eData";
 import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
@@ -11,38 +11,9 @@ import {
   FIGHTING_MASTERIES,
   LIGHTSABER_FORMS,
 } from "../data/classFeatureChoices";
+import { chainPrerequisiteName, isVisibleOption } from "../classFeatureLogic";
 import HoverInfo from "./HoverInfo";
 import Modal from "./Modal";
-
-// Maneuver-style prerequisite text is either "Proficiency in <Skill>" (hide the option unless the
-// character has that skill proficiency) or "<Maneuver name> maneuver" / "<Maneuver name>
-// (Improved) maneuver" (an Improved/Greater tier — hide unless the base tier is already known,
-// and highlight+sort it to the top once it is). Every other prerequisite (casting ability,
-// Companion, etc.) has no computed character state to check against, so it stays purely
-// informational, same as before.
-function chainPrerequisiteName(prerequisite: string | undefined): string | null {
-  if (!prerequisite) return null;
-  const m = prerequisite.match(/^(.+) maneuver$/);
-  return m ? m[1] : null;
-}
-
-function skillPrerequisiteName(prerequisite: string | undefined): SkillName | null {
-  if (!prerequisite) return null;
-  const m = prerequisite.match(/^Proficiency in (.+)$/);
-  return m && isSkillName(m[1]) ? m[1] : null;
-}
-
-function isVisibleOption(
-  option: ClassSubChoiceOption,
-  knownNames: Set<string>,
-  skills: Record<SkillName, SkillState>
-): boolean {
-  const chainReq = chainPrerequisiteName(option.prerequisite);
-  if (chainReq) return knownNames.has(chainReq);
-  const skillReq = skillPrerequisiteName(option.prerequisite);
-  if (skillReq) return skills[skillReq]?.proficient ?? false;
-  return true;
-}
 
 const TOOL_OPTIONS = GEAR_CATALOG.filter((g) => g.category === "Tool" || g.category === "Kit").map((g) => g.name);
 

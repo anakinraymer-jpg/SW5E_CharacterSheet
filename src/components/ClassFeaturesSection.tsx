@@ -10,6 +10,7 @@ interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
   onUpdateResource: (key: string, current: number) => void;
+  onOpenManeuverSwap: () => void;
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
 }
@@ -106,6 +107,7 @@ export default function ClassFeaturesSection({
   character,
   update,
   onUpdateResource,
+  onOpenManeuverSwap,
   collapsedSections,
   onToggleSection,
 }: Props) {
@@ -124,6 +126,7 @@ export default function ClassFeaturesSection({
     : [];
 
   const hasManeuvers = subChoiceDefs.some((def) => def.key.endsWith("-maneuvers"));
+  const canSwapManeuvers = hasManeuvers && chosenOptions.some((o) => o.allowsManeuverSwap);
   const pb = proficiencyBonus(character.level);
   const physicalManeuverMod = abilityModifier(character.abilities[character.maneuverPhysicalAbility]);
   const mentalManeuverMod = abilityModifier(character.abilities[character.maneuverMentalAbility]);
@@ -304,6 +307,11 @@ export default function ClassFeaturesSection({
               <span className="info-chip">General: your choice of the two</span>
             </HoverInfo>
           </div>
+          {canSwapManeuvers && (
+            <button type="button" className="btn btn-secondary btn-small" style={{ marginTop: 8 }} onClick={onOpenManeuverSwap}>
+              Swap a Known Maneuver
+            </button>
+          )}
         </div>
       )}
 

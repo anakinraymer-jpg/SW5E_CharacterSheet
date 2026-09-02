@@ -217,6 +217,7 @@ export interface ClassSubChoiceOption {
   carryingCapacityMultiplier?: number; // multiplies carrying-capacity figures (e.g. Bantha's Instinct)
   travelPaceMultiplier?: number; // multiplies travel-pace speeds (e.g. Blurrg's Instinct)
   actionChoiceCount?: number; // e.g. Fighter's Cunning Strategist: pick this many actions usable as a bonus action
+  allowsManeuverSwap?: boolean; // e.g. Fighter's Maneuver Strategist: lets the player swap a known maneuver for another
 }
 
 export interface ClassSubChoiceDef {

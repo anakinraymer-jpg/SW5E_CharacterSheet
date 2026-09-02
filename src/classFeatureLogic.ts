@@ -5,7 +5,9 @@ import type {
   ClassSubChoiceOption,
   ClassSubChoicePickDetail,
   SkillName,
+  SkillState,
 } from "./types";
+import { isSkillName } from "./types";
 import { CLASS_RESOURCES_BY_CLASS, CLASS_SUB_CHOICES_BY_CLASS, FIGHTING_STYLES, FIGHTING_MASTERIES } from "./data/classFeatureChoices";
 
 const FIGHTING_STYLES_BY_NAME = new Map(FIGHTING_STYLES.map((s) => [s.name, s]));
@@ -13,6 +15,36 @@ const FIGHTING_MASTERIES_BY_NAME = new Map(FIGHTING_MASTERIES.map((m) => [m.name
 
 function levelIndex(character: Character): number {
   return Math.max(1, Math.min(20, character.level || 1)) - 1;
+}
+
+// Maneuver-style prerequisite text is either "Proficiency in <Skill>" (hide the option unless the
+// character has that skill proficiency) or "<Maneuver name> maneuver" / "<Maneuver name>
+// (Improved) maneuver" (an Improved/Greater tier — hide unless the base tier is already known,
+// and highlight+sort it to the top once it is). Every other prerequisite (casting ability,
+// Companion, etc.) has no computed character state to check against, so it stays purely
+// informational.
+export function chainPrerequisiteName(prerequisite: string | undefined): string | null {
+  if (!prerequisite) return null;
+  const m = prerequisite.match(/^(.+) maneuver$/);
+  return m ? m[1] : null;
+}
+
+export function skillPrerequisiteName(prerequisite: string | undefined): SkillName | null {
+  if (!prerequisite) return null;
+  const m = prerequisite.match(/^Proficiency in (.+)$/);
+  return m && isSkillName(m[1]) ? m[1] : null;
+}
+
+export function isVisibleOption(
+  option: ClassSubChoiceOption,
+  knownNames: Set<string>,
+  skills: Record<SkillName, SkillState>
+): boolean {
+  const chainReq = chainPrerequisiteName(option.prerequisite);
+  if (chainReq) return knownNames.has(chainReq);
+  const skillReq = skillPrerequisiteName(option.prerequisite);
+  if (skillReq) return skills[skillReq]?.proficient ?? false;
+  return true;
 }
 
 // A def's count-by-level, plus any countBonusFrom bonus once its triggering option is picked
@@ -209,4 +241,27 @@ export function updateClassResource(character: Character, key: string, current: 
     ...character,
     classResources: character.classResources.map((r) => (r.key === key ? { ...r, current } : r)),
   };
+}
+
+// The character's maneuvers def (e.g. "fighter-maneuvers"), if any applicable chosen sub-choice
+// option grants the ability to swap a known maneuver (e.g. Fighter's Maneuver Strategist).
+export function maneuverSwapDef(character: Character): ClassSubChoiceDef | null {
+  const hasSwapPerk = allChosenSubChoiceOptions(character).some((o) => o.allowsManeuverSwap);
+  if (!hasSwapPerk) return null;
+  return applicableSubChoiceDefs(character).find((d) => d.key.endsWith("-maneuvers")) ?? null;
+}
+
+// Replaces one already-known pick (by index) within a sub-choice def with a different option,
+// clearing any stored detail for that slot (maneuvers never need one).
+export function swapSubChoicePick(character: Character, defKey: string, index: number, newName: string): Character {
+  const picks = [...(character.classSubChoicePicks[defKey] ?? [])];
+  const details = [...(character.classSubChoiceDetails[defKey] ?? [])];
+  if (index < 0 || index >= picks.length) return character;
+  picks[index] = newName;
+  details[index] = {};
+  return resyncSubChoiceGrantedSkills({
+    ...character,
+    classSubChoicePicks: { ...character.classSubChoicePicks, [defKey]: picks },
+    classSubChoiceDetails: { ...character.classSubChoiceDetails, [defKey]: details },
+  });
 }
