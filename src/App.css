@@ -1156,6 +1156,7 @@
 .choice-group-hint {
   font-size: 0.8rem;
   opacity: 0.7;
+  white-space: pre-line;
 }
 
 .choice-selects {
@@ -1233,6 +1234,7 @@
   display: block;
   font-size: 0.82rem;
   line-height: 1.42;
+  white-space: pre-line;
 }
 
 .hover-info-hidden-text {
