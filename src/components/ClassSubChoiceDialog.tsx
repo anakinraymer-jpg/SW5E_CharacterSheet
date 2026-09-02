@@ -11,6 +11,7 @@ import {
   FIGHTING_MASTERIES,
   LIGHTSABER_FORMS,
 } from "../data/classFeatureChoices";
+import HoverInfo from "./HoverInfo";
 import Modal from "./Modal";
 
 // Maneuver-style prerequisite text is either "Proficiency in <Skill>" (hide the option unless the
@@ -44,8 +45,36 @@ function isVisibleOption(
 }
 
 const TOOL_OPTIONS = GEAR_CATALOG.filter((g) => g.category === "Tool" || g.category === "Kit").map((g) => g.name);
-const FIGHTING_STYLE_NAMES = FIGHTING_STYLES.map((s) => s.name);
-const LIGHTSABER_FORM_NAMES = LIGHTSABER_FORMS.map((f) => f.name);
+
+// A row of selectable buttons, one per option, each wrapped in the sheet's own HoverInfo tooltip
+// showing that option's full, unmodified description — used for picks with a catalog of named
+// options with rules text (Fighting Style, Fighting Mastery, Lightsaber Form), so the player can
+// preview the exact text before choosing without a native <select>'s unstyled tooltip.
+function HoverOptionButtons({
+  options,
+  value,
+  onSelect,
+}: {
+  options: ClassSubChoiceOption[];
+  value: string;
+  onSelect: (name: string) => void;
+}) {
+  return (
+    <div className="chip-row" style={{ marginTop: 4 }}>
+      {options.map((o) => (
+        <HoverInfo key={o.name} title={o.name} lines={[o.text]}>
+          <button
+            type="button"
+            className={`btn btn-small ${value === o.name ? "btn-primary" : "btn-secondary"}`}
+            onClick={() => onSelect(o.name)}
+          >
+            {o.name}
+          </button>
+        </HoverInfo>
+      ))}
+    </div>
+  );
+}
 
 // Blasters/vibroweapons without the heavy property or a Strength requirement, per Weaponmaster's Exploit.
 const NON_HEAVY_WEAPON_OPTIONS = WEAPON_CATALOG.filter((w) => {
@@ -244,57 +273,34 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
                 )}
 
                 {option?.fightingStyleChoice && (
-                  <div className="choice-selects" style={{ marginTop: 4 }}>
-                    <select
-                      value={detail.fightingStyle ?? ""}
-                      onChange={(e) => updateDetail(i, { ...detail, fightingStyle: e.target.value || undefined })}
-                    >
-                      <option value="">Choose fighting style…</option>
-                      {FIGHTING_STYLE_NAMES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <HoverOptionButtons
+                    options={FIGHTING_STYLES}
+                    value={detail.fightingStyle ?? ""}
+                    onSelect={(name) => updateDetail(i, { ...detail, fightingStyle: name })}
+                  />
                 )}
 
                 {option?.fightingMasteryChoice && (
-                  <div className="choice-selects" style={{ marginTop: 4 }}>
-                    <select
-                      value={detail.fightingMastery ?? ""}
-                      title={FIGHTING_MASTERIES.find((m) => m.name === detail.fightingMastery)?.text}
-                      onChange={(e) => updateDetail(i, { ...detail, fightingMastery: e.target.value || undefined })}
-                    >
-                      <option value="">Choose fighting mastery…</option>
-                      {FIGHTING_MASTERIES.map((m) => (
-                        <option key={m.name} value={m.name} title={m.text}>
-                          {m.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                  <HoverOptionButtons
+                    options={FIGHTING_MASTERIES}
+                    value={detail.fightingMastery ?? ""}
+                    onSelect={(name) => updateDetail(i, { ...detail, fightingMastery: name })}
+                  />
                 )}
 
                 {option?.lightsaberFormChoiceCount && (
-                  <div className="choice-selects" style={{ marginTop: 4 }}>
+                  <div>
                     {Array.from({ length: option.lightsaberFormChoiceCount }).map((_, fi) => (
-                      <select
+                      <HoverOptionButtons
                         key={fi}
+                        options={LIGHTSABER_FORMS}
                         value={detail.lightsaberForms?.[fi] ?? ""}
-                        onChange={(e) => {
+                        onSelect={(name) => {
                           const forms = [...(detail.lightsaberForms ?? Array(option.lightsaberFormChoiceCount).fill(""))];
-                          forms[fi] = e.target.value;
+                          forms[fi] = name;
                           updateDetail(i, { ...detail, lightsaberForms: forms });
                         }}
-                      >
-                        <option value="">Choose lightsaber form…</option>
-                        {LIGHTSABER_FORM_NAMES.map((f) => (
-                          <option key={f} value={f}>
-                            {f}
-                          </option>
-                        ))}
-                      </select>
+                      />
                     ))}
                   </div>
                 )}
