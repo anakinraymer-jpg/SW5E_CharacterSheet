@@ -45,7 +45,6 @@ function isVisibleOption(
 
 const TOOL_OPTIONS = GEAR_CATALOG.filter((g) => g.category === "Tool" || g.category === "Kit").map((g) => g.name);
 const FIGHTING_STYLE_NAMES = FIGHTING_STYLES.map((s) => s.name);
-const FIGHTING_MASTERY_NAMES = FIGHTING_MASTERIES.map((m) => m.name);
 const LIGHTSABER_FORM_NAMES = LIGHTSABER_FORMS.map((f) => f.name);
 
 // Blasters/vibroweapons without the heavy property or a Strength requirement, per Weaponmaster's Exploit.
@@ -264,12 +263,13 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
                   <div className="choice-selects" style={{ marginTop: 4 }}>
                     <select
                       value={detail.fightingMastery ?? ""}
+                      title={FIGHTING_MASTERIES.find((m) => m.name === detail.fightingMastery)?.text}
                       onChange={(e) => updateDetail(i, { ...detail, fightingMastery: e.target.value || undefined })}
                     >
                       <option value="">Choose fighting mastery…</option>
-                      {FIGHTING_MASTERY_NAMES.map((m) => (
-                        <option key={m} value={m}>
-                          {m}
+                      {FIGHTING_MASTERIES.map((m) => (
+                        <option key={m.name} value={m.name} title={m.text}>
+                          {m.name}
                         </option>
                       ))}
                     </select>
