@@ -216,6 +216,7 @@ export interface ClassSubChoiceOption {
   speedBonus?: number; // flat bonus to walking speed while this option is picked (e.g. Predator's Instinct)
   carryingCapacityMultiplier?: number; // multiplies carrying-capacity figures (e.g. Bantha's Instinct)
   travelPaceMultiplier?: number; // multiplies travel-pace speeds (e.g. Blurrg's Instinct)
+  actionChoiceCount?: number; // e.g. Fighter's Cunning Strategist: pick this many actions usable as a bonus action
 }
 
 export interface ClassSubChoiceDef {
@@ -225,6 +226,9 @@ export interface ClassSubChoiceDef {
   archetypeName?: string; // when set, only applies if character.archetypeAppliedName matches
   countByLevel: number[]; // length 20, index 0 = level 1
   options: ClassSubChoiceOption[];
+  // Adds `bonus` to this def's effective count-by-level once `optionName` has been picked under
+  // `defKey` (e.g. Fighter's Maneuver Strategist grants 2 extra known maneuvers).
+  countBonusFrom?: { defKey: string; optionName: string; bonus: number };
 }
 
 // Player-chosen detail for one entry of classSubChoicePicks[key], at the same array index.
@@ -238,6 +242,7 @@ export interface ClassSubChoicePickDetail {
   fightingMastery?: string;
   lightsaberForms?: string[];
   damageTypes?: string[];
+  actions?: string[];
 }
 
 export interface FeatEntry {
@@ -410,6 +415,8 @@ export interface Character {
   defense: number;
   monkUnarmoredDefenseAbility: "wis" | "cha"; // Monk's Unarmored Defense: Wisdom or Charisma (player's choice)
   isRaging: boolean; // Berserker's Rage: toggles the advantage/resistance/damage buffs on and off
+  maneuverPhysicalAbility: "str" | "dex" | "con"; // Fighter/Scholar Combat/Academic Superiority: ability for Physical maneuvers
+  maneuverMentalAbility: "int" | "wis" | "cha"; // Fighter/Scholar Combat/Academic Superiority: ability for Mental maneuvers
   armorNotes: string;
   resistances: string;
   hitDiceTotal: string;
@@ -601,6 +608,8 @@ export function createBlankCharacter(): Character {
     defense: 10,
     monkUnarmoredDefenseAbility: "wis",
     isRaging: false,
+    maneuverPhysicalAbility: "str",
+    maneuverMentalAbility: "int",
     armorNotes: "",
     resistances: "",
     hitDiceTotal: "1d8",

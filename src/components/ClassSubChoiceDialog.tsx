@@ -1,11 +1,47 @@
 import { useState } from "react";
-import type { ClassSubChoiceDef, ClassSubChoicePickDetail, SkillName, SkillState } from "../types";
-import { SKILL_LIST } from "../types";
+import type { ClassSubChoiceDef, ClassSubChoiceOption, ClassSubChoicePickDetail, SkillName, SkillState } from "../types";
+import { SKILL_LIST, isSkillName } from "../types";
 import { LANGUAGES } from "../data/sw5eData";
 import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
-import { DAMAGE_TYPES, FIGHTING_STYLES, FIGHTING_MASTERIES, LIGHTSABER_FORMS } from "../data/classFeatureChoices";
+import {
+  BONUS_ACTION_CONVERTIBLE_ACTIONS,
+  DAMAGE_TYPES,
+  FIGHTING_STYLES,
+  FIGHTING_MASTERIES,
+  LIGHTSABER_FORMS,
+} from "../data/classFeatureChoices";
 import Modal from "./Modal";
+
+// Maneuver-style prerequisite text is either "Proficiency in <Skill>" (hide the option unless the
+// character has that skill proficiency) or "<Maneuver name> maneuver" / "<Maneuver name>
+// (Improved) maneuver" (an Improved/Greater tier — hide unless the base tier is already known,
+// and highlight+sort it to the top once it is). Every other prerequisite (casting ability,
+// Companion, etc.) has no computed character state to check against, so it stays purely
+// informational, same as before.
+function chainPrerequisiteName(prerequisite: string | undefined): string | null {
+  if (!prerequisite) return null;
+  const m = prerequisite.match(/^(.+) maneuver$/);
+  return m ? m[1] : null;
+}
+
+function skillPrerequisiteName(prerequisite: string | undefined): SkillName | null {
+  if (!prerequisite) return null;
+  const m = prerequisite.match(/^Proficiency in (.+)$/);
+  return m && isSkillName(m[1]) ? m[1] : null;
+}
+
+function isVisibleOption(
+  option: ClassSubChoiceOption,
+  knownNames: Set<string>,
+  skills: Record<SkillName, SkillState>
+): boolean {
+  const chainReq = chainPrerequisiteName(option.prerequisite);
+  if (chainReq) return knownNames.has(chainReq);
+  const skillReq = skillPrerequisiteName(option.prerequisite);
+  if (skillReq) return skills[skillReq]?.proficient ?? false;
+  return true;
+}
 
 const TOOL_OPTIONS = GEAR_CATALOG.filter((g) => g.category === "Tool" || g.category === "Kit").map((g) => g.name);
 const FIGHTING_STYLE_NAMES = FIGHTING_STYLES.map((s) => s.name);
@@ -67,6 +103,14 @@ function detailComplete(option: ClassSubChoiceDef["options"][number] | undefined
       new Set(types).size === types.length
     );
   }
+  if (option.actionChoiceCount) {
+    const actions = detail.actions ?? [];
+    return (
+      actions.length === option.actionChoiceCount &&
+      actions.every(Boolean) &&
+      new Set(actions).size === actions.length
+    );
+  }
   if (option.skillOrToolFork) {
     const tools = detail.tools ?? [];
     if (detail.skill) {
@@ -88,6 +132,7 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
 
   const repeatableNames = new Set(def.options.filter((o) => o.repeatable).map((o) => o.name));
   const takenElsewhere = new Set([...alreadyChosen].filter((n) => !repeatableNames.has(n)));
+  const knownNames = new Set(alreadyChosen);
   const nonRepeatablePicks = picks.filter((n) => n && !repeatableNames.has(n));
   const picksValid =
     picks.every(Boolean) && new Set(nonRepeatablePicks).size === nonRepeatablePicks.length;
@@ -135,12 +180,22 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
                   <option value="">Choose…</option>
                   {def.options
                     .filter((o) => !takenElsewhere.has(o.name) || o.repeatable || o.name === v)
-                    .map((o) => (
-                      <option key={o.name} value={o.name}>
-                        {o.name}
-                        {o.prerequisite ? ` (${o.prerequisite})` : ""}
-                      </option>
-                    ))}
+                    .filter((o) => isVisibleOption(o, knownNames, skills))
+                    .sort(
+                      (a, b) =>
+                        Number(Boolean(chainPrerequisiteName(b.prerequisite))) -
+                        Number(Boolean(chainPrerequisiteName(a.prerequisite)))
+                    )
+                    .map((o) => {
+                      const upgradeAvailable = Boolean(chainPrerequisiteName(o.prerequisite));
+                      return (
+                        <option key={o.name} value={o.name} style={upgradeAvailable ? { fontWeight: "bold" } : undefined}>
+                          {upgradeAvailable ? "★ " : ""}
+                          {o.name}
+                          {o.prerequisite ? ` (${o.prerequisite})` : ""}
+                        </option>
+                      );
+                    })}
                 </select>
 
                 {option?.languageChoiceCount && (
@@ -267,6 +322,29 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
                   </div>
                 )}
 
+                {option?.actionChoiceCount && (
+                  <div className="choice-selects" style={{ marginTop: 4 }}>
+                    {Array.from({ length: option.actionChoiceCount }).map((_, ai) => (
+                      <select
+                        key={ai}
+                        value={detail.actions?.[ai] ?? ""}
+                        onChange={(e) => {
+                          const actions = [...(detail.actions ?? Array(option.actionChoiceCount).fill(""))];
+                          actions[ai] = e.target.value;
+                          updateDetail(i, { ...detail, actions });
+                        }}
+                      >
+                        <option value="">Choose action…</option>
+                        {BONUS_ACTION_CONVERTIBLE_ACTIONS.map((a) => (
+                          <option key={a} value={a}>
+                            {a}
+                          </option>
+                        ))}
+                      </select>
+                    ))}
+                  </div>
+                )}
+
                 {option?.skillChoice && (
                   <div className="choice-selects" style={{ marginTop: 4 }}>
                     <select
@@ -340,15 +418,18 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
         </div>
       </div>
 
-      {def.options.map((o) => (
-        <div className="choice-group" key={o.name}>
-          <div className="choice-group-label">
-            {o.name}
-            {o.prerequisite ? ` — Prerequisite: ${o.prerequisite}` : ""}
+      {def.options
+        .filter((o) => isVisibleOption(o, knownNames, skills))
+        .map((o) => (
+          <div className="choice-group" key={o.name}>
+            <div className="choice-group-label">
+              {chainPrerequisiteName(o.prerequisite) ? "★ " : ""}
+              {o.name}
+              {o.prerequisite ? ` — Prerequisite: ${o.prerequisite}` : ""}
+            </div>
+            <div className="choice-group-hint">{o.text}</div>
           </div>
-          <div className="choice-group-hint">{o.text}</div>
-        </div>
-      ))}
+        ))}
     </Modal>
   );
 }

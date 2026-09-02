@@ -15,6 +15,17 @@ function levelIndex(character: Character): number {
   return Math.max(1, Math.min(20, character.level || 1)) - 1;
 }
 
+// A def's count-by-level, plus any countBonusFrom bonus once its triggering option is picked
+// (e.g. Fighter's Maneuver Strategist adds 2 to Maneuvers Known).
+function subChoiceCountAt(character: Character, def: ClassSubChoiceDef, idx: number): number {
+  let count = def.countByLevel[idx] ?? 0;
+  if (def.countBonusFrom) {
+    const { defKey, optionName, bonus } = def.countBonusFrom;
+    if ((character.classSubChoicePicks[defKey] ?? []).includes(optionName)) count += bonus;
+  }
+  return count;
+}
+
 export function applicableSubChoiceDefs(character: Character): ClassSubChoiceDef[] {
   const defs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
   return defs.filter((d) => !d.archetypeName || d.archetypeName === character.archetypeAppliedName);
@@ -156,7 +167,7 @@ export function recalcClassSubChoices(character: Character): Character {
     if (validKeys.has(key)) details[key] = detailsArr;
   }
   for (const def of defs) {
-    const max = def.countByLevel[idx] ?? 0;
+    const max = subChoiceCountAt(character, def, idx);
     const chosen = picks[def.key] ?? [];
     if (chosen.length > max) {
       picks[def.key] = chosen.slice(0, max);
@@ -171,7 +182,7 @@ export function pendingSubChoice(character: Character): { def: ClassSubChoiceDef
   const defs = applicableSubChoiceDefs(character);
   const idx = levelIndex(character);
   for (const def of defs) {
-    const max = def.countByLevel[idx] ?? 0;
+    const max = subChoiceCountAt(character, def, idx);
     const have = (character.classSubChoicePicks[def.key] ?? []).length;
     if (have < max) return { def, needed: max - have };
   }

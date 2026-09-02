@@ -249,7 +249,7 @@ export const MANEUVERS: ClassSubChoiceOption[] = [
   { name: "Threaten", text: "[General] When you make an Intimidation check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Intimidation" },
   { name: "Trip Attack", text: "[Physical] On a weapon hit against a Large or smaller target, expend a superiority die for extra damage equal to the roll and force a Strength save; on a failure knock the target prone." },
   { name: "Tumble", text: "[General] When you make an Acrobatics check, you can expend a superiority die and add it to the roll, before or after rolling but before the outcome is determined.", prerequisite: "Proficiency in Acrobatics" },
-  { name: "Tyrannical Strike", text: "[Mental] On a weapon hit, reaction: expend a superiority die for extra damage equal to the roll and issue a one-word command; on a failed Wisdom save the target must follow it on its next turn.", prerequisite: "Proficiency with Intimidation" },
+  { name: "Tyrannical Strike", text: "[Mental] On a weapon hit, reaction: expend a superiority die for extra damage equal to the roll and issue a one-word command; on a failed Wisdom save the target must follow it on its next turn.", prerequisite: "Proficiency in Intimidation" },
   { name: "Unrelenting Grasp", text: "[Physical] On an opportunity attack against a creature within 5 feet, expend a superiority die for extra damage equal to the roll and attempt to grapple as part of the same reaction.", prerequisite: "Proficiency in Athletics" },
   { name: "Vanity", text: "[General] On reducing a hostile creature to 0 HP, expend and roll a superiority die (no action) to regain hit points equal to the roll + your maneuver ability modifier." },
   { name: "Weak Point Strike", text: "[Physical] On a weapon hit, expend a superiority die to add the roll to damage and force a Constitution save; on a failure the target is stunned until the end of its next turn.", prerequisite: "Proficiency in Medicine" },
@@ -277,9 +277,28 @@ export const MANEUVERS: ClassSubChoiceOption[] = [
   { name: "Wracking Torment", text: "[Mental] Reaction: when a hostile creature within 30 feet would take damage from an effect you or an ally controls, expend a superiority die; until the end of the turn it loses resistance to that damage type." },
 ];
 
-function maneuverChoice(className: string, countByLevel: number[]): ClassSubChoiceDef {
-  return { key: `${className.toLowerCase()}-maneuvers`, label: "Maneuvers", className, countByLevel, options: MANEUVERS };
+function maneuverChoice(
+  className: string,
+  countByLevel: number[],
+  countBonusFrom?: ClassSubChoiceDef["countBonusFrom"]
+): ClassSubChoiceDef {
+  return { key: `${className.toLowerCase()}-maneuvers`, label: "Maneuvers", className, countByLevel, options: MANEUVERS, countBonusFrom };
 }
+
+// Actions a creature can normally only take on its turn as an action, which Fighter's Cunning
+// Strategist lets you convert to a bonus action instead (pick two).
+export const BONUS_ACTION_CONVERTIBLE_ACTIONS = [
+  "Apply Poison",
+  "Dash",
+  "Disengage",
+  "Guard",
+  "Help",
+  "Hide",
+  "Search",
+  "Throw Grenades / Set Mines",
+  "Mounted Beast Attack",
+  "Vehicle Action",
+];
 
 // Berserker's Rage: bonus to Strength-based melee damage while raging, by level (index 0 = level 1).
 export const BERSERKER_RAGE_DAMAGE_BY_LEVEL = [2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5];
@@ -512,19 +531,23 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     ],
   },
   fightingStyleChoice("Fighter", [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
-  maneuverChoice("Fighter", [0, 1, 2, 2, 4, 4, 5, 5, 6, 6, 7, 7, 9, 9, 10, 10, 11, 11, 12, 12]),
+  maneuverChoice("Fighter", [0, 1, 2, 2, 4, 4, 5, 5, 6, 6, 7, 7, 9, 9, 10, 10, 11, 11, 12, 12], {
+    defKey: "fighter-strategies",
+    optionName: "Maneuver Strategist",
+    bonus: 2,
+  }),
   {
     key: "fighter-strategies",
     label: "Fighter Strategies",
     className: "Fighter",
     countByLevel: [0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4],
     options: [
-      { name: "Cover Strategist", text: "You treat partial cover as one step higher, and while in cover, your attacks reduce partial cover by one step." },
-      { name: "Cunning Strategist", text: "Choose two actions (apply poison, Dash, Disengage, Guard, Help, Hide, Search, throw grenades/set mines, mounted beast attack, or vehicle action) you can take as a bonus action instead of an action." },
-      { name: "Enduring Strategist", text: "You only need 3 hours of sleep for a long rest's benefits, an interrupted long rest just needs completing rather than restarting, and you have advantage on saves against exhaustion." },
+      { name: "Cover Strategist", text: "You treat partial cover as one step higher, and while in cover, your attacks reduce partial cover by one step.", passiveBuffText: "Cover treated one step higher; while in cover, your attacks reduce the target's cover by one step." },
+      { name: "Cunning Strategist", text: "Choose two actions (apply poison, Dash, Disengage, Guard, Help, Hide, Search, throw grenades/set mines, mounted beast attack, or vehicle action) you can take as a bonus action instead of an action.", actionChoiceCount: 2 },
+      { name: "Enduring Strategist", text: "You only need 3 hours of sleep for a long rest's benefits, an interrupted long rest just needs completing rather than restarting, and you have advantage on saves against exhaustion.", passiveBuffText: "Only 3 hrs sleep for a long rest; interrupted long rests just resume; advantage on saves vs. exhaustion." },
       { name: "Mastery Strategist", text: "You've mastered a particular style of fighting. Choose one of the Fighting Mastery options.", fightingMasteryChoice: true },
-      { name: "Lightweapon Strategist", text: "You gain proficiency in all lightweapons, no longer need force-casting ability to learn lightsaber-form-granting features, and learn one lightsaber form of your choice.", grantsProficiency: "All lightweapons" },
-      { name: "Maneuver Strategist", text: "You learn two additional maneuvers, replaceable one at a short rest or both at a long rest." },
+      { name: "Lightweapon Strategist", text: "You gain proficiency in all lightweapons, no longer need force-casting ability to learn lightsaber-form-granting features, and learn one lightsaber form of your choice.", grantsProficiency: "All lightweapons", lightsaberFormChoiceCount: 1 },
+      { name: "Maneuver Strategist", text: "You learn two additional maneuvers, replaceable one at a short rest or both at a long rest.", passiveBuffText: "+2 maneuvers known (already added to your Maneuvers Known count); swap one at a short rest, or both at a long rest." },
       { name: "Skilled Strategist", text: "You gain proficiency in a skill and a tool, or two tools.", skillOrToolFork: true },
       { name: "Style Strategist", text: "You adopt a second fighting style (choose one of the Fighting Style options), swappable at the end of a long rest.", fightingStyleChoice: true },
     ],

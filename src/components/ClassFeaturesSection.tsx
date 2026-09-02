@@ -1,8 +1,8 @@
-import type { Character } from "../types";
+import type { AbilityKey, Character } from "../types";
 import { BERSERKER_RAGE_DAMAGE_BY_LEVEL, CLASS_SUB_CHOICES_BY_CLASS } from "../data/classFeatureChoices";
 import { CLASSES_CATALOG } from "../data/classes";
 import { allChosenSubChoiceOptions, applicableClassResources, chosenDamageTypesFor } from "../classFeatureLogic";
-import { formatModifier } from "../utils";
+import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
 
@@ -13,6 +13,15 @@ interface Props {
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
 }
+
+const ABILITY_LABELS: Record<AbilityKey, string> = {
+  str: "Strength",
+  dex: "Dexterity",
+  con: "Constitution",
+  int: "Intelligence",
+  wis: "Wisdom",
+  cha: "Charisma",
+};
 
 interface ParsedFeature {
   title: string;
@@ -113,6 +122,13 @@ export default function ClassFeaturesSection({
   const dewbackTypes = chosenOptions.some((o) => o.name === "Dewback's Instinct")
     ? chosenDamageTypesFor(character, "Dewback's Instinct")
     : [];
+
+  const hasManeuvers = subChoiceDefs.some((def) => def.key.endsWith("-maneuvers"));
+  const pb = proficiencyBonus(character.level);
+  const physicalManeuverMod = abilityModifier(character.abilities[character.maneuverPhysicalAbility]);
+  const mentalManeuverMod = abilityModifier(character.abilities[character.maneuverMentalAbility]);
+  const physicalManeuverDC = 8 + pb + physicalManeuverMod;
+  const mentalManeuverDC = 8 + pb + mentalManeuverMod;
 
   if (!character.classTraitsText && !character.archetypeTraitsText && resources.length === 0) {
     return null;
@@ -225,9 +241,75 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
+      {hasManeuvers && (
+        <div className="species-traits-box">
+          <div className="species-traits-header">Maneuver Save DC</div>
+          <div className="combat-grid">
+            <div className="field">
+              <label>Physical Maneuver Ability</label>
+              <div className="power-type-toggle">
+                {(["str", "dex", "con"] as const).map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    className={`btn btn-small ${character.maneuverPhysicalAbility === a ? "btn-primary" : "btn-secondary"}`}
+                    onClick={() => update("maneuverPhysicalAbility", a)}
+                  >
+                    {ABILITY_LABELS[a]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="field">
+              <label>Mental Maneuver Ability</label>
+              <div className="power-type-toggle">
+                {(["int", "wis", "cha"] as const).map((a) => (
+                  <button
+                    key={a}
+                    type="button"
+                    className={`btn btn-small ${character.maneuverMentalAbility === a ? "btn-primary" : "btn-secondary"}`}
+                    onClick={() => update("maneuverMentalAbility", a)}
+                  >
+                    {ABILITY_LABELS[a]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="chip-row" style={{ marginTop: 8 }}>
+            <HoverInfo
+              title="Physical Maneuver DC"
+              lines={[
+                "Base: 8",
+                `Proficiency Bonus: ${formatModifier(pb)}`,
+                `${ABILITY_LABELS[character.maneuverPhysicalAbility]} modifier: ${formatModifier(physicalManeuverMod)}`,
+              ]}
+            >
+              <span className="info-chip">Physical Maneuver DC: {physicalManeuverDC}</span>
+            </HoverInfo>
+            <HoverInfo
+              title="Mental Maneuver DC"
+              lines={[
+                "Base: 8",
+                `Proficiency Bonus: ${formatModifier(pb)}`,
+                `${ABILITY_LABELS[character.maneuverMentalAbility]} modifier: ${formatModifier(mentalManeuverMod)}`,
+              ]}
+            >
+              <span className="info-chip">Mental Maneuver DC: {mentalManeuverDC}</span>
+            </HoverInfo>
+            <HoverInfo
+              title="General Maneuvers"
+              lines={["General maneuvers use whichever of your two maneuver ability modifiers is better for that maneuver, your choice each time you use one."]}
+            >
+              <span className="info-chip">General: your choice of the two</span>
+            </HoverInfo>
+          </div>
+        </div>
+      )}
+
       {passiveBuffOptions.length > 0 && (
         <div className="species-traits-box">
-          <div className="species-traits-header">{character.classAppliedName} Instinct Effects</div>
+          <div className="species-traits-header">Passive Feature Effects</div>
           <div className="chip-row">
             {passiveBuffOptions.map((o) => (
               <HoverInfo key={o.name} title={o.name} lines={[o.passiveBuffText!]}>
@@ -257,6 +339,7 @@ export default function ClassFeaturesSection({
                 if (detail?.fightingStyle) extra.push(`Fighting Style: ${detail.fightingStyle}`);
                 if (detail?.fightingMastery) extra.push(`Fighting Mastery: ${detail.fightingMastery}`);
                 if (detail?.lightsaberForms?.length) extra.push(`Lightsaber Forms: ${detail.lightsaberForms.join(", ")}`);
+                if (detail?.actions?.length) extra.push(`Bonus Action Options: ${detail.actions.join(", ")}`);
                 return (
                   <HoverInfo
                     key={`${def.key}-${name}-${i}`}
