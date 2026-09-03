@@ -58,22 +58,26 @@ function toHitAbilityInfo(character: Character, weaponName: string): { mod: numb
   const entry = WEAPON_LOOKUP.get(weaponName.trim().toLowerCase());
   if (!entry) return { mod: strMod, label: "Strength" };
   const isRanged = /blaster/i.test(entry.type);
+  const isMonk = character.classAppliedName === "Monk";
   const isMonkWeapon = entry.name === "Unarmed Strike" || MONK_WEAPON_NAME_SET.has(entry.name.toLowerCase());
 
-  if (character.classAppliedName === "Monk" && isMonkWeapon && !isRanged) {
+  // Vow of Spirit is scoped to unarmed strikes/monk weapons specifically (its own text), but
+  // Martial Arts' finesse grant applies to any weapon the Monk wields while unarmored/shieldless.
+  if (isMonk && isMonkWeapon && !isRanged) {
     const hasVowOfSpirit = allChosenSubChoiceOptions(character).some((o) => o.name === "Vow of Spirit");
     if (hasVowOfSpirit) {
       const ability = character.monkUnarmoredDefenseAbility;
       return { mod: abilityModifier(character.abilities[ability]), label: `${ABILITY_LABEL[ability]} (Vow of Spirit)` };
     }
-    if (monkRetainsUnarmoredBenefits(character) && dexMod > strMod) {
-      return { mod: dexMod, label: "Dexterity (Martial Arts)" };
-    }
   }
 
-  const isFinesse = /finesse/i.test(entry.property);
+  const monkFinesse = isMonk && !isRanged && monkRetainsUnarmoredBenefits(character);
+  const isFinesse = monkFinesse || /finesse/i.test(entry.property);
   if (isRanged) return { mod: dexMod, label: "Dexterity" };
-  if (isFinesse && dexMod > strMod) return { mod: dexMod, label: "Dexterity (Finesse)" };
+  if (isFinesse && dexMod > strMod) {
+    const isCatalogFinesse = /finesse/i.test(entry.property);
+    return { mod: dexMod, label: isCatalogFinesse ? "Dexterity (Finesse)" : "Dexterity (Martial Arts)" };
+  }
   return { mod: strMod, label: "Strength" };
 }
 
@@ -191,30 +195,47 @@ export default function WeaponsSection({
                 </HoverInfo>
               </td>
               <td>
-                <input
-                  type="text"
-                  value={w.damage}
-                  onChange={(e) => updateWeapon(w.id, { damage: e.target.value })}
-                />
-                {isRaging && abilityLabel === "Strength" && (
-                  <HoverInfo
-                    title="Rage Damage"
-                    lines={[`+${rageDamageBonus} to this melee damage roll while raging (Strength-based).`]}
-                  >
-                    <span className="rage-damage-note">+{rageDamageBonus} Rage</span>
-                  </HoverInfo>
+                {w.name.trim().toLowerCase() === "unarmed strike" ? (
+                  (() => {
+                    const dieNotation = hasMartialArts ? `1${martialArtsDie}` : "1";
+                    const display = `${dieNotation}${formatModifier(abilityMod)} Kinetic`;
+                    const lines = [
+                      hasMartialArts ? `Martial Arts die: 1${martialArtsDie}` : "Base unarmed strike damage: 1",
+                      `${abilityLabel} modifier: ${formatModifier(abilityMod)}`,
+                    ];
+                    return (
+                      <HoverInfo title="Unarmed Strike Damage" lines={lines}>
+                        <div className="readonly-box to-hit-box">{display}</div>
+                      </HoverInfo>
+                    );
+                  })()
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      value={w.damage}
+                      onChange={(e) => updateWeapon(w.id, { damage: e.target.value })}
+                    />
+                    {isRaging && abilityLabel === "Strength" && (
+                      <HoverInfo
+                        title="Rage Damage"
+                        lines={[`+${rageDamageBonus} to this melee damage roll while raging (Strength-based).`]}
+                      >
+                        <span className="rage-damage-note">+{rageDamageBonus} Rage</span>
+                      </HoverInfo>
+                    )}
+                    {hasMartialArts && MONK_WEAPON_NAME_SET.has(w.name.trim().toLowerCase()) && (
+                      <HoverInfo
+                        title="Martial Arts"
+                        lines={[
+                          `You can roll 1${martialArtsDie} + ${abilityLabel} modifier (${formatModifier(abilityMod)}) in place of this weapon's normal damage when you make a monk weapon attack.`,
+                        ]}
+                      >
+                        <span className="rage-damage-note">Martial Arts: 1{martialArtsDie}{formatModifier(abilityMod)}</span>
+                      </HoverInfo>
+                    )}
+                  </>
                 )}
-                {hasMartialArts &&
-                  (w.name === "Unarmed Strike" || MONK_WEAPON_NAME_SET.has(w.name.trim().toLowerCase())) && (
-                    <HoverInfo
-                      title="Martial Arts"
-                      lines={[
-                        `You can roll ${martialArtsDie} in place of this weapon's normal damage when you make an unarmed strike or monk weapon attack.`,
-                      ]}
-                    >
-                      <span className="rage-damage-note">Martial Arts: {martialArtsDie}</span>
-                    </HoverInfo>
-                  )}
               </td>
               <td>
                 <input
