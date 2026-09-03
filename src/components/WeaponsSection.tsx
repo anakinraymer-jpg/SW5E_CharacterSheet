@@ -1,11 +1,15 @@
 import type { Character, CombatFeature, RefreshType, Weapon } from "../types";
 import { WEAPON_CATALOG, type WeaponCatalogEntry } from "../data/weapons";
 import { GEAR_CATALOG } from "../data/gear";
-import { CLASSES_CATALOG } from "../data/classes";
-import { BERSERKER_RAGE_DAMAGE_BY_LEVEL } from "../data/classFeatureChoices";
+import { CLASSES_CATALOG, MONK_WEAPON_NAMES } from "../data/classes";
+import { BERSERKER_RAGE_DAMAGE_BY_LEVEL, MONK_MARTIAL_ARTS_DIE_BY_LEVEL } from "../data/classFeatureChoices";
+import { allChosenSubChoiceOptions, monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
+import { ABILITY_LABEL } from "../speciesLogic";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
+
+const MONK_WEAPON_NAME_SET = new Set(MONK_WEAPON_NAMES.map((n) => n.toLowerCase()));
 
 function extractRange(property: string): string {
   const match = property.match(/\((?:range )?(\d+(?:\/\d+)?)\)/i);
@@ -37,18 +41,36 @@ function classProficientWithType(weaponType: string, label: string): boolean {
 }
 
 function defaultProficient(className: string, entry: WeaponCatalogEntry): boolean {
+  if (entry.name === "Unarmed Strike") return true; // everyone is always proficient with unarmed strikes
   const classEntry = CLASSES_CATALOG.find((c) => c.name === className);
   if (!classEntry) return false;
   return classEntry.weaponProficiencies.some((wp) => classProficientWithType(entry.type, wp.label));
 }
 
 // Blasters use Dexterity; melee weapons use Strength unless Finesse allows the better of the two.
+// Monk unarmed strikes/monk weapons additionally gain Martial Arts' finesse while the Monk is
+// unarmored and shieldless, and Vow of Spirit replaces Str/Dex with Wis/Cha entirely (no armor
+// requirement) — both are class/state-aware, so they're computed here rather than stored on the
+// catalog entry itself, which is shared by every class.
 function toHitAbilityInfo(character: Character, weaponName: string): { mod: number; label: string } {
   const strMod = abilityModifier(character.abilities.str);
   const dexMod = abilityModifier(character.abilities.dex);
   const entry = WEAPON_LOOKUP.get(weaponName.trim().toLowerCase());
   if (!entry) return { mod: strMod, label: "Strength" };
   const isRanged = /blaster/i.test(entry.type);
+  const isMonkWeapon = entry.name === "Unarmed Strike" || MONK_WEAPON_NAME_SET.has(entry.name.toLowerCase());
+
+  if (character.classAppliedName === "Monk" && isMonkWeapon && !isRanged) {
+    const hasVowOfSpirit = allChosenSubChoiceOptions(character).some((o) => o.name === "Vow of Spirit");
+    if (hasVowOfSpirit) {
+      const ability = character.monkUnarmoredDefenseAbility;
+      return { mod: abilityModifier(character.abilities[ability]), label: `${ABILITY_LABEL[ability]} (Vow of Spirit)` };
+    }
+    if (monkRetainsUnarmoredBenefits(character) && dexMod > strMod) {
+      return { mod: dexMod, label: "Dexterity (Martial Arts)" };
+    }
+  }
+
   const isFinesse = /finesse/i.test(entry.property);
   if (isRanged) return { mod: dexMod, label: "Dexterity" };
   if (isFinesse && dexMod > strMod) return { mod: dexMod, label: "Dexterity (Finesse)" };
@@ -88,6 +110,8 @@ export default function WeaponsSection({
   const pb = proficiencyBonus(character.level);
   const isRaging = character.classAppliedName === "Berserker" && character.isRaging;
   const rageDamageBonus = BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
+  const hasMartialArts = character.classAppliedName === "Monk" && monkRetainsUnarmoredBenefits(character);
+  const martialArtsDie = MONK_MARTIAL_ARTS_DIE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
   return (
     <section className="sheet-section weapons-section">
       <SectionHeader
@@ -180,6 +204,17 @@ export default function WeaponsSection({
                     <span className="rage-damage-note">+{rageDamageBonus} Rage</span>
                   </HoverInfo>
                 )}
+                {hasMartialArts &&
+                  (w.name === "Unarmed Strike" || MONK_WEAPON_NAME_SET.has(w.name.trim().toLowerCase())) && (
+                    <HoverInfo
+                      title="Martial Arts"
+                      lines={[
+                        `You can roll ${martialArtsDie} in place of this weapon's normal damage when you make an unarmed strike or monk weapon attack.`,
+                      ]}
+                    >
+                      <span className="rage-damage-note">Martial Arts: {martialArtsDie}</span>
+                    </HoverInfo>
+                  )}
               </td>
               <td>
                 <input

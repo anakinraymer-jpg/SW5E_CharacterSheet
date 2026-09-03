@@ -218,6 +218,7 @@ export interface ClassSubChoiceOption {
   travelPaceMultiplier?: number; // multiplies travel-pace speeds (e.g. Blurrg's Instinct)
   actionChoiceCount?: number; // e.g. Fighter's Cunning Strategist: pick this many actions usable as a bonus action
   allowsManeuverSwap?: boolean; // e.g. Fighter's Maneuver Strategist: lets the player swap a known maneuver for another
+  abilitySubstituteOptions?: AbilityKey[]; // e.g. Monk's Vow of the Focused: pick one of these to replace Wis/Cha on monk features
 }
 
 export interface ClassSubChoiceDef {
@@ -244,6 +245,7 @@ export interface ClassSubChoicePickDetail {
   lightsaberForms?: string[];
   damageTypes?: string[];
   actions?: string[];
+  substituteAbility?: AbilityKey;
 }
 
 export interface FeatEntry {

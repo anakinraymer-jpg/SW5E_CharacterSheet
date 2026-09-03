@@ -303,6 +303,16 @@ export const BONUS_ACTION_CONVERTIBLE_ACTIONS = [
 // Berserker's Rage: bonus to Strength-based melee damage while raging, by level (index 0 = level 1).
 export const BERSERKER_RAGE_DAMAGE_BY_LEVEL = [2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5];
 
+// Monk's Martial Arts die, in place of an unarmed strike's/monk weapon's normal damage, by level.
+export const MONK_MARTIAL_ARTS_DIE_BY_LEVEL = [
+  "d4", "d4", "d4", "d4", "d6", "d6", "d6", "d6", "d8", "d8", "d8", "d8", "d10", "d10", "d10", "d10", "d12", "d12", "d12", "d12",
+];
+
+// Monk's Unarmored Movement: flat bonus to walking speed while unarmored and shieldless, by level.
+export const MONK_UNARMORED_MOVEMENT_BY_LEVEL = [
+  0, 0, 10, 10, 15, 15, 15, 15, 20, 20, 20, 20, 25, 25, 25, 25, 30, 30, 30, 30,
+];
+
 export const CLASS_RESOURCES: ClassResourceDef[] = [
   {
     key: "berserker-rages",
@@ -605,23 +615,23 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     countByLevel: [0, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5],
     options: [
       { name: "Vow of Deflection", text: "Reaction to reduce melee weapon attack damage by 1d10 + Dexterity modifier + monk level." },
-      { name: "Vow of the Devoted", text: "You learn 2 (growing) universal force powers, cast with focus points (1 per power level) instead of force points, using your focus ability and DC/attack modifier." },
-      { name: "Vow of Fate", text: "Roll a d20 after a rest; before the next rest, replace any attack/save/check by you or a creature within 5 feet with that roll.", prerequisite: "7th level" },
+      { name: "Vow of the Devoted", text: "You learn 2 (growing) universal force powers, cast with focus points (1 per power level) instead of force points, using your focus ability and DC/attack modifier.", passiveBuffText: "Learn 2 (growing) universal force powers, castable with focus points (1 per power level) instead of force points." },
+      { name: "Vow of Fate", text: "Roll a d20 after a rest; before the next rest, replace any attack/save/check by you or a creature within 5 feet with that roll.", prerequisite: "7th level", passiveBuffText: "Once per rest: roll and hold a d20; before your next rest, replace any attack/save/check by you or a creature within 5 feet with it." },
       { name: "Vow of the Fighter", text: "You adopt a particular style of fighting as your specialty. Choose one of the Fighting Style options.", fightingStyleChoice: true },
-      { name: "Vow of the Focused", text: "Substitute Strength, Constitution, or Intelligence (chosen now) for Wisdom or Charisma on monk class features (except other vows and Monastic Order)." },
-      { name: "Vow of Fortitude", text: "Use your action or bonus action to end being blinded or deafened on yourself.", prerequisite: "7th level" },
-      { name: "Vow of Freedom", text: "Ignore unenhanced difficult terrain; break free of a grapple/restraint as a bonus action instead of an action." },
-      { name: "Vow of Intuition", text: "You no longer have disadvantage on attack rolls against creatures within 10 feet you can't see." },
-      { name: "Vow of the Limber", text: "Spend 1 focus point on your first unarmed strike each turn to increase your reach by 5 feet until end of turn.", prerequisite: "7th level" },
-      { name: "Vow of the Nemesis", text: "Bonus action to force a Wisdom save on a creature within 30 feet; on a failure it has disadvantage attacking others and must save to move far from you for a minute.", prerequisite: "13th level" },
-      { name: "Vow of the Open Mind", text: "Gain proficiency in a skill of your choice. Spend 1 focus point and 10 minutes meditating to add Wisdom or Charisma modifier to checks with a skill you're proficient in (one instance at a time).", skillChoice: true },
-      { name: "Vow of Precision", text: "Your critical hit range with unarmed strikes increases by 1.", prerequisite: "13th level" },
-      { name: "Vow of Requital", text: "After Dodging, when a melee attack against you misses, use your reaction to make a melee attack against that creature.", prerequisite: "13th level" },
-      { name: "Vow of Restoration", text: "Spend 1 focus point in place of an unarmed strike to heal a willing creature within reach: your Martial Arts die + Wisdom or Charisma modifier." },
-      { name: "Vow of the Sentry", text: "Gain proficiency in light and medium armor, and keep Martial Arts/Unarmored Movement benefits while wearing them (no shield).", grantsProficiency: "Light and medium armor" },
-      { name: "Vow of Serenity", text: "Your maximum focus increases by half your Wisdom or Charisma modifier (minimum +1)." },
-      { name: "Vow of Spirit", text: "Use Wisdom or Charisma instead of Strength/Dexterity for unarmed strike and monk weapon attack and damage rolls (same modifier for both)." },
-      { name: "Vow of the Versatile", text: "Replace an unarmed strike in Martial Arts or Flurry of Blows with a monk weapon attack using your Martial Arts die for damage." },
+      { name: "Vow of the Focused", text: "Substitute Strength, Constitution, or Intelligence (chosen now) for Wisdom or Charisma on monk class features (except other vows and Monastic Order).", abilitySubstituteOptions: ["str", "con", "int"] },
+      { name: "Vow of Fortitude", text: "Use your action or bonus action to end being blinded or deafened on yourself.", prerequisite: "7th level", passiveBuffText: "Action or bonus action: end being blinded or deafened on yourself." },
+      { name: "Vow of Freedom", text: "Ignore unenhanced difficult terrain; break free of a grapple/restraint as a bonus action instead of an action.", passiveBuffText: "Ignore unenhanced difficult terrain; break free of a grapple/restraint as a bonus action instead of an action." },
+      { name: "Vow of Intuition", text: "You no longer have disadvantage on attack rolls against creatures within 10 feet you can't see.", passiveBuffText: "No disadvantage on attack rolls against creatures within 10 feet you can't see." },
+      { name: "Vow of the Limber", text: "Spend 1 focus point on your first unarmed strike each turn to increase your reach by 5 feet until end of turn.", prerequisite: "7th level", passiveBuffText: "Spend 1 focus point on your first unarmed strike each turn to increase your reach by 5 feet until end of turn." },
+      { name: "Vow of the Nemesis", text: "Bonus action to force a Wisdom save on a creature within 30 feet; on a failure it has disadvantage attacking others and must save to move far from you for a minute.", prerequisite: "13th level", passiveBuffText: "Bonus action: force a Wisdom save on a creature within 30 feet; on a failure it has disadvantage attacking others and must save to move away for a minute." },
+      { name: "Vow of the Open Mind", text: "Gain proficiency in a skill of your choice. Spend 1 focus point and 10 minutes meditating to add Wisdom or Charisma modifier to checks with a skill you're proficient in (one instance at a time).", skillChoice: true, passiveBuffText: "Spend 1 focus point and 10 minutes meditating to add your Wisdom or Charisma modifier to checks with a skill you're proficient in (one instance at a time)." },
+      { name: "Vow of Precision", text: "Your critical hit range with unarmed strikes increases by 1.", prerequisite: "13th level", passiveBuffText: "Critical hit range with unarmed strikes increases by 1." },
+      { name: "Vow of Requital", text: "After Dodging, when a melee attack against you misses, use your reaction to make a melee attack against that creature.", prerequisite: "13th level", passiveBuffText: "After Dodging, when a melee attack against you misses, use your reaction to make a melee attack against that creature." },
+      { name: "Vow of Restoration", text: "Spend 1 focus point in place of an unarmed strike to heal a willing creature within reach: your Martial Arts die + Wisdom or Charisma modifier.", passiveBuffText: "Spend 1 focus point in place of an unarmed strike to heal a willing creature within reach: your Martial Arts die + Wisdom or Charisma modifier." },
+      { name: "Vow of the Sentry", text: "Gain proficiency in light and medium armor, and keep Martial Arts/Unarmored Movement benefits while wearing them (no shield).", grantsProficiency: "Light and medium armor", passiveBuffText: "Keep Martial Arts and Unarmored Movement benefits while wearing light or medium armor (still no shield) — already reflected above." },
+      { name: "Vow of Serenity", text: "Your maximum focus increases by half your Wisdom or Charisma modifier (minimum +1).", passiveBuffText: "Focus maximum increases by half your Wisdom or Charisma modifier (min +1) — already reflected in your Focus Points above." },
+      { name: "Vow of Spirit", text: "Use Wisdom or Charisma instead of Strength/Dexterity for unarmed strike and monk weapon attack and damage rolls (same modifier for both).", passiveBuffText: "Unarmed strikes and monk weapon attacks use Wisdom or Charisma instead of Strength/Dexterity — already reflected in the Weapons table." },
+      { name: "Vow of the Versatile", text: "Replace an unarmed strike in Martial Arts or Flurry of Blows with a monk weapon attack using your Martial Arts die for damage.", passiveBuffText: "Replace an unarmed strike in Martial Arts or Flurry of Blows with a monk weapon attack using your Martial Arts die for damage." },
     ],
   },
   {

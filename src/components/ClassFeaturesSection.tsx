@@ -1,7 +1,12 @@
 import type { AbilityKey, Character } from "../types";
 import { BERSERKER_RAGE_DAMAGE_BY_LEVEL, CLASS_SUB_CHOICES_BY_CLASS } from "../data/classFeatureChoices";
 import { CLASSES_CATALOG } from "../data/classes";
-import { allChosenSubChoiceOptions, applicableClassResources, chosenDamageTypesFor } from "../classFeatureLogic";
+import {
+  allChosenSubChoiceOptions,
+  applicableClassResources,
+  chosenDamageTypesFor,
+  resourceMaxBonus,
+} from "../classFeatureLogic";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
@@ -124,6 +129,8 @@ export default function ClassFeaturesSection({
   const dewbackTypes = chosenOptions.some((o) => o.name === "Dewback's Instinct")
     ? chosenDamageTypesFor(character, "Dewback's Instinct")
     : [];
+  const hasVowOfDeflection = chosenOptions.some((o) => o.name === "Vow of Deflection");
+  const deflectionFlatBonus = abilityModifier(character.abilities.dex) + character.level;
 
   const hasManeuvers = subChoiceDefs.some((def) => def.key.endsWith("-maneuvers"));
   const canSwapManeuvers = hasManeuvers && chosenOptions.some((o) => o.allowsManeuverSwap);
@@ -156,7 +163,7 @@ export default function ClassFeaturesSection({
           {resources.map((def) => {
             const state = character.classResources.find((r) => r.key === def.key);
             const idx = Math.max(1, Math.min(20, character.level || 1)) - 1;
-            const max = def.maxByLevel[idx] ?? 0;
+            const max = (def.maxByLevel[idx] ?? 0) + resourceMaxBonus(character, def.key);
             const die = def.dieByLevel?.[idx];
             const current = state?.current ?? max;
             return (
@@ -315,10 +322,20 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {passiveBuffOptions.length > 0 && (
+      {(passiveBuffOptions.length > 0 || hasVowOfDeflection) && (
         <div className="species-traits-box">
           <div className="species-traits-header">Passive Feature Effects</div>
           <div className="chip-row">
+            {hasVowOfDeflection && (
+              <HoverInfo
+                title="Vow of Deflection"
+                lines={[
+                  `Reaction: reduce a melee weapon attack's damage by 1d10 + ${formatModifier(deflectionFlatBonus)} (Dexterity modifier + monk level).`,
+                ]}
+              >
+                <span className="info-chip">Deflect: 1d10 {formatModifier(deflectionFlatBonus)}</span>
+              </HoverInfo>
+            )}
             {passiveBuffOptions.map((o) => (
               <HoverInfo key={o.name} title={o.name} lines={[o.passiveBuffText!]}>
                 <span className="info-chip">{o.passiveBuffText}</span>
@@ -348,6 +365,7 @@ export default function ClassFeaturesSection({
                 if (detail?.fightingMastery) extra.push(`Fighting Mastery: ${detail.fightingMastery}`);
                 if (detail?.lightsaberForms?.length) extra.push(`Lightsaber Forms: ${detail.lightsaberForms.join(", ")}`);
                 if (detail?.actions?.length) extra.push(`Bonus Action Options: ${detail.actions.join(", ")}`);
+                if (detail?.substituteAbility) extra.push(`Substitute Ability: ${ABILITY_LABELS[detail.substituteAbility]}`);
                 return (
                   <HoverInfo
                     key={`${def.key}-${name}-${i}`}

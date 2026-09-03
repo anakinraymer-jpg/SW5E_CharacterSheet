@@ -66,6 +66,10 @@ export const WEAPON_CATALOG: WeaponCatalogEntry[] = [
   { name: "Techaxe", type: "Simple Vibroweapon", property: "Light, Thrown (range 25/75)", cost: 75, weight: 1, damage: "1d6 Kinetic" },
   { name: "Techblade", type: "Martial Vibroweapon", property: "Finesse, Light", cost: 100, weight: 1.5, damage: "1d6 Kinetic" },
   { name: "Techstaff", type: "Martial Vibroweapon", property: "Dexterity 11, Double (2d4 kinetic), Light", cost: 650, weight: 5.25, damage: "2d4 Kinetic" },
+  // Not a real "type" category (everyone is always proficient with it, unlike simple/martial
+  // weapon proficiency lists) — kept out of the Simple/Martial/Vibroweapon/Blaster/Lightweapon
+  // naming scheme on purpose so it never gets swept into an unrelated weaponNamesByType() filter.
+  { name: "Unarmed Strike", type: "Unarmed", property: "Light", cost: 0, weight: 0, damage: "1 Kinetic" },
   { name: "Vibroaxe", type: "Martial Vibroweapon", property: "Dexterity 11, Heavy, Two-handed", cost: 950, weight: 9.25, damage: "1d12 Kinetic" },
   { name: "Vibroblade", type: "Martial Vibroweapon", property: "Versatile (1d10)", cost: 200, weight: 5, damage: "1d8 Kinetic" },
   { name: "Vibrodagger", type: "Simple Vibroweapon", property: "Finesse, Light, Thrown (range 20/60)", cost: 50, weight: 0.5, damage: "1d4 Kinetic" },

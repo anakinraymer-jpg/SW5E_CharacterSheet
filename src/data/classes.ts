@@ -43,6 +43,9 @@ const MONK_PROFICIENT_VIBROWEAPONS = [
     excludeProps: [/^Dexterity/, /^Heavy$/, /^Special$/, /^Two-handed$/],
   }),
 ];
+// "Monk weapons" per Martial Arts: simple blasters, simple vibroweapons, and the martial
+// vibroweapons above (excludes lightweapons and disqualified martial vibroweapons).
+export const MONK_WEAPON_NAMES = [...SIMPLE_BLASTERS, ...MONK_PROFICIENT_VIBROWEAPONS];
 // Operative: proficient with all simple vibroweapons plus finesse martial vibroweapons.
 const OPERATIVE_PROFICIENT_VIBROWEAPONS = [
   ...SIMPLE_VIBROWEAPONS,

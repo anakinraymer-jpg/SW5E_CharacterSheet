@@ -12,6 +12,7 @@ import {
   LIGHTSABER_FORMS,
 } from "../data/classFeatureChoices";
 import { chainPrerequisiteName, isVisibleOption } from "../classFeatureLogic";
+import { ABILITY_LABEL } from "../speciesLogic";
 import HoverInfo from "./HoverInfo";
 import Modal from "./Modal";
 
@@ -116,6 +117,9 @@ function detailComplete(option: ClassSubChoiceDef["options"][number] | undefined
       return tools.length === 1 && Boolean(tools[0]);
     }
     return tools.length === 2 && tools.every(Boolean) && new Set(tools).size === tools.length;
+  }
+  if (option.abilitySubstituteOptions) {
+    return Boolean(detail.substituteAbility);
   }
   return true;
 }
@@ -393,6 +397,21 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
                         </select>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {option?.abilitySubstituteOptions && (
+                  <div className="choice-selects" style={{ marginTop: 4 }}>
+                    {option.abilitySubstituteOptions.map((a) => (
+                      <button
+                        key={a}
+                        type="button"
+                        className={`btn btn-small ${detail.substituteAbility === a ? "btn-primary" : "btn-secondary"}`}
+                        onClick={() => updateDetail(i, { ...detail, substituteAbility: a })}
+                      >
+                        {ABILITY_LABEL[a]}
+                      </button>
+                    ))}
                   </div>
                 )}
               </div>

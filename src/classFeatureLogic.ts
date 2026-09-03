@@ -1,4 +1,5 @@
 import type {
+  AbilityKey,
   Character,
   ClassResourceState,
   ClassSubChoiceDef,
@@ -8,7 +9,14 @@ import type {
   SkillState,
 } from "./types";
 import { isSkillName } from "./types";
-import { CLASS_RESOURCES_BY_CLASS, CLASS_SUB_CHOICES_BY_CLASS, FIGHTING_STYLES, FIGHTING_MASTERIES } from "./data/classFeatureChoices";
+import {
+  CLASS_RESOURCES_BY_CLASS,
+  CLASS_SUB_CHOICES_BY_CLASS,
+  FIGHTING_STYLES,
+  FIGHTING_MASTERIES,
+  MONK_UNARMORED_MOVEMENT_BY_LEVEL,
+} from "./data/classFeatureChoices";
+import { abilityModifier, armorCatalogMatch } from "./utils";
 
 const FIGHTING_STYLES_BY_NAME = new Map(FIGHTING_STYLES.map((s) => [s.name, s]));
 const FIGHTING_MASTERIES_BY_NAME = new Map(FIGHTING_MASTERIES.map((m) => [m.name, m]));
@@ -77,8 +85,50 @@ export function allChosenSubChoiceOptions(character: Character): ClassSubChoiceO
   return out;
 }
 
+// True while a Monk keeps their Martial Arts/Unarmored Movement benefits: unarmored and
+// shieldless, or (with Vow of the Sentry) in light/medium armor and still shieldless.
+export function monkRetainsUnarmoredBenefits(character: Character): boolean {
+  if (character.classAppliedName !== "Monk") return false;
+  const equippedArmor = character.equipment
+    .filter((i) => i.equipped)
+    .map((i) => armorCatalogMatch(i.name))
+    .filter((a): a is NonNullable<ReturnType<typeof armorCatalogMatch>> => Boolean(a));
+  if (equippedArmor.some((a) => a.type === "Shield")) return false;
+  const armor = equippedArmor.find((a) => a.type !== "Shield");
+  if (!armor) return true;
+  const hasVowOfSentry = allChosenSubChoiceOptions(character).some((o) => o.name === "Vow of the Sentry");
+  return hasVowOfSentry && (armor.type === "Light" || armor.type === "Medium");
+}
+
+// The ability a Monk with Vow of the Focused has chosen to substitute for Wisdom/Charisma on
+// monk class features (e.g. Unarmored Defense), or null if not applicable.
+export function monkSubstituteAbility(character: Character): AbilityKey | null {
+  for (const def of applicableSubChoiceDefs(character)) {
+    const chosen = character.classSubChoicePicks[def.key] ?? [];
+    const idx = chosen.indexOf("Vow of the Focused");
+    if (idx === -1) continue;
+    const detail = (character.classSubChoiceDetails[def.key] ?? [])[idx];
+    if (detail?.substituteAbility) return detail.substituteAbility;
+  }
+  return null;
+}
+
+// Every source contributing to the character's effective walking speed bonus, for both the
+// summed total (activeSpeedBonus) and a labeled breakdown (e.g. the Speed Base hover tooltip).
+export function activeSpeedBonusSources(character: Character): { label: string; amount: number }[] {
+  const sources: { label: string; amount: number }[] = [];
+  for (const o of allChosenSubChoiceOptions(character)) {
+    if (o.speedBonus) sources.push({ label: o.name, amount: o.speedBonus });
+  }
+  if (monkRetainsUnarmoredBenefits(character)) {
+    const bonus = MONK_UNARMORED_MOVEMENT_BY_LEVEL[levelIndex(character)] ?? 0;
+    if (bonus > 0) sources.push({ label: "Unarmored Movement", amount: bonus });
+  }
+  return sources;
+}
+
 export function activeSpeedBonus(character: Character): number {
-  return allChosenSubChoiceOptions(character).reduce((sum, o) => sum + (o.speedBonus ?? 0), 0);
+  return activeSpeedBonusSources(character).reduce((sum, s) => sum + s.amount, 0);
 }
 
 export function activeCarryingCapacityMultiplier(character: Character): number {
@@ -168,12 +218,22 @@ function resyncSubChoiceGrantedSkills(character: Character): Character {
 // Rebuilds classResources from scratch for the character's current class, dropping resources
 // from a previous class. When a resource's max grows (leveling up), current grows by the same
 // delta (newly available uses start unspent); when max shrinks, current is clamped down.
+// Monk's Vow of Serenity adds half the character's Wisdom/Charisma modifier (min +1) to their
+// maximum focus points — a formula-based bonus, unlike the flat countBonusFrom mechanism, so it's
+// special-cased here rather than added as a new generic ClassResourceDef field for one resource.
+export function resourceMaxBonus(character: Character, defKey: string): number {
+  if (defKey !== "monk-focus-points") return 0;
+  if (!allChosenSubChoiceOptions(character).some((o) => o.name === "Vow of Serenity")) return 0;
+  const mod = abilityModifier(character.abilities[character.monkUnarmoredDefenseAbility]);
+  return Math.max(1, Math.floor(mod / 2));
+}
+
 export function recalcClassResources(character: Character): Character {
   const defs = applicableClassResources(character);
   const idx = levelIndex(character);
   const existingByKey = new Map(character.classResources.map((r) => [r.key, r]));
   const next: ClassResourceState[] = defs.map((def) => {
-    const max = def.maxByLevel[idx] ?? 0;
+    const max = (def.maxByLevel[idx] ?? 0) + resourceMaxBonus(character, def.key);
     const existing = existingByKey.get(def.key);
     if (!existing) return { key: def.key, current: max, max };
     const delta = max - existing.max;

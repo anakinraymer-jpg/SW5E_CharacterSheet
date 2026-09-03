@@ -12,6 +12,7 @@ import type {
 import { emptyAbilities0, isSkillName } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
 import { resolveEquipmentParts } from "./equipmentLogic";
+import { monkSubstituteAbility } from "./classFeatureLogic";
 import { abilityModifier } from "./utils";
 
 export interface UnarmoredDefenseBonus {
@@ -33,12 +34,13 @@ export function computeUnarmoredDefenseBonus(character: Character): UnarmoredDef
     };
   }
   if (character.classAppliedName === "Monk") {
-    const ability = character.monkUnarmoredDefenseAbility;
+    const substitute = monkSubstituteAbility(character);
+    const ability = substitute ?? character.monkUnarmoredDefenseAbility;
     return {
       modifier: abilityModifier(character.abilities[ability]),
       allowShield: false,
-      sourceLabel: "Monk Unarmored Defense",
-      abilityLabel: ability === "wis" ? "Wisdom" : "Charisma",
+      sourceLabel: substitute ? "Monk Unarmored Defense (Vow of the Focused)" : "Monk Unarmored Defense",
+      abilityLabel: ABILITY_LABEL[ability],
     };
   }
   if (
