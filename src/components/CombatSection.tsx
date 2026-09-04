@@ -235,9 +235,11 @@ export default function CombatSection({
                   checked={item.equipped}
                   onChange={(e) => updateItem(item.id, { equipped: e.target.checked })}
                 />
-                <span className="armor-equip-name">{item.name}</span>
-                <span className="armor-equip-meta">
-                  {catalog.type} · AC {catalog.ac}
+                <span className="armor-equip-text">
+                  <span className="armor-equip-name">{item.name}</span>
+                  <span className="armor-equip-meta">
+                    {catalog.type} · AC {catalog.ac}
+                  </span>
                 </span>
               </label>
             ))}
@@ -267,9 +269,11 @@ export default function CombatSection({
               const { display: damageDisplay } = weaponDamageDisplay(character, w);
               return (
                 <div key={w.id} className="armor-equip-row is-readonly">
-                  <span className="armor-equip-name">{w.name || "Unnamed weapon"}</span>
-                  <span className="armor-equip-meta">
-                    To Hit {formatModifier(toHit)} ({abilityLabel}) · {damageDisplay || "no damage set"} · {w.range || "Melee"}
+                  <span className="armor-equip-text">
+                    <span className="armor-equip-name">{w.name || "Unnamed weapon"}</span>
+                    <span className="armor-equip-meta">
+                      To Hit {formatModifier(toHit)} ({abilityLabel}) · {damageDisplay || "no damage set"} · {w.range || "Melee"}
+                    </span>
                   </span>
                 </div>
               );

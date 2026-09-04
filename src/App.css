@@ -824,15 +824,23 @@
   background: var(--accent-dim);
 }
 
+.armor-equip-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
 .armor-equip-name {
   font-weight: 600;
-  flex: 1;
 }
 
 .armor-equip-meta {
   font-size: 0.75rem;
   opacity: 0.65;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: break-word;
 }
 
 .armor-penalty-mark {
