@@ -687,7 +687,6 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             character={character}
             update={update}
             updateItem={updateItem}
-            updateWeapon={updateWeapon}
             collapsedSections={collapsedSections}
             onToggleSection={toggleSection}
           />

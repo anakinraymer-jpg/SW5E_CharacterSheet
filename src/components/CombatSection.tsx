@@ -1,4 +1,4 @@
-import type { Character, EquipmentItem, Weapon } from "../types";
+import type { Character, EquipmentItem } from "../types";
 import { SKILL_ABILITY } from "../types";
 import type { ArmorCatalogEntry } from "../data/armor";
 import { abilityModifier, armorCatalogMatch, formatModifier, passivePerception, proficiencyBonus } from "../utils";
@@ -11,7 +11,6 @@ interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
   updateItem: (id: string, patch: Partial<EquipmentItem>) => void;
-  updateWeapon: (id: string, patch: Partial<Weapon>) => void;
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
 }
@@ -42,13 +41,13 @@ export default function CombatSection({
   character,
   update,
   updateItem,
-  updateWeapon,
   collapsedSections,
   onToggleSection,
 }: Props) {
   const collapsed = !!collapsedSections["combat"];
   const pb = proficiencyBonus(character.level);
   const travelPaceMultiplier = activeTravelPaceMultiplier(character);
+  const equippedWeapons = character.weapons.filter((w) => w.equipped);
 
   const armorItems = character.equipment
     .map((item) => ({ item, catalog: armorCatalogMatch(item.name) }))
@@ -260,31 +259,26 @@ export default function CombatSection({
 
       <div className="field field-wide">
         <label>Equipped Weapons</label>
-        {character.weapons.length > 0 ? (
+        {equippedWeapons.length > 0 ? (
           <div className="armor-equip-list">
-            {character.weapons.map((w) => {
+            {equippedWeapons.map((w) => {
               const { mod: abilityMod, label: abilityLabel } = toHitAbilityInfo(character, w.name);
               const toHit = abilityMod + (w.proficient ? pb : 0);
               const { display: damageDisplay } = weaponDamageDisplay(character, w);
               return (
-                <label key={w.id} className="armor-equip-row">
-                  <input
-                    type="checkbox"
-                    checked={w.equipped}
-                    onChange={(e) => updateWeapon(w.id, { equipped: e.target.checked })}
-                  />
+                <div key={w.id} className="armor-equip-row">
                   <span className="armor-equip-name">{w.name || "Unnamed weapon"}</span>
                   <span className="armor-equip-meta">
                     To Hit {formatModifier(toHit)} ({abilityLabel}) · {damageDisplay || "no damage set"} · {w.range || "Melee"}
                   </span>
-                </label>
+                </div>
               );
             })}
           </div>
         ) : (
           <p className="section-hint">
-            No weapons in your Weapons &amp; Ammunitions table yet. Add one there and it'll show up
-            here to equip.
+            No weapons equipped. Check Equipped in the Weapons &amp; Ammunitions table to show them
+            here.
           </p>
         )}
       </div>

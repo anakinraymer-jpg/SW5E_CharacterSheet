@@ -105,6 +105,7 @@ export default function WeaponsSection({
         <thead>
           <tr>
             <th>Weapon</th>
+            <th>Equipped</th>
             <th>Prof.</th>
             <th>To Hit Bonus</th>
             <th>Damage/Type</th>
@@ -145,6 +146,13 @@ export default function WeaponsSection({
                       updateWeapon(w.id, { name });
                     }
                   }}
+                />
+              </td>
+              <td>
+                <input
+                  type="checkbox"
+                  checked={w.equipped}
+                  onChange={(e) => updateWeapon(w.id, { equipped: e.target.checked })}
                 />
               </td>
               <td>
