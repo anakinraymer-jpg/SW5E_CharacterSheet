@@ -91,6 +91,7 @@ export function resolveEquipmentParts(
           weight: hit.entry.weight,
           ammoCount: 0,
           ammoType: "",
+          equipped: false,
         });
       }
     } else if (hit.kind === "armor") {

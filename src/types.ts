@@ -316,6 +316,7 @@ export interface Weapon {
   weight: number;
   ammoCount: number;
   ammoType: string;
+  equipped: boolean; // shown (with computed stats) in Combat's Equipped Weapons block
 }
 
 export type RefreshType = "Short Rest" | "Long Rest" | "At Will";

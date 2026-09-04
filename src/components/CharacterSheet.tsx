@@ -474,6 +474,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       weight: 0,
       ammoCount: 0,
       ammoType: "",
+      equipped: false,
     };
     setCharacter((prev) => ({ ...prev, weapons: [...prev.weapons, newWeapon] }));
   }
@@ -686,6 +687,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             character={character}
             update={update}
             updateItem={updateItem}
+            updateWeapon={updateWeapon}
             collapsedSections={collapsedSections}
             onToggleSection={toggleSection}
           />

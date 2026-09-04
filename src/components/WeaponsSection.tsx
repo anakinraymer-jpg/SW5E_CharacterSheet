@@ -3,9 +3,9 @@ import { WEAPON_CATALOG, type WeaponCatalogEntry } from "../data/weapons";
 import { GEAR_CATALOG } from "../data/gear";
 import { CLASSES_CATALOG, MONK_WEAPON_NAMES } from "../data/classes";
 import { BERSERKER_RAGE_DAMAGE_BY_LEVEL, MONK_MARTIAL_ARTS_DIE_BY_LEVEL } from "../data/classFeatureChoices";
-import { allChosenSubChoiceOptions, monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
-import { ABILITY_LABEL } from "../speciesLogic";
-import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
+import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
+import { WEAPON_LOOKUP, toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
+import { formatModifier, proficiencyBonus } from "../utils";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
 
@@ -16,7 +16,6 @@ function extractRange(property: string): string {
   return match ? `${match[1]} ft` : "Melee";
 }
 
-const WEAPON_LOOKUP = new Map(WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), w]));
 const AMMO_TYPES = GEAR_CATALOG.filter((g) => g.category === "Ammunition").map((g) => g.name);
 
 // Best-effort default for a newly-picked catalog weapon: does the applied class's broad
@@ -45,40 +44,6 @@ function defaultProficient(className: string, entry: WeaponCatalogEntry): boolea
   const classEntry = CLASSES_CATALOG.find((c) => c.name === className);
   if (!classEntry) return false;
   return classEntry.weaponProficiencies.some((wp) => classProficientWithType(entry.type, wp.label));
-}
-
-// Blasters use Dexterity; melee weapons use Strength unless Finesse allows the better of the two.
-// Monk unarmed strikes/monk weapons additionally gain Martial Arts' finesse while the Monk is
-// unarmored and shieldless, and Vow of Spirit replaces Str/Dex with Wis/Cha entirely (no armor
-// requirement) — both are class/state-aware, so they're computed here rather than stored on the
-// catalog entry itself, which is shared by every class.
-function toHitAbilityInfo(character: Character, weaponName: string): { mod: number; label: string } {
-  const strMod = abilityModifier(character.abilities.str);
-  const dexMod = abilityModifier(character.abilities.dex);
-  const entry = WEAPON_LOOKUP.get(weaponName.trim().toLowerCase());
-  if (!entry) return { mod: strMod, label: "Strength" };
-  const isRanged = /blaster/i.test(entry.type);
-  const isMonk = character.classAppliedName === "Monk";
-  const isMonkWeapon = entry.name === "Unarmed Strike" || MONK_WEAPON_NAME_SET.has(entry.name.toLowerCase());
-
-  // Vow of Spirit is scoped to unarmed strikes/monk weapons specifically (its own text), but
-  // Martial Arts' finesse grant applies to any weapon the Monk wields while unarmored/shieldless.
-  if (isMonk && isMonkWeapon && !isRanged) {
-    const hasVowOfSpirit = allChosenSubChoiceOptions(character).some((o) => o.name === "Vow of Spirit");
-    if (hasVowOfSpirit) {
-      const ability = character.monkUnarmoredDefenseAbility;
-      return { mod: abilityModifier(character.abilities[ability]), label: `${ABILITY_LABEL[ability]} (Vow of Spirit)` };
-    }
-  }
-
-  const monkFinesse = isMonk && !isRanged && monkRetainsUnarmoredBenefits(character);
-  const isFinesse = monkFinesse || /finesse/i.test(entry.property);
-  if (isRanged) return { mod: dexMod, label: "Dexterity" };
-  if (isFinesse && dexMod > strMod) {
-    const isCatalogFinesse = /finesse/i.test(entry.property);
-    return { mod: dexMod, label: isCatalogFinesse ? "Dexterity (Finesse)" : "Dexterity (Martial Arts)" };
-  }
-  return { mod: strMod, label: "Strength" };
 }
 
 interface Props {
@@ -197,12 +162,7 @@ export default function WeaponsSection({
               <td>
                 {w.name.trim().toLowerCase() === "unarmed strike" ? (
                   (() => {
-                    const dieNotation = hasMartialArts ? `1${martialArtsDie}` : "1";
-                    const display = `${dieNotation}${formatModifier(abilityMod)} Kinetic`;
-                    const lines = [
-                      hasMartialArts ? `Martial Arts die: 1${martialArtsDie}` : "Base unarmed strike damage: 1",
-                      `${abilityLabel} modifier: ${formatModifier(abilityMod)}`,
-                    ];
+                    const { display, lines } = weaponDamageDisplay(character, w);
                     return (
                       <HoverInfo title="Unarmed Strike Damage" lines={lines}>
                         <div className="readonly-box to-hit-box">{display}</div>
