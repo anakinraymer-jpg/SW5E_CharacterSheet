@@ -816,6 +816,14 @@
   background: var(--accent-dim);
 }
 
+/* Read-only variant (no checkbox) for lists that only ever show already-active items, e.g.
+   Combat's Equipped Weapons — always rendered in the "active" accent style, no pointer cursor. */
+.armor-equip-row.is-readonly {
+  cursor: default;
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
 .armor-equip-name {
   font-weight: 600;
   flex: 1;

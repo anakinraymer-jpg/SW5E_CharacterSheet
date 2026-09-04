@@ -266,7 +266,7 @@ export default function CombatSection({
               const toHit = abilityMod + (w.proficient ? pb : 0);
               const { display: damageDisplay } = weaponDamageDisplay(character, w);
               return (
-                <div key={w.id} className="armor-equip-row">
+                <div key={w.id} className="armor-equip-row is-readonly">
                   <span className="armor-equip-name">{w.name || "Unnamed weapon"}</span>
                   <span className="armor-equip-meta">
                     To Hit {formatModifier(toHit)} ({abilityLabel}) · {damageDisplay || "no damage set"} · {w.range || "Melee"}
