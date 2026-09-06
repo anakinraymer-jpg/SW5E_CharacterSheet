@@ -383,6 +383,7 @@ export interface Character {
   // Class/archetype trait application state
   classAppliedName: string;
   classSavingThrowsApplied: AbilityKey[];
+  classLevelSavingThrowsApplied: AbilityKey[]; // saves granted by a level threshold (e.g. Operative's Slippery Mind), re-evaluated every level change rather than fixed at class-apply time
   classGrantedSkills: SkillName[];
   classGrantedProficiencies: string[];
   classAbilityBonus: AbilityScores;
@@ -584,6 +585,7 @@ export function createBlankCharacter(): Character {
     speciesCreditsApplied: 0,
     classAppliedName: "",
     classSavingThrowsApplied: [],
+    classLevelSavingThrowsApplied: [],
     classGrantedSkills: [],
     classGrantedProficiencies: [],
     classAbilityBonus: emptyAbilities0(),

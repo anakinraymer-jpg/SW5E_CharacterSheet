@@ -131,6 +131,9 @@ export default function ClassFeaturesSection({
     : [];
   const hasVowOfDeflection = chosenOptions.some((o) => o.name === "Vow of Deflection");
   const deflectionFlatBonus = abilityModifier(character.abilities.dex) + character.level;
+  const isOperative = character.classAppliedName === "Operative";
+  const hasReliableTalent = isOperative && character.level >= 11;
+  const hasSlipperyMind = isOperative && character.level >= 15;
 
   const hasManeuvers = subChoiceDefs.some((def) => def.key.endsWith("-maneuvers"));
   const canSwapManeuvers = hasManeuvers && chosenOptions.some((o) => o.allowsManeuverSwap);
@@ -322,7 +325,7 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {(passiveBuffOptions.length > 0 || hasVowOfDeflection) && (
+      {(passiveBuffOptions.length > 0 || hasVowOfDeflection || hasReliableTalent || hasSlipperyMind) && (
         <div className="species-traits-box">
           <div className="species-traits-header">Passive Feature Effects</div>
           <div className="chip-row">
@@ -334,6 +337,22 @@ export default function ClassFeaturesSection({
                 ]}
               >
                 <span className="info-chip">Deflect: 1d10 {formatModifier(deflectionFlatBonus)}</span>
+              </HoverInfo>
+            )}
+            {hasReliableTalent && (
+              <HoverInfo
+                title="Reliable Talent"
+                lines={["Ability checks that add your proficiency bonus treat a d20 roll of 9 or lower as a 10."]}
+              >
+                <span className="info-chip">Reliable Talent: treat 9 or lower as 10</span>
+              </HoverInfo>
+            )}
+            {hasSlipperyMind && (
+              <HoverInfo
+                title="Slippery Mind"
+                lines={["You gain proficiency in Wisdom saving throws — already applied above."]}
+              >
+                <span className="info-chip">Proficient: Wisdom saves</span>
               </HoverInfo>
             )}
             {passiveBuffOptions.map((o) => (

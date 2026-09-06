@@ -114,10 +114,22 @@ function resolveClassEquipmentGrants(
   return { weapons, equipment };
 }
 
+// Saving throw proficiencies granted by a level threshold rather than at class-apply time
+// (e.g. Operative's Slippery Mind, level 15: proficiency in Wisdom saving throws) — re-evaluated
+// on every level change via recalcClassForLevel, distinct from the fixed base saves in
+// classSavingThrowsApplied.
+function levelGrantedSavingThrows(className: string, level: number): AbilityKey[] {
+  if (className === "Operative" && level >= 15) return ["wis"];
+  return [];
+}
+
 export function revertClass(character: Character): Character {
   if (!character.classAppliedName) return character;
   const savingThrows = { ...character.savingThrows };
   for (const key of character.classSavingThrowsApplied) {
+    savingThrows[key] = false;
+  }
+  for (const key of character.classLevelSavingThrowsApplied) {
     savingThrows[key] = false;
   }
   const skills = { ...character.skills };
@@ -135,6 +147,7 @@ export function revertClass(character: Character): Character {
     weapons: character.weapons.filter((w) => !grantedWeaponIds.has(w.id)),
     classAppliedName: "",
     classSavingThrowsApplied: [],
+    classLevelSavingThrowsApplied: [],
     classGrantedSkills: [],
     classGrantedProficiencies: [],
     classTraitsText: "",
@@ -154,6 +167,10 @@ export function applyClass(
 
   const savingThrows = { ...base.savingThrows };
   for (const key of classEntry.savingThrows) {
+    savingThrows[key] = true;
+  }
+  const levelSavingThrows = levelGrantedSavingThrows(classEntry.name, Math.max(1, Math.min(20, base.level || 1)));
+  for (const key of levelSavingThrows) {
     savingThrows[key] = true;
   }
 
@@ -198,6 +215,7 @@ export function applyClass(
       row?.techPoints !== undefined ? { ...base.techPoints, max: row.techPoints + techMod } : base.techPoints,
     classAppliedName: classEntry.name,
     classSavingThrowsApplied: [...classEntry.savingThrows],
+    classLevelSavingThrowsApplied: levelSavingThrows,
     classGrantedSkills: grantedSkills,
     classGrantedProficiencies: grantedProficiencies,
     classEquipmentText: equipmentText,
@@ -216,8 +234,20 @@ export function recalcClassForLevel(character: Character, classEntry: ClassEntry
   const row = classEntry.levels[level - 1];
   const forceMod = abilityModifier(character.abilities[character.forceCastingAbility]);
   const techMod = abilityModifier(character.abilities.int);
+
+  const savingThrows = { ...character.savingThrows };
+  for (const key of character.classLevelSavingThrowsApplied) {
+    savingThrows[key] = false;
+  }
+  const levelSavingThrows = levelGrantedSavingThrows(classEntry.name, level);
+  for (const key of levelSavingThrows) {
+    savingThrows[key] = true;
+  }
+
   const next: Character = {
     ...character,
+    savingThrows,
+    classLevelSavingThrowsApplied: levelSavingThrows,
     hitDiceTotal: `${level}d${classEntry.hitDie}`,
     forcePoints:
       row?.forcePoints !== undefined
