@@ -313,6 +313,9 @@ export const MONK_UNARMORED_MOVEMENT_BY_LEVEL = [
   0, 0, 10, 10, 15, 15, 15, 15, 20, 20, 20, 20, 25, 25, 25, 25, 30, 30, 30, 30,
 ];
 
+// Operative's Sneak Attack: number of d6s dealt once per turn on a finesse/ranged weapon hit, by level.
+export const OPERATIVE_SNEAK_ATTACK_DICE_BY_LEVEL = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10];
+
 export const CLASS_RESOURCES: ClassResourceDef[] = [
   {
     key: "berserker-rages",

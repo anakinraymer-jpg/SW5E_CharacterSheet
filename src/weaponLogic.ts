@@ -43,6 +43,15 @@ export function toHitAbilityInfo(character: Character, weaponName: string): { mo
   return { mod: strMod, label: "Strength" };
 }
 
+// Sneak Attack (Operative) requires a finesse or ranged weapon — independent of which ability
+// the attack actually uses, so this checks the catalog entry directly rather than reusing
+// toHitAbilityInfo's Str/Dex resolution.
+export function isFinesseOrRangedWeapon(weaponName: string): boolean {
+  const entry = WEAPON_LOOKUP.get(weaponName.trim().toLowerCase());
+  if (!entry) return false;
+  return /blaster/i.test(entry.type) || /finesse/i.test(entry.property);
+}
+
 // Unarmed Strike has no legitimate manual damage override (unlike other weapons, which can carry
 // homebrew/magical bonuses) — its damage is fully determined by Martial Arts die (if any) plus the
 // applicable ability modifier, so this is computed live rather than stored on the weapon row.

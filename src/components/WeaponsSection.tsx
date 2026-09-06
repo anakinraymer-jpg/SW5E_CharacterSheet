@@ -2,9 +2,9 @@ import type { Character, CombatFeature, RefreshType, Weapon } from "../types";
 import { WEAPON_CATALOG, type WeaponCatalogEntry } from "../data/weapons";
 import { GEAR_CATALOG } from "../data/gear";
 import { CLASSES_CATALOG, MONK_WEAPON_NAMES } from "../data/classes";
-import { BERSERKER_RAGE_DAMAGE_BY_LEVEL, MONK_MARTIAL_ARTS_DIE_BY_LEVEL } from "../data/classFeatureChoices";
+import { BERSERKER_RAGE_DAMAGE_BY_LEVEL, MONK_MARTIAL_ARTS_DIE_BY_LEVEL, OPERATIVE_SNEAK_ATTACK_DICE_BY_LEVEL } from "../data/classFeatureChoices";
 import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
-import { WEAPON_LOOKUP, toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
+import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { formatModifier, proficiencyBonus } from "../utils";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
@@ -81,6 +81,8 @@ export default function WeaponsSection({
   const rageDamageBonus = BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
   const hasMartialArts = character.classAppliedName === "Monk" && monkRetainsUnarmoredBenefits(character);
   const martialArtsDie = MONK_MARTIAL_ARTS_DIE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
+  const hasSneakAttack = character.classAppliedName === "Operative";
+  const sneakAttackDice = OPERATIVE_SNEAK_ATTACK_DICE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
   return (
     <section className="sheet-section weapons-section">
       <SectionHeader
@@ -200,6 +202,16 @@ export default function WeaponsSection({
                         ]}
                       >
                         <span className="rage-damage-note">Martial Arts: 1{martialArtsDie}{formatModifier(abilityMod)}</span>
+                      </HoverInfo>
+                    )}
+                    {hasSneakAttack && isFinesseOrRangedWeapon(w.name) && (
+                      <HoverInfo
+                        title="Sneak Attack"
+                        lines={[
+                          `Once per turn, deal an extra ${sneakAttackDice}d6 damage on a hit with this weapon if you have advantage, or if another enemy of the target is within 5 feet of it.`,
+                        ]}
+                      >
+                        <span className="rage-damage-note">Sneak Attack: {sneakAttackDice}d6</span>
                       </HoverInfo>
                     )}
                   </>
