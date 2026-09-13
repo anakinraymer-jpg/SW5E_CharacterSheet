@@ -44,16 +44,20 @@ export function revertSpecies(character: Character): Character {
   for (const skillName of character.speciesGrantedSkills) {
     skills[skillName] = { ...skills[skillName], proficient: false };
   }
+  // Only clear Vision if it still holds exactly what was auto-filled — leaves a player's own edit alone.
+  const vision = character.vision === character.speciesGrantedVision ? "" : character.vision;
   return {
     ...character,
     abilities,
     skills,
+    vision,
     credits: character.credits - character.speciesCreditsApplied,
     speciesAppliedName: "",
     speciesAbilityBonus: emptyAbilities0(),
     speciesGrantedSkills: [],
     speciesGrantedLanguages: [],
     speciesGrantedProficiencies: [],
+    speciesGrantedVision: "",
     speciesTraitsText: "",
     speciesCreditsApplied: 0,
   };
@@ -132,6 +136,15 @@ export function applySpecies(
 
   const creditsApplied = computeSpeciesCredits(species, base.level || 1);
 
+  const grantedVision = species.traits
+    .filter((t) => t.grantsVision)
+    .map((t) => t.grantsVision!)
+    .join(", ");
+  // Only auto-fill Vision if it's currently blank or still holds a prior species' auto-fill —
+  // never overwrite a player's own edit.
+  const vision =
+    grantedVision && (!base.vision || base.vision === base.speciesGrantedVision) ? grantedVision : base.vision;
+
   return {
     ...base,
     species: species.name,
@@ -139,12 +152,14 @@ export function applySpecies(
     speedBase: species.speed,
     abilities,
     skills,
+    vision,
     credits: base.credits + creditsApplied,
     speciesAppliedName: species.name,
     speciesAbilityBonus: bonus,
     speciesGrantedSkills: grantedSkills,
     speciesGrantedLanguages: grantedLanguages,
     speciesGrantedProficiencies: grantedProficiencies,
+    speciesGrantedVision: grantedVision,
     speciesTraitsText: buildTraitsText(species, selections),
     speciesCreditsApplied: creditsApplied,
   };

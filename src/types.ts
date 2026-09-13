@@ -60,6 +60,7 @@ export interface SpeciesTrait {
   grantsSkills?: SkillName[];
   grantsProficiency?: string; // fixed non-skill proficiency this trait grants (armor/weapon/tool)
   grantsCreditsMultiplier?: number; // e.g. Wealthy: bonus credits = level * proficiency bonus * this multiplier
+  grantsVision?: string; // display text auto-filled into Combat's Vision field (e.g. "Darkvision 60 ft."), non-destructively — see applySpecies
   choices?: SpeciesTraitChoice[];
 }
 
@@ -386,6 +387,7 @@ export interface Character {
   speciesGrantedSkills: SkillName[];
   speciesGrantedLanguages: string[];
   speciesGrantedProficiencies: string[];
+  speciesGrantedVision: string; // exact text last auto-filled into Combat's Vision field, so revert can tell a player edit from an untouched grant
   speciesTraitsText: string;
   speciesCreditsApplied: number; // bonus credits from traits like Wealthy, so revert/relevel can cleanly adjust
 
@@ -594,6 +596,7 @@ export function createBlankCharacter(): Character {
     speciesGrantedSkills: [],
     speciesGrantedLanguages: [],
     speciesGrantedProficiencies: [],
+    speciesGrantedVision: "",
     speciesTraitsText: "",
     speciesCreditsApplied: 0,
     classAppliedName: "",
