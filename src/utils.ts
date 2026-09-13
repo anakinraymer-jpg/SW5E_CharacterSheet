@@ -1,4 +1,4 @@
-import type { EquipmentItem } from "./types";
+import type { EquipmentItem, SpeciesNaturalArmor } from "./types";
 import { ARMOR_CATALOG, type ArmorCatalogEntry } from "./data/armor";
 
 export function abilityModifier(score: number): number {
@@ -75,12 +75,18 @@ export interface EquippedDefense {
   armor: ArmorCatalogEntry | null;
   shields: ArmorCatalogEntry[];
   unarmoredDefenseApplied: boolean;
+  naturalArmorApplied: boolean;
 }
 
+// Natural armor (e.g. Wookiee's Hide: "AC is 13 + Dex modifier while unarmored or wearing light
+// armor") is an alternative base AC formula like Unarmored Defense, but — per its own wording —
+// can still apply over light armor. Rather than assume it always overrides the armor's own
+// formula, we compute every applicable candidate and take the best, so this only ever helps.
 export function computeDefense(
   equipment: EquipmentItem[],
   dexModifier: number,
-  unarmoredDefense?: UnarmoredDefenseInput | null
+  unarmoredDefense?: UnarmoredDefenseInput | null,
+  naturalArmor?: SpeciesNaturalArmor | null
 ): EquippedDefense | null {
   const equippedMatches = equipment
     .filter((item) => item.equipped)
@@ -88,21 +94,36 @@ export function computeDefense(
     .filter((a): a is ArmorCatalogEntry => Boolean(a));
   const shields = equippedMatches.filter((a) => a.type === "Shield");
   const armor = equippedMatches.find((a) => a.type !== "Shield") ?? null;
-  if (!armor && shields.length === 0 && !unarmoredDefense) return null;
+  if (!armor && shields.length === 0 && !unarmoredDefense && !naturalArmor) return null;
 
   const usesUnarmoredDefense = Boolean(
     !armor && unarmoredDefense && (unarmoredDefense.allowShield || shields.length === 0)
   );
-  const base = armor
+  const naturalArmorEligible = Boolean(
+    naturalArmor &&
+      (!armor || naturalArmor.allowAnyArmor || (armor.type === "Light" && naturalArmor.allowLightArmor))
+  );
+
+  let base = armor
     ? armorClassFromFormula(armor.ac, dexModifier)
     : usesUnarmoredDefense
       ? 10 + dexModifier + (unarmoredDefense?.modifier ?? 0)
       : 10 + dexModifier;
+  let usesNaturalArmor = false;
+  if (naturalArmorEligible && naturalArmor) {
+    const naturalTotal = naturalArmor.base + (naturalArmor.addDex ? dexModifier : 0);
+    if (naturalTotal > base) {
+      base = naturalTotal;
+      usesNaturalArmor = true;
+    }
+  }
+
   const shieldBonus = shields.reduce((sum, s) => sum + armorClassFromFormula(s.ac, dexModifier), 0);
   return {
     total: base + shieldBonus,
     armor,
     shields,
-    unarmoredDefenseApplied: usesUnarmoredDefense,
+    unarmoredDefenseApplied: usesUnarmoredDefense && !usesNaturalArmor,
+    naturalArmorApplied: usesNaturalArmor,
   };
 }

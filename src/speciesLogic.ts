@@ -3,6 +3,7 @@ import type {
   Character,
   SkillName,
   SpeciesEntry,
+  SpeciesNaturalArmor,
   SpeciesSelections,
 } from "./types";
 import { emptyAbilities0 } from "./types";
@@ -58,6 +59,7 @@ export function revertSpecies(character: Character): Character {
     speciesGrantedLanguages: [],
     speciesGrantedProficiencies: [],
     speciesGrantedVision: "",
+    speciesNaturalArmor: null,
     speciesTraitsText: "",
     speciesCreditsApplied: 0,
   };
@@ -145,6 +147,17 @@ export function applySpecies(
   const vision =
     grantedVision && (!base.vision || base.vision === base.speciesGrantedVision) ? grantedVision : base.vision;
 
+  const naturalArmorTrait = species.traits.find((t) => t.naturalArmor);
+  const naturalArmor: SpeciesNaturalArmor | null = naturalArmorTrait?.naturalArmor
+    ? {
+        base: naturalArmorTrait.naturalArmor.base,
+        addDex: naturalArmorTrait.naturalArmor.addDex ?? true,
+        allowLightArmor: naturalArmorTrait.naturalArmor.allowLightArmor ?? true,
+        allowAnyArmor: naturalArmorTrait.naturalArmor.allowAnyArmor ?? false,
+        sourceLabel: `${species.name} ${naturalArmorTrait.name}`,
+      }
+    : null;
+
   return {
     ...base,
     species: species.name,
@@ -160,6 +173,7 @@ export function applySpecies(
     speciesGrantedLanguages: grantedLanguages,
     speciesGrantedProficiencies: grantedProficiencies,
     speciesGrantedVision: grantedVision,
+    speciesNaturalArmor: naturalArmor,
     speciesTraitsText: buildTraitsText(species, selections),
     speciesCreditsApplied: creditsApplied,
   };

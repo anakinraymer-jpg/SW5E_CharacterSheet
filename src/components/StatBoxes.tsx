@@ -12,19 +12,23 @@ interface Props {
 export function DefenseBox({ character, update }: Props) {
   const dexMod = abilityModifier(character.abilities.dex);
   const unarmoredDefense = computeUnarmoredDefenseBonus(character);
-  const computed = computeDefense(character.equipment, dexMod, unarmoredDefense);
+  const naturalArmor = character.speciesNaturalArmor;
+  const computed = computeDefense(character.equipment, dexMod, unarmoredDefense, naturalArmor);
 
   if (computed) {
     const lines = [
-      computed.armor
-        ? `${computed.armor.name}: ${computed.armor.ac}`
-        : computed.unarmoredDefenseApplied && unarmoredDefense
-          ? `${unarmoredDefense.sourceLabel}: 10 + Dex + ${unarmoredDefense.abilityLabel}`
-          : `Unarmored: 10 + Dex modifier`,
+      computed.naturalArmorApplied && naturalArmor
+        ? `${naturalArmor.sourceLabel}: ${naturalArmor.base}${naturalArmor.addDex ? " + Dex modifier" : ""}`
+        : computed.armor
+          ? `${computed.armor.name}: ${computed.armor.ac}`
+          : computed.unarmoredDefenseApplied && unarmoredDefense
+            ? `${unarmoredDefense.sourceLabel}: 10 + Dex + ${unarmoredDefense.abilityLabel}`
+            : `Unarmored: 10 + Dex modifier`,
       `Dex modifier: ${formatModifier(dexMod)}`,
       ...(computed.unarmoredDefenseApplied && unarmoredDefense
         ? [`${unarmoredDefense.abilityLabel} modifier: ${formatModifier(unarmoredDefense.modifier)}`]
         : []),
+      ...(computed.naturalArmorApplied && computed.armor ? [`(overrides ${computed.armor.name}'s own AC)`] : []),
       ...computed.shields.map((s) => `${s.name}: ${s.ac}`),
     ];
     return (

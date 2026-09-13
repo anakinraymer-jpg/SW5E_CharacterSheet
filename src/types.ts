@@ -61,7 +61,16 @@ export interface SpeciesTrait {
   grantsProficiency?: string; // fixed non-skill proficiency this trait grants (armor/weapon/tool)
   grantsCreditsMultiplier?: number; // e.g. Wealthy: bonus credits = level * proficiency bonus * this multiplier
   grantsVision?: string; // display text auto-filled into Combat's Vision field (e.g. "Darkvision 60 ft."), non-destructively — see applySpecies
+  naturalArmor?: { base: number; addDex?: boolean; allowLightArmor?: boolean; allowAnyArmor?: boolean }; // e.g. Wookiee's Hide: "AC is 13 + Dex modifier while unarmored or wearing light armor" — addDex/allowLightArmor default true; allowAnyArmor for the rare case (Colicoid) that gets no benefit from armor of any kind, so natural armor always wins
   choices?: SpeciesTraitChoice[];
+}
+
+export interface SpeciesNaturalArmor {
+  base: number;
+  addDex: boolean;
+  allowLightArmor: boolean;
+  allowAnyArmor: boolean;
+  sourceLabel: string; // e.g. "Wookiee Hide", shown in the Defense breakdown tooltip
 }
 
 export interface AbilityChoiceIncrease {
@@ -388,6 +397,7 @@ export interface Character {
   speciesGrantedLanguages: string[];
   speciesGrantedProficiencies: string[];
   speciesGrantedVision: string; // exact text last auto-filled into Combat's Vision field, so revert can tell a player edit from an untouched grant
+  speciesNaturalArmor: SpeciesNaturalArmor | null;
   speciesTraitsText: string;
   speciesCreditsApplied: number; // bonus credits from traits like Wealthy, so revert/relevel can cleanly adjust
 
@@ -597,6 +607,7 @@ export function createBlankCharacter(): Character {
     speciesGrantedLanguages: [],
     speciesGrantedProficiencies: [],
     speciesGrantedVision: "",
+    speciesNaturalArmor: null,
     speciesTraitsText: "",
     speciesCreditsApplied: 0,
     classAppliedName: "",
