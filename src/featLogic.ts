@@ -5,6 +5,10 @@ import { FEATS_CATALOG } from "./data/feats";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 
+export function hasFeat(character: Character, name: string): boolean {
+  return character.feats.some((f) => f.name === name);
+}
+
 export function featNeedsChoices(feat: FeatEntry): boolean {
   if (feat.abilityOptions.length > 1) return true;
   if (feat.choices && feat.choices.length > 0) return true;

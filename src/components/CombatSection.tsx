@@ -4,6 +4,7 @@ import type { ArmorCatalogEntry } from "../data/armor";
 import { abilityModifier, armorCatalogMatch, formatModifier, passivePerception, proficiencyBonus } from "../utils";
 import { activeTravelPaceMultiplier } from "../classFeatureLogic";
 import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
+import { hasFeat } from "../featLogic";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
 
@@ -55,11 +56,21 @@ export default function CombatSection({
       (x): x is { item: EquipmentItem; catalog: ArmorCatalogEntry } => Boolean(x.catalog)
     );
 
+  const isObservant = hasFeat(character, "Observant");
+
   const perceptionState = character.skills.Perception;
   const wisMod = abilityModifier(character.abilities[SKILL_ABILITY.Perception]);
   let perceptionBonus = wisMod;
   if (perceptionState.proficient) perceptionBonus += pb;
   if (perceptionState.expertise) perceptionBonus += pb;
+  if (isObservant) perceptionBonus += 5;
+
+  const investigationState = character.skills.Investigation;
+  const intMod = abilityModifier(character.abilities[SKILL_ABILITY.Investigation]);
+  let investigationBonus = intMod;
+  if (investigationState.proficient) investigationBonus += pb;
+  if (investigationState.expertise) investigationBonus += pb;
+  if (isObservant) investigationBonus += 5;
 
   return (
     <section className="sheet-section combat-section">
@@ -69,7 +80,29 @@ export default function CombatSection({
       <div className="combat-grid">
         <div className="field">
           <label>Passive Perception</label>
-          <div className="readonly-box">{passivePerception(perceptionBonus)}</div>
+          {isObservant ? (
+            <HoverInfo
+              title="Observant"
+              lines={["Considered to have advantage when determining passive Perception: +5."]}
+            >
+              <div className="readonly-box">{passivePerception(perceptionBonus)}</div>
+            </HoverInfo>
+          ) : (
+            <div className="readonly-box">{passivePerception(perceptionBonus)}</div>
+          )}
+        </div>
+        <div className="field">
+          <label>Passive Investigation</label>
+          {isObservant ? (
+            <HoverInfo
+              title="Observant"
+              lines={["Considered to have advantage when determining passive Investigation: +5."]}
+            >
+              <div className="readonly-box">{passivePerception(investigationBonus)}</div>
+            </HoverInfo>
+          ) : (
+            <div className="readonly-box">{passivePerception(investigationBonus)}</div>
+          )}
         </div>
       </div>
 
