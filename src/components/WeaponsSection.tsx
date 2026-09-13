@@ -2,9 +2,14 @@ import type { Character, CombatFeature, RefreshType, Weapon } from "../types";
 import { WEAPON_CATALOG, type WeaponCatalogEntry } from "../data/weapons";
 import { GEAR_CATALOG } from "../data/gear";
 import { CLASSES_CATALOG, MONK_WEAPON_NAMES } from "../data/classes";
-import { BERSERKER_RAGE_DAMAGE_BY_LEVEL, MONK_MARTIAL_ARTS_DIE_BY_LEVEL, OPERATIVE_SNEAK_ATTACK_DICE_BY_LEVEL } from "../data/classFeatureChoices";
+import {
+  BERSERKER_RAGE_DAMAGE_BY_LEVEL,
+  MONK_MARTIAL_ARTS_DIE_BY_LEVEL,
+  OPERATIVE_SNEAK_ATTACK_DICE_BY_LEVEL,
+  SCOUT_RANGERS_QUARRY_DIE_BY_LEVEL,
+} from "../data/classFeatureChoices";
 import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
-import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
+import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, isMeleeWeapon, toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { formatModifier, proficiencyBonus } from "../utils";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
@@ -83,6 +88,9 @@ export default function WeaponsSection({
   const martialArtsDie = MONK_MARTIAL_ARTS_DIE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
   const hasSneakAttack = character.classAppliedName === "Operative";
   const sneakAttackDice = OPERATIVE_SNEAK_ATTACK_DICE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
+  const hasForceEmpoweredStrikes = character.classAppliedName === "Guardian" && character.level >= 11;
+  const hasRangersQuarry = character.classAppliedName === "Scout";
+  const rangersQuarryDie = SCOUT_RANGERS_QUARRY_DIE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
   return (
     <section className="sheet-section weapons-section">
       <SectionHeader
@@ -212,6 +220,24 @@ export default function WeaponsSection({
                         ]}
                       >
                         <span className="rage-damage-note">Sneak Attack: {sneakAttackDice}d6</span>
+                      </HoverInfo>
+                    )}
+                    {hasForceEmpoweredStrikes && isMeleeWeapon(w.name) && (
+                      <HoverInfo
+                        title="Improved Force-Empowered Strikes"
+                        lines={["Whenever you hit with a melee weapon attack, the creature takes an extra 1d8 damage of the same type."]}
+                      >
+                        <span className="rage-damage-note">Force-Empowered: +1d8</span>
+                      </HoverInfo>
+                    )}
+                    {hasRangersQuarry && (
+                      <HoverInfo
+                        title="Ranger's Quarry"
+                        lines={[
+                          `Once per turn, deal an extra 1${rangersQuarryDie} weapon damage to a creature you've marked (no action required to mark, within 120 feet, lasts 1 hour).`,
+                        ]}
+                      >
+                        <span className="rage-damage-note">Ranger's Quarry: 1{rangersQuarryDie}</span>
                       </HoverInfo>
                     )}
                   </>

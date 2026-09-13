@@ -120,8 +120,11 @@ function resolveClassEquipmentGrants(
 // (e.g. Operative's Slippery Mind, level 15: proficiency in Wisdom saving throws) — re-evaluated
 // on every level change via recalcClassForLevel, distinct from the fixed base saves in
 // classSavingThrowsApplied.
+const ALL_ABILITIES: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
+
 function levelGrantedSavingThrows(className: string, level: number): AbilityKey[] {
   if (className === "Operative" && level >= 15) return ["wis"];
+  if (className === "Monk" && level >= 14) return ALL_ABILITIES; // Diamond Soul
   return [];
 }
 
@@ -366,7 +369,11 @@ export function recalcClassForLevel(character: Character, classEntry: ClassEntry
 
   const savingThrows = { ...character.savingThrows };
   for (const key of character.classLevelSavingThrowsApplied) {
-    savingThrows[key] = false;
+    // Don't strip a save that's independently granted by the class's fixed base saves —
+    // only unset it if this level-granted feature (e.g. Diamond Soul) was its sole source.
+    if (!character.classSavingThrowsApplied.includes(key)) {
+      savingThrows[key] = false;
+    }
   }
   const levelSavingThrows = levelGrantedSavingThrows(classEntry.name, level);
   for (const key of levelSavingThrows) {

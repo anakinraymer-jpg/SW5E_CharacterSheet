@@ -316,6 +316,11 @@ export const MONK_UNARMORED_MOVEMENT_BY_LEVEL = [
 // Operative's Sneak Attack: number of d6s dealt once per turn on a finesse/ranged weapon hit, by level.
 export const OPERATIVE_SNEAK_ATTACK_DICE_BY_LEVEL = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 10, 10];
 
+// Scout's Ranger's Quarry: bonus weapon-damage die dealt once per turn to a marked target, by level.
+export const SCOUT_RANGERS_QUARRY_DIE_BY_LEVEL = [
+  "d4", "d4", "d4", "d4", "d6", "d6", "d6", "d6", "d8", "d8", "d8", "d8", "d10", "d10", "d10", "d10", "d12", "d12", "d12", "d12",
+];
+
 export const CLASS_RESOURCES: ClassResourceDef[] = [
   {
     key: "berserker-rages",

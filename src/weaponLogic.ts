@@ -52,6 +52,13 @@ export function isFinesseOrRangedWeapon(weaponName: string): boolean {
   return /blaster/i.test(entry.type) || /finesse/i.test(entry.property);
 }
 
+// Guardian's (Improved) Force-Empowered Strikes only applies to melee weapon attacks.
+export function isMeleeWeapon(weaponName: string): boolean {
+  const entry = WEAPON_LOOKUP.get(weaponName.trim().toLowerCase());
+  if (!entry) return true; // Unarmed Strike and unrecognized names default to melee
+  return !/blaster/i.test(entry.type);
+}
+
 // Unarmed Strike has no legitimate manual damage override (unlike other weapons, which can carry
 // homebrew/magical bonuses) — its damage is fully determined by Martial Arts die (if any) plus the
 // applicable ability modifier, so this is computed live rather than stored on the weapon row.

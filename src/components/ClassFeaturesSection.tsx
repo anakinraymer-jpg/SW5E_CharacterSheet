@@ -134,6 +134,7 @@ export default function ClassFeaturesSection({
   const isOperative = character.classAppliedName === "Operative";
   const hasReliableTalent = isOperative && character.level >= 11;
   const hasSlipperyMind = isOperative && character.level >= 15;
+  const hasDiamondSoul = character.classAppliedName === "Monk" && character.level >= 14;
 
   const hasManeuvers = subChoiceDefs.some((def) => def.key.endsWith("-maneuvers"));
   const canSwapManeuvers = hasManeuvers && chosenOptions.some((o) => o.allowsManeuverSwap);
@@ -325,7 +326,7 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {(passiveBuffOptions.length > 0 || hasVowOfDeflection || hasReliableTalent || hasSlipperyMind) && (
+      {(passiveBuffOptions.length > 0 || hasVowOfDeflection || hasReliableTalent || hasSlipperyMind || hasDiamondSoul) && (
         <div className="species-traits-box">
           <div className="species-traits-header">Passive Feature Effects</div>
           <div className="chip-row">
@@ -353,6 +354,17 @@ export default function ClassFeaturesSection({
                 lines={["You gain proficiency in Wisdom saving throws — already applied above."]}
               >
                 <span className="info-chip">Proficient: Wisdom saves</span>
+              </HoverInfo>
+            )}
+            {hasDiamondSoul && (
+              <HoverInfo
+                title="Diamond Soul"
+                lines={[
+                  "You gain proficiency in all saving throws — already applied above.",
+                  "On a failed save, you can spend 1 focus point to reroll it.",
+                ]}
+              >
+                <span className="info-chip">Proficient: all saving throws</span>
               </HoverInfo>
             )}
             {passiveBuffOptions.map((o) => (
