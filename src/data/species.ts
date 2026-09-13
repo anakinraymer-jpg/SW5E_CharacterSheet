@@ -127,7 +127,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
       { name: "Jungle Dweller", text: "You don't treat jungle terrain as difficult terrain." },
       { name: "Silver Tongue", text: "You have proficiency with Deception or Persuasion (your choice).", choices: [skillChoice("Skill", ["Deception", "Persuasion"])] },
       { name: "Tech Resistance", text: "You have advantage on Dexterity and Intelligence saving throws against tech powers." },
-      { name: "Two Livered", text: "You have advantage on saving throws against poison, and resistance against poison damage.", grantsResistance: "Resistance to poison damage." },
+      { name: "Two Livered", text: "You have advantage on saving throws against poison, and resistance against poison damage.", grantsResistance: "Advantage on saves vs poison; resistance to poison damage." },
     ],
   },
   {
@@ -487,7 +487,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
       { name: "Charismatic", text: "You have proficiency with Deception or Persuasion (your choice).", choices: [skillChoice("Skill", ["Deception", "Persuasion"])] },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", grantsVision: "Darkvision 60 ft." },
       { name: "Elegant Dancers", text: "You have proficiency in the Performance skill.", grantsSkills: ["Performance"] },
-      { name: "Natural Antitoxins", text: "You have advantage on saving throws against poison and disease, and resistance against poison damage.", grantsResistance: "Resistance to poison damage." },
+      { name: "Natural Antitoxins", text: "You have advantage on saving throws against poison and disease, and resistance against poison damage.", grantsResistance: "Advantage on saves vs poison and disease; resistance to poison damage." },
       { name: "Unarmed Combatant", text: "Your unarmed strikes deal 1d4 kinetic damage and have the finesse property.", naturalWeapon: { damage: "1d4", damageType: "Kinetic", finesse: true } },
     ],
   },

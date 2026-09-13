@@ -149,6 +149,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: null,
     abilityOptions: ["int", "wis"],
     text: "Alert to the hidden traps and secret doors found in many dungeons, you gain the following benefits:\n- Increase your Intelligence or Wisdom score by 1, to a maximum of 20.\n- You have advantage on Wisdom (Perception) and Intelligence (Investigation) checks made to detect the presence of secret doors.\n- You have advantage on saving throws made to avoid or resist traps.\n- You have resistance to the damage dealt by traps.\n- Traveling at a fast pace no longer imposes a -5 penalty to your passive Wisdom (Perception) score.",
+    grantsResistance: "Advantage on saves vs traps; resistance to trap damage.",
   },
   {
     name: "Durable",
@@ -550,6 +551,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: null,
     abilityOptions: ["con", "int", "wis"],
     text: "You've developed resilience against debilitating noises, gaining the following benefits:\n- Increase your Constitution, Intelligence, or Wisdom score by 1, to a maximum of 20.\n- While you are deafened, you can make ability checks that rely on hearing with disadvantage, instead of automatically failing them.\n- You have advantage on saving throws made to avoid sonic damage.",
+    grantsResistance: "Advantage on saves vs sonic damage.",
   },
   {
     name: "Blinding Agility",
@@ -569,6 +571,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: null,
     abilityOptions: ["dex", "con", "int"],
     text: "You're able to neutralize caustic chemicals, mitigating their worst effects. You gain the following benefits:\n- Increase your Dexterity, Constitution, or Intelligence score by 1, to a maximum of 20.\n- You cannot be disintegrated, and you ignore the first corroded level you receive.\n- You have advantage on saving throws made to avoid acid damage.",
+    grantsResistance: "Advantage on saves vs acid damage.",
   },
   {
     name: "Class Improvement",
@@ -631,6 +634,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: null,
     abilityOptions: ["int", "wis", "cha"],
     text: "You're able to avoid the brunt of electric shocks. You gain the following benefits:\n- Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20.\n- At the start of each of your turns while shocked, you can choose to have a reaction, or you can choose to be able to take both an action and a bonus action on your turn.\n- You have advantage on saving throws made to avoid lightning damage.",
+    grantsResistance: "Advantage on saves vs lightning damage.",
   },
   {
     name: "Exalted Awareness",
@@ -657,6 +661,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: null,
     abilityOptions: ["str", "wis", "cha"],
     text: "You've practiced techniques to resist being manipulated by the Force. You gain the following benefits:\n- Increase your Strength, Wisdom, or Charisma score by 1, to a maximum of 20.\n- When a creature attempts to move you against your will using a force power, the maximum distance it can move you is halved.\n- You have advantage on saving throws made to avoid force damage.",
+    grantsResistance: "Advantage on saves vs force damage.",
   },
   {
     name: "Greater Force-Sensitive",
@@ -675,6 +680,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: null,
     abilityOptions: ["dex", "int"],
     text: "You can tolerate extremely hot temperatures. You gain the following benefits:\n- Increase your Dexterity, Constitution, or Intelligence score by 1, to a maximum of 20.\n- You have advantage on Constitution saving throws made to avoid exhaustion due to extreme heat, and you can use your bonus action to end the ignited condition on yourself, instead of your action.\n- You have advantage on saving throws made to avoid fire damage.",
+    grantsResistance: "Advantage on saves vs fire damage.",
   },
   {
     name: "Improved Force-Sensitive",
@@ -705,12 +711,14 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: null,
     abilityOptions: ["con", "int", "cha"],
     text: "You've developed resilience against many poisons, gaining the following benefits:\n- Increase your Constitution, Intelligence, or Charisma score by 1, to a maximum of 20.\n- As an action or bonus action, you can expend a Hit Die to end the poisoned condition on yourself.\n- You have advantage on saving throws made to avoid poison damage.",
+    grantsResistance: "Advantage on saves vs poison damage.",
   },
   {
     name: "Mindful Meditator",
     prerequisite: null,
     abilityOptions: ["int", "wis", "cha"],
     text: "You've learned meditation techniques to calm your mind. You gain the following benefits:\n- Increase your Intelligence, Wisdom, or Charisma score by 1, to a maximum of 20.\n- You only need 3 hours of sleep during a long rest to gain its benefits, instead of 6. Additionally, if your long rest would be interrupted, you only need to complete the long rest instead of restarting it to gain its benefits.\n- You have advantage on saving throws made to avoid psychic damage.",
+    grantsResistance: "Advantage on saves vs psychic damage.",
   },
   {
     name: "Mounted Caster",
@@ -794,6 +802,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: null,
     abilityOptions: ["con", "int", "cha"],
     text: "Thanks to the strength of your vitality, you gain the following benefits:\n- Increase your Constitution, Intelligence, or Charisma score by 1, to a maximum of 20.\n- As an action, you can expend a Hit Die to end the weakened condition on yourself.\n- Once per long rest, when you complete a short rest, you can expend a Hit Die to remove 1 level of exhaustion.\n- You have advantage on saving throws made to avoid necrotic damage.",
+    grantsResistance: "Advantage on saves vs necrotic damage.",
   },
   {
     name: "War Caster",
@@ -806,5 +815,6 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: null,
     abilityOptions: ["dex", "con", "int"],
     text: "You can tolerate extremely cold temperatures. You gain the following benefits:\n- Increase your Dexterity, Constitution, or Intelligence score by 1, to a maximum of 20.\n- You have advantage on Constitution saving throws made to avoid exhaustion due to extreme cold, and each slowed level only reduces your speed by 5 feet, unless it would reduce your speed to 0.\n- You have advantage on saving throws made to avoid cold damage.",
+    grantsResistance: "Advantage on saves vs cold damage.",
   },
 ];

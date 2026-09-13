@@ -79,6 +79,13 @@ export function addFeat(character: Character, feat: FeatEntry, selections: FeatS
     choiceSelections: selections.choiceSelections.map((arr) => arr.filter(Boolean)),
   };
 
+  // Non-destructively append this feat's advantage/resistance blurb to the Combat tab's
+  // Advantages/Resistances/Immunities field, unless it's already present (e.g. re-adding after undo).
+  let resistances = character.resistances;
+  if (feat.grantsResistance && !resistances.includes(feat.grantsResistance)) {
+    resistances = resistances.trim() ? `${resistances.trim()} ${feat.grantsResistance}` : feat.grantsResistance;
+  }
+
   return {
     ...character,
     abilities,
@@ -86,6 +93,7 @@ export function addFeat(character: Character, feat: FeatEntry, selections: FeatS
     savingThrows,
     featAbilityBonus: bonus,
     feats: [...character.feats, characterFeat],
+    resistances,
   };
 }
 
@@ -122,6 +130,16 @@ export function removeFeat(character: Character, featId: string): Character {
     savingThrows[cf.savingThrowGranted] = false;
   }
 
+  // Remove this feat's auto-filled resistance blurb, leaving any other text (species-granted or
+  // player-typed) untouched — only an exact substring match is removed.
+  let resistances = character.resistances;
+  if (feat?.grantsResistance) {
+    resistances = resistances
+      .replace(feat.grantsResistance, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
   return {
     ...character,
     abilities,
@@ -129,6 +147,7 @@ export function removeFeat(character: Character, featId: string): Character {
     savingThrows,
     featAbilityBonus: bonus,
     feats: character.feats.filter((f) => f.id !== featId),
+    resistances,
   };
 }
 

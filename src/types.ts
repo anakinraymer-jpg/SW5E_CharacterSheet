@@ -294,6 +294,7 @@ export interface FeatEntry {
   grantsProficiency?: string; // fixed non-skill proficiency (armor/weapon/tool), if any (e.g. Weapon Expert)
   speedBonus?: number; // flat bonus to walking speed while this feat is known (e.g. Mobile, Tiny Terror)
   hpBonusPerLevel?: number; // e.g. Durable: "+2x level" total bonus (2x level when taken, +2/level after — always equals 2*current level), shown as an "Effective Max HP" overlay
+  grantsResistance?: string; // display text non-destructively appended to Combat's Advantages/Resistances/Immunities field when this feat is added, and removed again if the feat is removed — see addFeat/removeFeat
   choices?: SpeciesTraitChoice[]; // reused choice structure (tool/instrument/kit/skill/other picks)
 }
 
