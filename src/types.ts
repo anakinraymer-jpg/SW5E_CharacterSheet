@@ -64,6 +64,7 @@ export interface SpeciesTrait {
   naturalArmor?: { base: number; addDex?: boolean; allowLightArmor?: boolean; allowAnyArmor?: boolean }; // e.g. Wookiee's Hide: "AC is 13 + Dex modifier while unarmored or wearing light armor" — addDex/allowLightArmor default true; allowAnyArmor for the rare case (Colicoid) that gets no benefit from armor of any kind, so natural armor always wins
   naturalWeapon?: { damage: string; damageType: string; finesse?: boolean }; // e.g. Wookiee's Claws: "unarmed strikes deal 1d4 kinetic damage" — replaces the flat 1-point Unarmed Strike catalog damage
   speeds?: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" }; // extra movement modes beyond the base walking speed; "walking" for e.g. Toydarian's Flight ("equal to your walking speed")
+  grantsResistance?: string; // display text auto-filled into Combat's Advantages/Resistances/Immunities field (e.g. "Resistance to poison damage."), non-destructively — see applySpecies
   choices?: SpeciesTraitChoice[];
 }
 
@@ -285,6 +286,7 @@ export interface FeatEntry {
   grantsSavingThrow?: AbilityKey; // fixed saving throw proficiency (e.g. Titan's Power)
   grantsSavingThrowForAbilityChoice?: boolean; // Resilient: proficiency in the saving throw of the chosen ability
   grantsProficiency?: string; // fixed non-skill proficiency (armor/weapon/tool), if any (e.g. Weapon Expert)
+  speedBonus?: number; // flat bonus to walking speed while this feat is known (e.g. Mobile, Tiny Terror)
   choices?: SpeciesTraitChoice[]; // reused choice structure (tool/instrument/kit/skill/other picks)
 }
 
@@ -410,6 +412,7 @@ export interface Character {
   speciesNaturalWeapon: SpeciesNaturalWeapon | null;
   speciesSpeeds: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" } | null;
   speciesGrantedSpecialMovement: string; // exact text last auto-filled into Combat's Special Movement field, mirrors speciesGrantedVision's non-destructive pattern
+  speciesGrantedResistances: string; // exact text last auto-filled into Combat's Advantages/Resistances/Immunities field, same pattern
   speciesTraitsText: string;
   speciesCreditsApplied: number; // bonus credits from traits like Wealthy, so revert/relevel can cleanly adjust
 
@@ -623,6 +626,7 @@ export function createBlankCharacter(): Character {
     speciesNaturalWeapon: null,
     speciesSpeeds: null,
     speciesGrantedSpecialMovement: "",
+    speciesGrantedResistances: "",
     speciesTraitsText: "",
     speciesCreditsApplied: 0,
     classAppliedName: "",

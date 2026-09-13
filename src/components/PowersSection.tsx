@@ -4,6 +4,7 @@ import { FORCE_POWERS, TECH_POWERS, type ForcePowerEntry, type TechPowerEntry } 
 import PowerNameField, { type PowerPickerOption } from "./PowerNameField";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import { ABILITY_LABEL } from "../speciesLogic";
+import { hasFeat } from "../featLogic";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
 
@@ -73,19 +74,39 @@ export default function PowersSection({
   const [activeType, setActiveType] = useState<Power["type"]>("Force");
 
   const pb = proficiencyBonus(character.level);
+  const isCastingSpecialist = hasFeat(character, "Casting Specialist");
+  const specialistBonus = isCastingSpecialist ? 1 : 0;
   const forceAbilityLabel = `${ABILITY_LABEL[character.forceCastingAbility]} (${
     character.forceCastingAbility === "wis" ? "Light side" : "Dark side"
   })`;
   const forceMod = abilityModifier(character.abilities[character.forceCastingAbility]);
-  const forceAttack = pb + forceMod;
-  const forceDC = 8 + pb + forceMod;
-  const forceAttackLines = [`Proficiency Bonus: ${formatModifier(pb)}`, `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`];
-  const forceDCLines = [`Base: 8`, `Proficiency Bonus: ${formatModifier(pb)}`, `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`];
+  const forceAttack = pb + forceMod + specialistBonus;
+  const forceDC = 8 + pb + forceMod + specialistBonus;
+  const forceAttackLines = [
+    `Proficiency Bonus: ${formatModifier(pb)}`,
+    `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`,
+    ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
+  ];
+  const forceDCLines = [
+    `Base: 8`,
+    `Proficiency Bonus: ${formatModifier(pb)}`,
+    `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`,
+    ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
+  ];
   const techMod = abilityModifier(character.abilities.int);
-  const techAttack = pb + techMod;
-  const techDC = 8 + pb + techMod;
-  const techAttackLines = [`Proficiency Bonus: ${formatModifier(pb)}`, `Intelligence modifier: ${formatModifier(techMod)}`];
-  const techDCLines = [`Base: 8`, `Proficiency Bonus: ${formatModifier(pb)}`, `Intelligence modifier: ${formatModifier(techMod)}`];
+  const techAttack = pb + techMod + specialistBonus;
+  const techDC = 8 + pb + techMod + specialistBonus;
+  const techAttackLines = [
+    `Proficiency Bonus: ${formatModifier(pb)}`,
+    `Intelligence modifier: ${formatModifier(techMod)}`,
+    ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
+  ];
+  const techDCLines = [
+    `Base: 8`,
+    `Proficiency Bonus: ${formatModifier(pb)}`,
+    `Intelligence modifier: ${formatModifier(techMod)}`,
+    ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
+  ];
 
   const techCounts = countByAlignment(character.powers, "Tech");
   const forceCounts = countByAlignment(character.powers, "Force");

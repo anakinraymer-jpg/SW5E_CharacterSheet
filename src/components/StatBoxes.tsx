@@ -2,6 +2,7 @@ import type { Character } from "../types";
 import { abilityModifier, computeDefense, formatModifier, proficiencyBonus } from "../utils";
 import { computeUnarmoredDefenseBonus } from "../classLogic";
 import { activeSpeedBonusSources } from "../classFeatureLogic";
+import { hasFeat } from "../featLogic";
 import HoverInfo from "./HoverInfo";
 
 interface Props {
@@ -62,11 +63,26 @@ export function DefenseBox({ character, update }: Props) {
 
 export function InitiativeBox({ character }: Props) {
   const dexMod = abilityModifier(character.abilities.dex);
+  const isAlert = hasFeat(character, "Alert");
+  const pb = proficiencyBonus(character.level);
+  const initiative = dexMod + (isAlert ? pb : 0);
   return (
     <section className="sheet-section stat-box-section">
       <div className="field">
         <label>Initiative</label>
-        <div className="readonly-box">{formatModifier(dexMod)}</div>
+        {isAlert ? (
+          <HoverInfo
+            title="Alert"
+            lines={[
+              `Dexterity modifier: ${formatModifier(dexMod)}`,
+              `Proficiency Bonus (Alert): ${formatModifier(pb)}`,
+            ]}
+          >
+            <div className="readonly-box">{formatModifier(initiative)}</div>
+          </HoverInfo>
+        ) : (
+          <div className="readonly-box">{formatModifier(initiative)}</div>
+        )}
       </div>
     </section>
   );

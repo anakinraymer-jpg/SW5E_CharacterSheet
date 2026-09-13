@@ -303,6 +303,7 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: "4th level",
     abilityOptions: [],
     text: "You are exceptionally speedy and agile. You gain the following benefits:\n- Your speed increases by 10 feet.\n- When you use the Dash action, difficult terrain doesn't cost you extra movement on that turn.\n- When you make a melee attack against a creature, you don't provoke opportunity attacks from that creature for the rest of the turn, whether you hit or not.",
+    speedBonus: 10,
   },
   {
     name: "Naturalist",
@@ -505,18 +506,21 @@ export const FEATS_CATALOG: FeatEntry[] = [
     prerequisite: "Strength 13, size Medium",
     abilityOptions: ["str"],
     text: "Despite being of otherwise average size, your might extends beyond that of your peers. You gain the following benefits:\n- Increase your Strength score by 1, to a maximum of 20.\n- Your speed increases by 5 feet.\n- You can't add more than +3 when determining your bonus to AC from your Dexterity.\n- You can't add more than +3 when determing your bonus to Dexterity saving throws from Dexterity.\n- You gain the Oversized special trait: Light- and vibro-weapons that lack the dexterity or light property are considered to have the heavy property for you. The strength number for blasters is reduced by one step (from 19 to 17, 17 to 15, 15 to 13, or 13 to 11). If the strength number is 11, you ignore it entirely.",
+    speedBonus: 5,
   },
   {
     name: "Savage Shorty",
     prerequisite: "Strength 13, size Small",
     abilityOptions: ["str"],
     text: "Despite being short of stature, your size has no impact on your strength and virility. You gain the following benefits:\n- Increase your Strength score by 1, to a maximum of 20.\n- Your speed increases by 5 feet.\n- You lose the Undersized special trait.",
+    speedBonus: 5,
   },
   {
     name: "Tiny Terror",
     prerequisite: "Strength 13, size Tiny",
     abilityOptions: ["str"],
     text: "Despite falling below knee height of other species, your size has less impact on your strength and virility. You gain the following benefits:\n- Increase your Strength score by 1, to a maximum of 20.\n- Your speed increases by 5 feet.\n- You lose the Pintsized special trait, and you are no longer limited to +3 when determining your bonus to attack and damage rolls for weapon attacks using Strength due to the Puny special trait.\n- You gain the Undersized special trait: your small stature makes it hard for you to wield bigger weapons. You can't use heavy shields or martial weapons with the two-handed property unless it has the light property, and if a martial weapon has the versatile property, you can only wield it in two-hands.",
+    speedBonus: 5,
   },
   {
     name: "Weapon Focused",

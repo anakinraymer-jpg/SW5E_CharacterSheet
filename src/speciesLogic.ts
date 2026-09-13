@@ -69,12 +69,15 @@ export function revertSpecies(character: Character): Character {
   const vision = character.vision === character.speciesGrantedVision ? "" : character.vision;
   const specialMovement =
     character.specialMovement === character.speciesGrantedSpecialMovement ? "" : character.specialMovement;
+  const resistances =
+    character.resistances === character.speciesGrantedResistances ? "" : character.resistances;
   return {
     ...character,
     abilities,
     skills,
     vision,
     specialMovement,
+    resistances,
     credits: character.credits - character.speciesCreditsApplied,
     speciesAppliedName: "",
     speciesAbilityBonus: emptyAbilities0(),
@@ -86,6 +89,7 @@ export function revertSpecies(character: Character): Character {
     speciesNaturalWeapon: null,
     speciesSpeeds: null,
     speciesGrantedSpecialMovement: "",
+    speciesGrantedResistances: "",
     speciesTraitsText: "",
     speciesCreditsApplied: 0,
   };
@@ -173,6 +177,16 @@ export function applySpecies(
   const vision =
     grantedVision && (!base.vision || base.vision === base.speciesGrantedVision) ? grantedVision : base.vision;
 
+  const grantedResistances = species.traits
+    .filter((t) => t.grantsResistance)
+    .map((t) => t.grantsResistance!)
+    .join(" ");
+  // Same non-destructive auto-fill pattern as Vision.
+  const resistances =
+    grantedResistances && (!base.resistances || base.resistances === base.speciesGrantedResistances)
+      ? grantedResistances
+      : base.resistances;
+
   const naturalArmorTrait = species.traits.find((t) => t.naturalArmor);
   const naturalArmor: SpeciesNaturalArmor | null = naturalArmorTrait?.naturalArmor
     ? {
@@ -211,6 +225,7 @@ export function applySpecies(
     skills,
     vision,
     specialMovement,
+    resistances,
     credits: base.credits + creditsApplied,
     speciesAppliedName: species.name,
     speciesAbilityBonus: bonus,
@@ -222,6 +237,7 @@ export function applySpecies(
     speciesNaturalWeapon: naturalWeapon,
     speciesSpeeds: speeds,
     speciesGrantedSpecialMovement: grantedSpecialMovement,
+    speciesGrantedResistances: grantedResistances,
     speciesTraitsText: buildTraitsText(species, selections),
     speciesCreditsApplied: creditsApplied,
   };

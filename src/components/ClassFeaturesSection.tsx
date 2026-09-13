@@ -135,6 +135,14 @@ export default function ClassFeaturesSection({
   const hasReliableTalent = isOperative && character.level >= 11;
   const hasSlipperyMind = isOperative && character.level >= 15;
   const hasDiamondSoul = character.classAppliedName === "Monk" && character.level >= 14;
+  const hasPurityOfBody = character.classAppliedName === "Monk" && character.level >= 13;
+  const hasForcePurity = character.classAppliedName === "Guardian" && character.level >= 6;
+  const hasElectricAttunement = character.archetypeAppliedName === "Way of Lightning" && character.level >= 14;
+  const hasForceResistance = character.archetypeAppliedName === "Way of Balance" && character.level >= 18;
+  const hasHighVoltage = character.archetypeAppliedName === "Mechanist Technique" && character.level >= 11;
+  const hasGeneticistsResilience = character.archetypeAppliedName === "Geneticist Pursuit" && character.level >= 9;
+  const hasThunderousMomentum = character.archetypeAppliedName === "Path of Aggression" && character.level >= 3;
+  const hasSupremeSneak = character.archetypeAppliedName === "Acquisitions Practice" && character.level >= 9;
 
   const hasManeuvers = subChoiceDefs.some((def) => def.key.endsWith("-maneuvers"));
   const canSwapManeuvers = hasManeuvers && chosenOptions.some((o) => o.allowsManeuverSwap);
@@ -326,7 +334,19 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {(passiveBuffOptions.length > 0 || hasVowOfDeflection || hasReliableTalent || hasSlipperyMind || hasDiamondSoul) && (
+      {(passiveBuffOptions.length > 0 ||
+        hasVowOfDeflection ||
+        hasReliableTalent ||
+        hasSlipperyMind ||
+        hasDiamondSoul ||
+        hasPurityOfBody ||
+        hasForcePurity ||
+        hasElectricAttunement ||
+        hasForceResistance ||
+        hasHighVoltage ||
+        hasGeneticistsResilience ||
+        hasThunderousMomentum ||
+        hasSupremeSneak) && (
         <div className="species-traits-box">
           <div className="species-traits-header">Passive Feature Effects</div>
           <div className="chip-row">
@@ -365,6 +385,58 @@ export default function ClassFeaturesSection({
                 ]}
               >
                 <span className="info-chip">Proficient: all saving throws</span>
+              </HoverInfo>
+            )}
+            {hasPurityOfBody && (
+              <HoverInfo title="Purity of Body" lines={["You are immune to disease and poison, and resistant to poison damage."]}>
+                <span className="info-chip">Immune: disease, poison (resistant)</span>
+              </HoverInfo>
+            )}
+            {hasForcePurity && (
+              <HoverInfo title="Force Purity" lines={["The Force flowing through you makes you immune to poison and disease."]}>
+                <span className="info-chip">Immune: poison, disease</span>
+              </HoverInfo>
+            )}
+            {hasElectricAttunement && (
+              <HoverInfo
+                title="Electric Attunement"
+                lines={["Resistance to lightning damage; your force powers ignore resistance to lightning damage."]}
+              >
+                <span className="info-chip">Resistant: lightning</span>
+              </HoverInfo>
+            )}
+            {hasForceResistance && (
+              <HoverInfo title="Force Resistance" lines={["Advantage on saving throws against force powers, and resistance to their damage."]}>
+                <span className="info-chip">Resistant: force powers</span>
+              </HoverInfo>
+            )}
+            {hasHighVoltage && (
+              <HoverInfo title="High Voltage" lines={["You gain resistance to ion and lightning damage."]}>
+                <span className="info-chip">Resistant: ion, lightning</span>
+              </HoverInfo>
+            )}
+            {hasGeneticistsResilience && (
+              <HoverInfo
+                title="Geneticist's Resilience"
+                lines={["Your genetic alterations make you immune to poison and disease. Additionally, you have resistance to poison damage."]}
+              >
+                <span className="info-chip">Immune: poison, disease (resistant)</span>
+              </HoverInfo>
+            )}
+            {hasThunderousMomentum && (
+              <HoverInfo
+                title="Thunderous Momentum"
+                lines={["You are immune to the shocked condition, and each slowed level only reduces your speed by 5 feet, unless it would reduce your speed to 0."]}
+              >
+                <span className="info-chip">Immune: shocked</span>
+              </HoverInfo>
+            )}
+            {hasSupremeSneak && (
+              <HoverInfo
+                title="Supreme Sneak"
+                lines={["Advantage on Stealth if you move no more than half speed; resistance to and immunity from damage on falls under 100 feet."]}
+              >
+                <span className="info-chip">Immune: fall damage under 100 ft</span>
               </HoverInfo>
             )}
             {passiveBuffOptions.map((o) => (

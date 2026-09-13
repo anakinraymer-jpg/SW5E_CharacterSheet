@@ -16,7 +16,10 @@ import {
   FIGHTING_MASTERIES,
   MONK_UNARMORED_MOVEMENT_BY_LEVEL,
 } from "./data/classFeatureChoices";
+import { FEATS_CATALOG } from "./data/feats";
 import { abilityModifier, armorCatalogMatch } from "./utils";
+
+const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 
 const FIGHTING_STYLES_BY_NAME = new Map(FIGHTING_STYLES.map((s) => [s.name, s]));
 const FIGHTING_MASTERIES_BY_NAME = new Map(FIGHTING_MASTERIES.map((m) => [m.name, m]));
@@ -123,6 +126,10 @@ export function activeSpeedBonusSources(character: Character): { label: string; 
   if (monkRetainsUnarmoredBenefits(character)) {
     const bonus = MONK_UNARMORED_MOVEMENT_BY_LEVEL[levelIndex(character)] ?? 0;
     if (bonus > 0) sources.push({ label: "Unarmored Movement", amount: bonus });
+  }
+  for (const cf of character.feats) {
+    const feat = FEATS_BY_NAME.get(cf.name);
+    if (feat?.speedBonus) sources.push({ label: feat.name, amount: feat.speedBonus });
   }
   return sources;
 }
