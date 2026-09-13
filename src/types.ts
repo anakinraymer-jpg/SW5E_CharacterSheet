@@ -62,6 +62,8 @@ export interface SpeciesTrait {
   grantsCreditsMultiplier?: number; // e.g. Wealthy: bonus credits = level * proficiency bonus * this multiplier
   grantsVision?: string; // display text auto-filled into Combat's Vision field (e.g. "Darkvision 60 ft."), non-destructively — see applySpecies
   naturalArmor?: { base: number; addDex?: boolean; allowLightArmor?: boolean; allowAnyArmor?: boolean }; // e.g. Wookiee's Hide: "AC is 13 + Dex modifier while unarmored or wearing light armor" — addDex/allowLightArmor default true; allowAnyArmor for the rare case (Colicoid) that gets no benefit from armor of any kind, so natural armor always wins
+  naturalWeapon?: { damage: string; damageType: string; finesse?: boolean }; // e.g. Wookiee's Claws: "unarmed strikes deal 1d4 kinetic damage" — replaces the flat 1-point Unarmed Strike catalog damage
+  speeds?: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" }; // extra movement modes beyond the base walking speed; "walking" for e.g. Toydarian's Flight ("equal to your walking speed")
   choices?: SpeciesTraitChoice[];
 }
 
@@ -71,6 +73,13 @@ export interface SpeciesNaturalArmor {
   allowLightArmor: boolean;
   allowAnyArmor: boolean;
   sourceLabel: string; // e.g. "Wookiee Hide", shown in the Defense breakdown tooltip
+}
+
+export interface SpeciesNaturalWeapon {
+  damage: string;
+  damageType: string;
+  finesse: boolean;
+  sourceLabel: string; // e.g. "Wookiee Claws", shown in the Unarmed Strike hover breakdown
 }
 
 export interface AbilityChoiceIncrease {
@@ -398,6 +407,9 @@ export interface Character {
   speciesGrantedProficiencies: string[];
   speciesGrantedVision: string; // exact text last auto-filled into Combat's Vision field, so revert can tell a player edit from an untouched grant
   speciesNaturalArmor: SpeciesNaturalArmor | null;
+  speciesNaturalWeapon: SpeciesNaturalWeapon | null;
+  speciesSpeeds: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" } | null;
+  speciesGrantedSpecialMovement: string; // exact text last auto-filled into Combat's Special Movement field, mirrors speciesGrantedVision's non-destructive pattern
   speciesTraitsText: string;
   speciesCreditsApplied: number; // bonus credits from traits like Wealthy, so revert/relevel can cleanly adjust
 
@@ -608,6 +620,9 @@ export function createBlankCharacter(): Character {
     speciesGrantedProficiencies: [],
     speciesGrantedVision: "",
     speciesNaturalArmor: null,
+    speciesNaturalWeapon: null,
+    speciesSpeeds: null,
+    speciesGrantedSpecialMovement: "",
     speciesTraitsText: "",
     speciesCreditsApplied: 0,
     classAppliedName: "",

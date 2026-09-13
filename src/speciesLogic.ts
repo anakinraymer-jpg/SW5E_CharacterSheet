@@ -4,6 +4,7 @@ import type {
   SkillName,
   SpeciesEntry,
   SpeciesNaturalArmor,
+  SpeciesNaturalWeapon,
   SpeciesSelections,
 } from "./types";
 import { emptyAbilities0 } from "./types";
@@ -27,6 +28,24 @@ function computeSpeciesCredits(species: SpeciesEntry, level: number): number {
   );
 }
 
+// Formats a species' extra movement modes into the Combat tab's free-text Special Movement field,
+// e.g. "Climb 30 ft., Swim 25 ft." — "walking" speeds (e.g. Toydarian's Flight) can't be resolved
+// to a number here since base speed may still change later, so they're spelled out instead.
+function formatSpeciesSpeeds(speeds: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" }): string {
+  const labels: [key: "climb" | "swim" | "fly", label: string][] = [
+    ["climb", "Climb"],
+    ["swim", "Swim"],
+    ["fly", "Fly"],
+  ];
+  return labels
+    .filter(([key]) => speeds[key] !== undefined)
+    .map(([key, label]) => {
+      const value = speeds[key];
+      return value === "walking" ? `${label} (equal to walking speed)` : `${label} ${value} ft.`;
+    })
+    .join(", ");
+}
+
 export function speciesNeedsChoices(species: SpeciesEntry): boolean {
   if (species.abilityIncrease.humanVariant) return true;
   if (species.abilityIncrease.choices.length > 0) return true;
@@ -45,13 +64,17 @@ export function revertSpecies(character: Character): Character {
   for (const skillName of character.speciesGrantedSkills) {
     skills[skillName] = { ...skills[skillName], proficient: false };
   }
-  // Only clear Vision if it still holds exactly what was auto-filled — leaves a player's own edit alone.
+  // Only clear Vision/Special Movement if they still hold exactly what was auto-filled — leaves a
+  // player's own edit alone.
   const vision = character.vision === character.speciesGrantedVision ? "" : character.vision;
+  const specialMovement =
+    character.specialMovement === character.speciesGrantedSpecialMovement ? "" : character.specialMovement;
   return {
     ...character,
     abilities,
     skills,
     vision,
+    specialMovement,
     credits: character.credits - character.speciesCreditsApplied,
     speciesAppliedName: "",
     speciesAbilityBonus: emptyAbilities0(),
@@ -60,6 +83,9 @@ export function revertSpecies(character: Character): Character {
     speciesGrantedProficiencies: [],
     speciesGrantedVision: "",
     speciesNaturalArmor: null,
+    speciesNaturalWeapon: null,
+    speciesSpeeds: null,
+    speciesGrantedSpecialMovement: "",
     speciesTraitsText: "",
     speciesCreditsApplied: 0,
   };
@@ -158,6 +184,24 @@ export function applySpecies(
       }
     : null;
 
+  const naturalWeaponTrait = species.traits.find((t) => t.naturalWeapon);
+  const naturalWeapon: SpeciesNaturalWeapon | null = naturalWeaponTrait?.naturalWeapon
+    ? {
+        damage: naturalWeaponTrait.naturalWeapon.damage,
+        damageType: naturalWeaponTrait.naturalWeapon.damageType,
+        finesse: naturalWeaponTrait.naturalWeapon.finesse ?? false,
+        sourceLabel: `${species.name} ${naturalWeaponTrait.name}`,
+      }
+    : null;
+
+  const speedsTrait = species.traits.find((t) => t.speeds);
+  const speeds = speedsTrait?.speeds ?? null;
+  const grantedSpecialMovement = speeds ? formatSpeciesSpeeds(speeds) : "";
+  const specialMovement =
+    grantedSpecialMovement && (!base.specialMovement || base.specialMovement === base.speciesGrantedSpecialMovement)
+      ? grantedSpecialMovement
+      : base.specialMovement;
+
   return {
     ...base,
     species: species.name,
@@ -166,6 +210,7 @@ export function applySpecies(
     abilities,
     skills,
     vision,
+    specialMovement,
     credits: base.credits + creditsApplied,
     speciesAppliedName: species.name,
     speciesAbilityBonus: bonus,
@@ -174,6 +219,9 @@ export function applySpecies(
     speciesGrantedProficiencies: grantedProficiencies,
     speciesGrantedVision: grantedVision,
     speciesNaturalArmor: naturalArmor,
+    speciesNaturalWeapon: naturalWeapon,
+    speciesSpeeds: speeds,
+    speciesGrantedSpecialMovement: grantedSpecialMovement,
     speciesTraitsText: buildTraitsText(species, selections),
     speciesCreditsApplied: creditsApplied,
   };

@@ -74,11 +74,11 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Cathar reach adulthood in their late teens and live less than a century." },
       { name: "Alignment", text: "Cathar tend toward no particular alignment. The best and worst are found among them." },
-      { name: "Cat's Claws", text: "Your unarmed strikes deal 1d6 kinetic damage and have the finesse property." },
+      { name: "Cat's Claws", text: "Your unarmed strikes deal 1d6 kinetic damage and have the finesse property.", naturalWeapon: { damage: "1d6", damageType: "Kinetic", finesse: true } },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", grantsVision: "Darkvision 60 ft." },
       { name: "Leonine Agility", text: "When you move on your turn in combat, you can double your speed until the end of the turn. Once used, you can't use it again until you move 0 feet on one of your turns." },
       { name: "Silent Step", text: "You have proficiency in the Stealth skill.", grantsSkills: ["Stealth"] },
-      { name: "Treeclimber", text: "You have a climbing speed of 30 feet, and advantage on Strength saving throws and Strength (Athletics) checks that involve climbing." },
+      { name: "Treeclimber", text: "You have a climbing speed of 30 feet, and advantage on Strength saving throws and Strength (Athletics) checks that involve climbing.", speeds: { climb: 30 } },
     ],
   },
   {
@@ -257,7 +257,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
       { name: "Mask of the Wild", text: "You can attempt to hide even when only lightly obscured by foliage, heavy rain, falling snow, mist, and other natural phenomena." },
       { name: "Musical Culture", text: "You have proficiency in an instrument of your choice.", choices: [instrumentChoice()] },
       { name: "Natural Survivalist", text: "You have proficiency in Nature and Survival.", grantsSkills: ["Nature", "Survival"] },
-      { name: "Treeclimber", text: "You have a climbing speed of 25 feet, and advantage on Strength saving throws and Strength (Athletics) checks that involve climbing." },
+      { name: "Treeclimber", text: "You have a climbing speed of 25 feet, and advantage on Strength saving throws and Strength (Athletics) checks that involve climbing.", speeds: { climb: 25 } },
       { name: "Undersized", text: "You can't use heavy shields. You can't use two-handed martial weapons unless they're also light, and versatile weapons can only be wielded two-handed." },
     ],
   },
@@ -290,7 +290,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
       { name: "Heat Sensitivity", text: "You have disadvantage on Constitution saving throws made to avoid exhaustion due to extreme heat." },
       { name: "Martial Proficiency", text: "You have proficiency with light and medium armor as well as the techstaff and vibropike.", grantsProficiency: "Light and medium armor, techstaff, vibropike" },
       { name: "Strong-Legged", text: "You can long jump a number of feet up to twice your Strength score, and high jump 3 + twice your Strength modifier." },
-      { name: "Swim", text: "You have a swimming speed of 30 feet." },
+      { name: "Swim", text: "You have a swimming speed of 30 feet.", speeds: { swim: 30 } },
     ],
   },
   {
@@ -377,7 +377,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", grantsVision: "Darkvision 60 ft." },
       { name: "Mon Calamari Resistance", text: "You have advantage on saving throws against the slowed condition, and resistance against cold damage." },
       { name: "Musical", text: "You have proficiency in one musical instrument of your choice.", choices: [instrumentChoice()] },
-      { name: "Swim", text: "You have a swimming speed of 30 feet." },
+      { name: "Swim", text: "You have a swimming speed of 30 feet.", speeds: { swim: 30 } },
     ],
   },
   {
@@ -394,7 +394,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", grantsVision: "Darkvision 60 ft." },
       { name: "Hide", text: "While unarmored or wearing light armor, your AC is 12 + your Dexterity modifier.", naturalArmor: { base: 12 } },
       { name: "Natural Empathy", text: "You have advantage on Wisdom (Insight) checks to determine emotions against humanoids and beasts within 10 feet of you." },
-      { name: "Swim", text: "You have a swimming speed of 30 feet." },
+      { name: "Swim", text: "You have a swimming speed of 30 feet.", speeds: { swim: 30 } },
     ],
   },
   {
@@ -406,7 +406,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Rodians reach adulthood in their late teens and live less than a century." },
       { name: "Alignment", text: "Rodian culture's violent focus causes them to tend toward the dark side, though there are exceptions." },
-      { name: "Adept Climbers", text: "You have a climbing speed of 30 feet." },
+      { name: "Adept Climbers", text: "You have a climbing speed of 30 feet.", speeds: { climb: 30 } },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", grantsVision: "Darkvision 60 ft." },
       { name: "Keen Hearing and Smell", text: "You have advantage on Wisdom (Perception) checks that involve hearing or smell." },
       { name: "Stalking Hunter", text: "You have proficiency in the Survival and Stealth skills.", grantsSkills: ["Survival", "Stealth"] },
@@ -450,7 +450,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Trandoshans reach adulthood in their early teens and rarely live to be older than 70." },
       { name: "Alignment", text: "Trandoshans tend toward the dark side, though there are exceptions." },
-      { name: "Claws", text: "Your claws are natural weapons; your unarmed strikes deal 1d4 kinetic damage." },
+      { name: "Claws", text: "Your claws are natural weapons; your unarmed strikes deal 1d4 kinetic damage.", naturalWeapon: { damage: "1d4", damageType: "Kinetic" } },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", grantsVision: "Darkvision 60 ft." },
       { name: "Hide", text: "While unarmored or wearing light armor, your AC is 12 + your Dexterity modifier.", naturalArmor: { base: 12 } },
       { name: "Regenerative", text: "When you take damage, you can use your reaction and expend a Hit Die to regain hit points, as long as it wouldn't reduce your hit points to 0." },
@@ -488,7 +488,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", grantsVision: "Darkvision 60 ft." },
       { name: "Elegant Dancers", text: "You have proficiency in the Performance skill.", grantsSkills: ["Performance"] },
       { name: "Natural Antitoxins", text: "You have advantage on saving throws against poison and disease, and resistance against poison damage." },
-      { name: "Unarmed Combatant", text: "Your unarmed strikes deal 1d4 kinetic damage and have the finesse property." },
+      { name: "Unarmed Combatant", text: "Your unarmed strikes deal 1d4 kinetic damage and have the finesse property.", naturalWeapon: { damage: "1d4", damageType: "Kinetic", finesse: true } },
     ],
   },
   {
@@ -515,12 +515,12 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Wookiees reach adulthood at about 40 and can live to be 400." },
       { name: "Alignment", text: "Wookiees tend toward the light side, though there are exceptions." },
-      { name: "Claws", text: "Your claws are natural weapons; your unarmed strikes deal 1d4 kinetic damage." },
+      { name: "Claws", text: "Your claws are natural weapons; your unarmed strikes deal 1d4 kinetic damage.", naturalWeapon: { damage: "1d4", damageType: "Kinetic" } },
       { name: "Darkvision", text: "You can see in dim light within 60 feet of you as if it were bright light, and in darkness as if it were dim light.", grantsVision: "Darkvision 60 ft." },
       { name: "Hide", text: "While unarmored or wearing light armor, your AC is 13 + your Dexterity modifier. You have advantage on Constitution saving throws against extreme cold exhaustion.", naturalArmor: { base: 13 } },
       { name: "Menacing", text: "You have proficiency in the Intimidation skill.", grantsSkills: ["Intimidation"] },
       { name: "Powerful Build", text: "Your carrying capacity and the weight you can push, drag, or lift doubles (or triples if it would already double)." },
-      { name: "Treeclimber", text: "You have a climbing speed of 30 feet, and advantage on Strength saving throws and Strength (Athletics) checks that involve climbing." },
+      { name: "Treeclimber", text: "You have a climbing speed of 30 feet, and advantage on Strength saving throws and Strength (Athletics) checks that involve climbing.", speeds: { climb: 30 } },
     ],
   },
   {
@@ -536,7 +536,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
       { name: "Crafters", text: "You have proficiency with one set of artisan's implements of your choice.", choices: [toolChoice("Implements", TOOLS)] },
       { name: "Second Heart", text: "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. Requires a long rest to use again." },
       { name: "Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level." },
-      { name: "Unarmed Combatant", text: "Your unarmed strikes deal 1d4 kinetic damage and have the finesse property." },
+      { name: "Unarmed Combatant", text: "Your unarmed strikes deal 1d4 kinetic damage and have the finesse property.", naturalWeapon: { damage: "1d4", damageType: "Kinetic", finesse: true } },
     ],
   },
 ];

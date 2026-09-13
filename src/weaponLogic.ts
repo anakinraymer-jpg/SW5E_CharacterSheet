@@ -34,11 +34,17 @@ export function toHitAbilityInfo(character: Character, weaponName: string): { mo
   }
 
   const monkFinesse = isMonk && !isRanged && monkRetainsUnarmoredBenefits(character);
-  const isFinesse = monkFinesse || /finesse/i.test(entry.property);
+  const naturalWeaponFinesse = entry.name === "Unarmed Strike" && Boolean(character.speciesNaturalWeapon?.finesse);
+  const isCatalogFinesse = /finesse/i.test(entry.property);
+  const isFinesse = monkFinesse || naturalWeaponFinesse || isCatalogFinesse;
   if (isRanged) return { mod: dexMod, label: "Dexterity" };
   if (isFinesse && dexMod > strMod) {
-    const isCatalogFinesse = /finesse/i.test(entry.property);
-    return { mod: dexMod, label: isCatalogFinesse ? "Dexterity (Finesse)" : "Dexterity (Martial Arts)" };
+    const label = isCatalogFinesse
+      ? "Dexterity (Finesse)"
+      : monkFinesse
+        ? "Dexterity (Martial Arts)"
+        : `Dexterity (${character.speciesNaturalWeapon?.sourceLabel})`;
+    return { mod: dexMod, label };
   }
   return { mod: strMod, label: "Strength" };
 }
@@ -68,13 +74,25 @@ export function weaponDamageDisplay(character: Character, weapon: Weapon): { dis
     const hasMartialArts = character.classAppliedName === "Monk" && monkRetainsUnarmoredBenefits(character);
     const idx = Math.max(1, Math.min(20, character.level || 1)) - 1;
     const martialArtsDie = MONK_MARTIAL_ARTS_DIE_BY_LEVEL[idx];
-    const dieNotation = hasMartialArts ? `1${martialArtsDie}` : "1";
+    const naturalWeapon = character.speciesNaturalWeapon;
+    if (hasMartialArts) {
+      return {
+        display: `1${martialArtsDie}${formatModifier(abilityMod)} Kinetic`,
+        lines: [`Martial Arts die: 1${martialArtsDie}`, `${abilityLabel} modifier: ${formatModifier(abilityMod)}`],
+      };
+    }
+    if (naturalWeapon) {
+      return {
+        display: `${naturalWeapon.damage}${formatModifier(abilityMod)} ${naturalWeapon.damageType}`,
+        lines: [
+          `${naturalWeapon.sourceLabel}: ${naturalWeapon.damage} ${naturalWeapon.damageType}`,
+          `${abilityLabel} modifier: ${formatModifier(abilityMod)}`,
+        ],
+      };
+    }
     return {
-      display: `${dieNotation}${formatModifier(abilityMod)} Kinetic`,
-      lines: [
-        hasMartialArts ? `Martial Arts die: 1${martialArtsDie}` : "Base unarmed strike damage: 1",
-        `${abilityLabel} modifier: ${formatModifier(abilityMod)}`,
-      ],
+      display: `1${formatModifier(abilityMod)} Kinetic`,
+      lines: ["Base unarmed strike damage: 1", `${abilityLabel} modifier: ${formatModifier(abilityMod)}`],
     };
   }
   return { display: weapon.damage, lines: [] };
