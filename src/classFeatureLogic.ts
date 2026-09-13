@@ -165,6 +165,32 @@ export function activeSpeedBonus(character: Character): number {
   return activeSpeedBonusSources(character).reduce((sum, s) => sum + s.amount, 0);
 }
 
+// Classes granting multiple attacks per Attack action, and the level each tier kicks in.
+// Casting classes (Consular, Engineer, Operative, Scholar) don't get Extra Attack in SW5E.
+const EXTRA_ATTACK_TIERS: Record<string, { level: number; attacks: number; label: string }[]> = {
+  Berserker: [{ level: 5, attacks: 2, label: "Extra Attack" }],
+  Fighter: [
+    { level: 5, attacks: 2, label: "Extra Attack" },
+    { level: 11, attacks: 3, label: "Greater Extra Attack" },
+    { level: 20, attacks: 4, label: "Master of Combat" },
+  ],
+  Guardian: [{ level: 5, attacks: 2, label: "Extra Attack" }],
+  Monk: [{ level: 5, attacks: 2, label: "Extra Attack" }],
+  Scout: [{ level: 5, attacks: 2, label: "Extra Attack" }],
+  Sentinel: [{ level: 5, attacks: 2, label: "Extra Attack" }],
+};
+
+// The highest Extra-Attack tier the character currently qualifies for, or null if none (attacks = 1, the default, isn't worth showing).
+export function extraAttackInfo(character: Character): { attacks: number; label: string } | null {
+  const tiers = EXTRA_ATTACK_TIERS[character.classAppliedName];
+  if (!tiers) return null;
+  let best: { level: number; attacks: number; label: string } | null = null;
+  for (const tier of tiers) {
+    if (character.level >= tier.level && (!best || tier.level > best.level)) best = tier;
+  }
+  return best;
+}
+
 export function activeCarryingCapacityMultiplier(character: Character): number {
   return allChosenSubChoiceOptions(character).reduce((mult, o) => mult * (o.carryingCapacityMultiplier ?? 1), 1);
 }

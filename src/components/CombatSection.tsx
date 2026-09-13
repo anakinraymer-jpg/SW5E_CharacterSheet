@@ -2,7 +2,7 @@ import type { Character, EquipmentItem } from "../types";
 import { SKILL_ABILITY } from "../types";
 import type { ArmorCatalogEntry } from "../data/armor";
 import { abilityModifier, armorCatalogMatch, formatModifier, passivePerception, proficiencyBonus } from "../utils";
-import { activeHpBonusSources, activeTravelPaceMultiplier } from "../classFeatureLogic";
+import { activeHpBonusSources, activeTravelPaceMultiplier, extraAttackInfo } from "../classFeatureLogic";
 import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { hasFeat } from "../featLogic";
 import SectionHeader from "./SectionHeader";
@@ -50,6 +50,7 @@ export default function CombatSection({
   const travelPaceMultiplier = activeTravelPaceMultiplier(character);
   const hpBonusSources = activeHpBonusSources(character);
   const hpBonus = hpBonusSources.reduce((sum, s) => sum + s.amount, 0);
+  const extraAttack = extraAttackInfo(character);
   const equippedWeapons = character.weapons.filter((w) => w.equipped);
 
   const armorItems = character.equipment
@@ -307,6 +308,14 @@ export default function CombatSection({
 
       <div className="field field-wide">
         <label>Equipped Weapons</label>
+        {extraAttack && (
+          <HoverInfo
+            title={extraAttack.label}
+            lines={[`You can attack ${extraAttack.attacks} times, instead of once, when you take the Attack action.`]}
+          >
+            <span className="rage-damage-note">{extraAttack.label}: {extraAttack.attacks} attacks per action</span>
+          </HoverInfo>
+        )}
         {equippedWeapons.length > 0 ? (
           <div className="armor-equip-list">
             {equippedWeapons.map((w) => {
