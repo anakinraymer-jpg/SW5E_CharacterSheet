@@ -165,7 +165,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 20,
         "name": "Master of Adaptation",
-        "text": "Your masteries of the Force and technology have achieved equilibrium. Your Constitution and Wisdom or Charisma (your choice) scores increase by 2. Your maximum for those scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to ion damage, and you can't have disadvantage on saving throws against ion or lightning damage.\n- You can't have disadvantage on attack rolls you make as a part of a tech power, and enemies can't have advantage on saving throws against your tech powers.\n- You add your governing ability modifier (minimum of +1) to any damage or healing you do with tech powers you cast that don't already include that modifier.\n\nWhile you are conscious and your droid is within 60 feet of you and conscious, it also gains these benefits.\n\nThis effect ends early if you are incapacitated or die. Once you use this feature, you can't use it again until you finish a long rest."
+        "text": "Your masteries of the Force and technology have achieved equilibrium. Your Constitution and Wisdom or Charisma (your choice) scores increase by 2. Your maximum for those scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to ion damage, and you can't have disadvantage on saving throws against ion or lightning damage.\n- You can't have disadvantage on attack rolls you make as a part of a tech power, and enemies can't have advantage on saving throws against your tech powers.\n- You add your governing ability modifier (minimum of +1) to any damage or healing you do with tech powers you cast that don't already include that modifier.\n\nWhile you are conscious and your droid is within 60 feet of you and conscious, it also gains these benefits.\n\nThis effect ends early if you are incapacitated or die. Once you use this feature, you can't use it again until you finish a long rest.",
+        "abilityScoreIncrease": [{ "amount": 2, "options": ["con"] }, { "amount": 2, "options": ["wis", "cha"] }]
       }
     ],
     "name": "Aqinos Form"
@@ -460,7 +461,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 20,
         "name": "Master of Aggression",
-        "text": "Your presence on the field of battle is as a graceful blur of deadly blades and daring acrobatics. Your Dexterity and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for those scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- When an ally within 30 feet of you takes the Attack action, they can make one additional attack as a part of that same action.\n- When you hit a creature with a weapon attack, you can move up to 10 feet. This movement does not provoke opportunity attacks.\n\nThis effect ends early if you are incapacitated or die. Once you've used this feature, you can't use it again until you finish a long rest."
+        "text": "Your presence on the field of battle is as a graceful blur of deadly blades and daring acrobatics. Your Dexterity and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for those scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- When an ally within 30 feet of you takes the Attack action, they can make one additional attack as a part of that same action.\n- When you hit a creature with a weapon attack, you can move up to 10 feet. This movement does not provoke opportunity attacks.\n\nThis effect ends early if you are incapacitated or die. Once you've used this feature, you can't use it again until you finish a long rest.",
+        "abilityScoreIncrease": [{ "amount": 2, "options": ["dex"] }, { "amount": 2, "options": ["wis", "cha"] }]
       }
     ],
     "name": "Ataru Form"
@@ -1529,7 +1531,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 20,
         "name": "Master of Domination",
-        "text": "You are a whirlwind of strikes, eviscerating all who step within your reach. Your Strength and Dexterity scores increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- When you hit a creature with a melee weapon attack, you have advantage on the next melee weapon attack roll you make against that creature, and that creature provokes an opportunity attack from you even if they take the Disengage action before leaving your reach until the end of your next turn.\n- Creatures provoke an opportunity attack from you when they enter your reach.\n\nThis effect ends early if you are incapacitated or die. Once you use this feature, you can't use it again until you finish a long rest."
+        "text": "You are a whirlwind of strikes, eviscerating all who step within your reach. Your Strength and Dexterity scores increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- When you hit a creature with a melee weapon attack, you have advantage on the next melee weapon attack roll you make against that creature, and that creature provokes an opportunity attack from you even if they take the Disengage action before leaving your reach until the end of your next turn.\n- Creatures provoke an opportunity attack from you when they enter your reach.\n\nThis effect ends early if you are incapacitated or die. Once you use this feature, you can't use it again until you finish a long rest.",
+        "abilityScoreIncrease": [{ "amount": 2, "options": ["str"] }, { "amount": 2, "options": ["dex"] }]
       }
     ],
     "name": "Jar'Kai Form"
@@ -1571,7 +1574,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 20,
         "name": "Master of Ferocity",
-        "text": "You are a paragon of extraordinary martial prowess. Your Strength and Dexterity scores increase by 2. Your maximum for those scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to all damage.\n- When you take the Attack action on your turn, you can make one additional attack as part of that action.\n- Your critical hit range with weapons increases by 1.\n\nThis effect ends early if you are incapacitated or die. Once you've used this feature, you can't use it again until you complete a long rest."
+        "text": "You are a paragon of extraordinary martial prowess. Your Strength and Dexterity scores increase by 2. Your maximum for those scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to all damage.\n- When you take the Attack action on your turn, you can make one additional attack as part of that action.\n- Your critical hit range with weapons increases by 1.\n\nThis effect ends early if you are incapacitated or die. Once you've used this feature, you can't use it again until you complete a long rest.",
+        "abilityScoreIncrease": [{ "amount": 2, "options": ["str"] }, { "amount": 2, "options": ["dex"] }]
       }
     ],
     "name": "Juyo/Vaapad Form"
@@ -2551,7 +2555,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 20,
         "name": "Master of Determination",
-        "text": "The erratic fluidity of your movement confounds even the most determined of foes. Your Strength or Dexterity and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- Attack rolls made against you can't have advantage.\n- When more than one creature is within 5 feet of you, you gain a bonus to your Armor Class equal to the number of creatures within 5 feet of you, up to your Wisdom or Charisma modifier (your choice, minimum of one).\n- When you use your Sarlaac Sweep feature, you have advantage on the attack roll, and you can apply the bonus damage to every creature within 5 feet of you.\n\nThis effect ends early if you are incapacitated or die. Once you've used this feature, you can't use it again until you finish a long rest."
+        "text": "The erratic fluidity of your movement confounds even the most determined of foes. Your Strength or Dexterity and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- Attack rolls made against you can't have advantage.\n- When more than one creature is within 5 feet of you, you gain a bonus to your Armor Class equal to the number of creatures within 5 feet of you, up to your Wisdom or Charisma modifier (your choice, minimum of one).\n- When you use your Sarlaac Sweep feature, you have advantage on the attack roll, and you can apply the bonus damage to every creature within 5 feet of you.\n\nThis effect ends early if you are incapacitated or die. Once you've used this feature, you can't use it again until you finish a long rest.",
+        "abilityScoreIncrease": [{ "amount": 2, "options": ["str", "dex"] }, { "amount": 2, "options": ["wis", "cha"] }]
       }
     ],
     "name": "Shii-Cho Form"
@@ -2636,7 +2641,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 20,
         "name": "Master of Persistence",
-        "text": "You are an unrelenting force on the field of battle. Your Strength and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- You ignore effects that would reduce your speed.\n- Once per turn, when you push a creature, you can move up to 10 feet as a part of this push without provoking opportunity attacks. If you end this movement within 5 feet of that creature, you can make one melee weapon attack (no action required).\n\nThis effect ends early if you are incapacitated or die. Once you've used this feature, you can't use it again until you complete a long rest."
+        "text": "You are an unrelenting force on the field of battle. Your Strength and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- You ignore effects that would reduce your speed.\n- Once per turn, when you push a creature, you can move up to 10 feet as a part of this push without provoking opportunity attacks. If you end this movement within 5 feet of that creature, you can make one melee weapon attack (no action required).\n\nThis effect ends early if you are incapacitated or die. Once you've used this feature, you can't use it again until you complete a long rest.",
+        "abilityScoreIncrease": [{ "amount": 2, "options": ["str"] }, { "amount": 2, "options": ["wis", "cha"] }]
       }
     ],
     "name": "Sokan Form"
@@ -2782,7 +2788,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 20,
         "name": "Master of Deception",
-        "text": "Your skill with a lightweapon is both mesmerizing and confounding. Your Dexterity and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- Your attack rolls can't suffer from disadvantage.\n- Whenever a creature misses you with a melee attack, it takes 5 energy damage.\n- Whenever a creature hits you with a melee attack, it takes damage equal to half of the damage you take from the attack.\n\nThis effect ends early if you are incapacitated or die. Once you use this feature, you can't use it again until you finish a long rest."
+        "text": "Your skill with a lightweapon is both mesmerizing and confounding. Your Dexterity and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- Your attack rolls can't suffer from disadvantage.\n- Whenever a creature misses you with a melee attack, it takes 5 energy damage.\n- Whenever a creature hits you with a melee attack, it takes damage equal to half of the damage you take from the attack.\n\nThis effect ends early if you are incapacitated or die. Once you use this feature, you can't use it again until you finish a long rest.",
+        "abilityScoreIncrease": [{ "amount": 2, "options": ["dex"] }, { "amount": 2, "options": ["wis", "cha"] }]
       }
     ],
     "name": "Trakata Form"
@@ -2877,7 +2884,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 20,
         "name": "Master of Unity",
-        "text": "You and your allies are a paragon of harmony. Your Strength or Dexterity (your choice) and Constitution scores increase by 2. Your maximum for those scores increases by 2. Additionally, you can use your action and choose an ally within 60 feet of you to gain the following benefits for 1 minute:\n- You and the chosen ally have resistance to kinetic and energy damage.\n- Neither you nor the chosen ally can have disadvantage on attack rolls.\n- Both you and the chosen ally's critical hit ranges increase by 1.\n\nThis effect ends early if either you or the chosen ally are incapacitated or die, or if the chosen ally is ever more than 60 feet away from you. Once you've used this feature, you can't use it again until you complete a long rest."
+        "text": "You and your allies are a paragon of harmony. Your Strength or Dexterity (your choice) and Constitution scores increase by 2. Your maximum for those scores increases by 2. Additionally, you can use your action and choose an ally within 60 feet of you to gain the following benefits for 1 minute:\n- You and the chosen ally have resistance to kinetic and energy damage.\n- Neither you nor the chosen ally can have disadvantage on attack rolls.\n- Both you and the chosen ally's critical hit ranges increase by 1.\n\nThis effect ends early if either you or the chosen ally are incapacitated or die, or if the chosen ally is ever more than 60 feet away from you. Once you've used this feature, you can't use it again until you complete a long rest.",
+        "abilityScoreIncrease": [{ "amount": 2, "options": ["str", "dex"] }, { "amount": 2, "options": ["con"] }]
       }
     ],
     "name": "Vonil/Ishu Form"
@@ -3276,7 +3284,8 @@ export const ARCHETYPES_CATALOG_EC: ArchetypeEntry[] = [
       {
         "level": 20,
         "name": "Master of the Unorthodox",
-        "text": "You've mastered the unity between blaster and blade. Your Dexterity and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- When you hit a creature with a ranged weapon attack, you have advantage on the next melee weapon attack you make against that creature. When you hit a creature with a melee weapon attack, you have advantage on the next ranged weapon attack you make against that creature.\n- When you roll below half the maximum on a damage die, you can treat the roll as if you'd rolled half the maximum on the damage die. You can only affect a number of dice up to half your Wisdom or Charisma modifier (your choice, minimum of one) in this way.\n\nThis effect ends early if you are incapacitated or die. Once you use this feature, you can't use it again until you finish a long rest."
+        "text": "You've mastered the unity between blaster and blade. Your Dexterity and Wisdom or Charisma scores (your choice) increase by 2. Your maximum for these scores increases by 2. Additionally, you can use your action to gain the following benefits for 1 minute:\n- You have resistance to kinetic, energy, and ion damage from weapons.\n- When you hit a creature with a ranged weapon attack, you have advantage on the next melee weapon attack you make against that creature. When you hit a creature with a melee weapon attack, you have advantage on the next ranged weapon attack you make against that creature.\n- When you roll below half the maximum on a damage die, you can treat the roll as if you'd rolled half the maximum on the damage die. You can only affect a number of dice up to half your Wisdom or Charisma modifier (your choice, minimum of one) in this way.\n\nThis effect ends early if you are incapacitated or die. Once you use this feature, you can't use it again until you finish a long rest.",
+        "abilityScoreIncrease": [{ "amount": 2, "options": ["dex"] }, { "amount": 2, "options": ["wis", "cha"] }]
       }
     ],
     "name": "Ysannanite Form"

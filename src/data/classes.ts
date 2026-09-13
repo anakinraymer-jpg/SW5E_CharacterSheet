@@ -132,7 +132,7 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { name: "Relentless Rage", level: 11, text: "If you drop to 0 hit points while raging and don't die outright, you can make a DC 10 Constitution save to drop to 1 hit point instead. The DC increases by 5 each use since your last rest." },
       { name: "Persistent Rage", level: 15, text: "Your rage ends early only if you fall unconscious or choose to end it." },
       { name: "Indomitable Might", level: 18, text: "If your total for a Strength check is less than your Strength score, you can use that score in place of the total." },
-      { name: "Primal Champion", level: 20, text: "Your Strength or Dexterity score and your Constitution score each increase by 2 (max increases by 2). You can rage unlimited times, and entering rage no longer costs your bonus action." },
+      { name: "Primal Champion", level: 20, text: "Your Strength or Dexterity score and your Constitution score each increase by 2 (max increases by 2). You can rage unlimited times, and entering rage no longer costs your bonus action.", abilityScoreIncrease: [{ amount: 2, options: ["str", "dex"] }, { amount: 2, options: ["con"] }] },
     ],
   },
   {
@@ -193,7 +193,7 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { name: "Force Affinity", level: 3, text: "You develop an affinity for one aspect of the Force: Ashla (light powers heal), Bendu (add both Wis and Cha to force point max), or Bogan (dark power damage gains a minimum roll threshold)." },
       { name: "Consular Tradition", level: 3, text: "You choose a consular tradition (Way of Balance, Way of Lightning, Way of Suggestion, or Way of the Sage), gaining features at 3rd, 6th, 10th, 14th, and 18th level." },
       { name: "Ability Score Improvement", level: 4, text: "Increase one ability score by 2, or two ability scores by 1 each. Can't exceed 20 this way." },
-      { name: "One with the Force", level: 20, text: "Your Wisdom or Charisma score increases by 4 (max increases by 4). Choose a 3rd-level force power you know as your signature power; you can cast it once at 3rd level without expending force points, regaining the ability after a short or long rest." },
+      { name: "One with the Force", level: 20, text: "Your Wisdom or Charisma score increases by 4 (max increases by 4). Choose a 3rd-level force power you know as your signature power; you can cast it once at 3rd level without expending force points, regaining the ability after a short or long rest.", abilityScoreIncrease: [{ amount: 4, options: ["wis", "cha"] }] },
     ],
   },
   {
@@ -262,7 +262,7 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { name: "Tool Expertise", level: 2, text: "You gain expertise in any tool proficiencies you gain from this class." },
       { name: "Engineering Discipline", level: 3, text: "You focus on a specific engineering discipline (Armormech, Armstech, Gadgeteer, or Unstable Engineering), gaining features at 3rd, 6th, 14th, and 18th level." },
       { name: "Ability Score Improvement", level: 4, text: "Increase one ability score by 2, or two ability scores by 1 each. Can't exceed 20 this way." },
-      { name: "Tech Mastery", level: 20, text: "Your Constitution and Intelligence scores increase by 2 (max increases by 2). When you roll initiative with no uses of Potent Aptitude left, you regain one use." },
+      { name: "Tech Mastery", level: 20, text: "Your Constitution and Intelligence scores increase by 2 (max increases by 2). When you roll initiative with no uses of Potent Aptitude left, you regain one use.", abilityScoreIncrease: [{ amount: 2, options: ["con"] }, { amount: 2, options: ["int"] }] },
     ],
   },
   {
@@ -341,7 +341,7 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { name: "Extra Attack", level: 5, text: "You can attack twice, instead of once, whenever you take the Attack action on your turn." },
       { name: "Indomitable", level: 9, text: "You can reroll a failed saving throw, using the new roll. Requires a long rest to use again; usable twice starting at 13th level, three times at 17th." },
       { name: "Greater Extra Attack", level: 11, text: "You can attack three times, instead of twice, when you take the Attack action. When using a bonus action for Double- or Two-Weapon Fighting, you can make two attacks instead of one." },
-      { name: "Master of Combat", level: 20, text: "Your Strength or Dexterity score and your Constitution score each increase by 2 (max increases by 2). You can attack four times, instead of three, when you take the Attack action." },
+      { name: "Master of Combat", level: 20, text: "Your Strength or Dexterity score and your Constitution score each increase by 2 (max increases by 2). You can attack four times, instead of three, when you take the Attack action.", abilityScoreIncrease: [{ amount: 2, options: ["str", "dex"] }, { amount: 2, options: ["con"] }] },
     ],
   },
   {
@@ -495,7 +495,7 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { name: "Diamond Soul", level: 14, text: "You gain proficiency in all saving throws; on a failed save, you can spend 1 focus point to reroll it." },
       { name: "Timeless Vessel", level: 15, text: "You can't be aged abnormally (though you can still die of old age). On a short rest, you can expend a Hit Die to remove a level of exhaustion or slowed." },
       { name: "Empty Body", level: 18, text: "As an action, spend 4 focus points to become invisible for 1 minute, gaining resistance to all damage but force damage during that time." },
-      { name: "Perfect Self", level: 20, text: "Your Dexterity and Wisdom or Charisma scores increase by 2 (max increases by 2). When you roll initiative with fewer than 6 focus points, you regain up to 6." },
+      { name: "Perfect Self", level: 20, text: "Your Dexterity and Wisdom or Charisma scores increase by 2 (max increases by 2). When you roll initiative with fewer than 6 focus points, you regain up to 6.", abilityScoreIncrease: [{ amount: 2, options: ["dex"] }, { amount: 2, options: ["wis", "cha"] }] },
     ],
   },
   {
@@ -585,7 +585,7 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { name: "Blindsense", level: 14, text: "If you can hear, you're aware of hidden or invisible creatures within 10 feet of you." },
       { name: "Slippery Mind", level: 15, text: "You gain proficiency in Wisdom saving throws." },
       { name: "Elusive", level: 18, text: "No attack roll has advantage against you while you aren't incapacitated." },
-      { name: "Stroke of Luck", level: 20, text: "Your Dexterity and Intelligence scores increase by 2 (max increases by 2). You can turn a miss into a hit, or treat a failed ability check as a 20; requires a short or long rest to use again." },
+      { name: "Stroke of Luck", level: 20, text: "Your Dexterity and Intelligence scores increase by 2 (max increases by 2). You can turn a miss into a hit, or treat a failed ability check as a 20; requires a short or long rest to use again.", abilityScoreIncrease: [{ amount: 2, options: ["dex"] }, { amount: 2, options: ["int"] }] },
     ],
   },
   {
@@ -660,7 +660,7 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { name: "Multitasker", level: 5, text: "You can take a second reaction each round; you can also use your reaction to target a friendly creature forced to save with Critical Analysis." },
       { name: "Calm and Collected", level: 14, text: "On a saving throw against a visible effect, you can add your Intelligence modifier. Usable five times, six at 17th level; regains on long rest." },
       { name: "Adaptable Intellectual", level: 18, text: "At the end of a long rest, you can swap a known discovery for another you could learn." },
-      { name: "Knowledge Unbound", level: 20, text: "Your Intelligence score increases by 4 (max increases by 4). You can use any known maneuver without expending a superiority die, rolling a d4 instead." },
+      { name: "Knowledge Unbound", level: 20, text: "Your Intelligence score increases by 4 (max increases by 4). You can use any known maneuver without expending a superiority die, rolling a d4 instead.", abilityScoreIncrease: [{ amount: 4, options: ["int"] }] },
     ],
   },
   {
@@ -743,7 +743,7 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { name: "Commando", level: 10, text: "You can take Dash or Hide as a bonus action. If you don't move while hiding, creatures take a -10 penalty to Perception checks against you. You can no longer be tracked by unenhanced means unless you choose to leave a trail." },
       { name: "Combat Tech", level: 14, text: "When you use your action to cast a tech power, you can make one weapon attack as a bonus action." },
       { name: "Supreme Awareness", level: 18, text: "Attacking a creature you can't see doesn't impose disadvantage. You're aware of invisible creatures within 30 feet unless blinded or deafened." },
-      { name: "Foe Slayer", level: 20, text: "Your Strength or Dexterity score and your Intelligence score each increase by 2 (max increases by 2). Once per turn, you can add your Intelligence modifier to an attack or damage roll." },
+      { name: "Foe Slayer", level: 20, text: "Your Strength or Dexterity score and your Intelligence score each increase by 2 (max increases by 2). Once per turn, you can add your Intelligence modifier to an attack or damage roll.", abilityScoreIncrease: [{ amount: 2, options: ["str", "dex"] }, { amount: 2, options: ["int"] }] },
     ],
   },
   {
@@ -825,7 +825,7 @@ export const CLASSES_CATALOG: ClassEntry[] = [
       { name: "Extra Attack", level: 5, text: "You can attack twice, instead of once, whenever you take the Attack action on your turn." },
       { name: "Battle Readiness", level: 10, text: "When you take the Dodge or Disengage action, or use your action to cast a force power, you can make one weapon attack as a bonus action." },
       { name: "Enlightened Evasion", level: 15, text: "When forced to make a saving throw, you can spend 2 force points to add your Wisdom or Charisma modifier and take no damage on a success, half on a failure." },
-      { name: "Center of the Force", level: 20, text: "Your Dexterity and Wisdom or Charisma scores increase by 2 (max increases by 2). Once per turn, when you'd roll a Kinetic Combat die, you can instead choose the maximum." },
+      { name: "Center of the Force", level: 20, text: "Your Dexterity and Wisdom or Charisma scores increase by 2 (max increases by 2). Once per turn, when you'd roll a Kinetic Combat die, you can instead choose the maximum.", abilityScoreIncrease: [{ amount: 2, options: ["dex"] }, { amount: 2, options: ["wis", "cha"] }] },
     ],
   },
 ];

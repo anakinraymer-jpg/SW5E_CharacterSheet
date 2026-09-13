@@ -36,7 +36,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
       { name: "Channel the Force: Makashi Riposte", level: 3, text: "Reaction to melee damage: expend a Channel the Force use to reduce the damage by 1d10 + Dexterity modifier + guardian level; if reduced to 0, make a melee attack as part of the reaction." },
       { name: "Force-Empowered Reflexes", level: 7, text: "You can take a second reaction each round." },
       { name: "Glancing Blow", level: 15, text: "Reaction to halve an attack's damage against you." },
-      { name: "Master of Contention", level: 20, text: "Dexterity and Wisdom or Charisma scores increase by 2 (max +2). For 1 minute: resistance to and ignore resistance to kinetic/energy damage; melee attacks against you have disadvantage; your melee attacks deal an additional damage die. Long rest to reuse." },
+      { name: "Master of Contention", level: 20, text: "Dexterity and Wisdom or Charisma scores increase by 2 (max +2). For 1 minute: resistance to and ignore resistance to kinetic/energy damage; melee attacks against you have disadvantage; your melee attacks deal an additional damage die. Long rest to reuse.", abilityScoreIncrease: [{ amount: 2, options: ["dex"] }, { amount: 2, options: ["wis", "cha"] }] },
     ],
   },
   {
@@ -48,7 +48,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
       { name: "Channel the Force: Telekinetic Slash", level: 3, text: "When you damage with an at-will force power (attack or save), expend a Channel the Force use and force points for 1d8 additional damage per point, up to your Focused Strikes maximum." },
       { name: "Enlightenment", level: 7, text: "Reducing a hostile creature to 0 HP or healing an ally at 0 HP with a force power grants temporary force points equal to your Wisdom or Charisma modifier. Short/long rest to reuse." },
       { name: "Redirect", level: 15, text: "Reaction to redirect a Dexterity-save or attack-roll power targeting only you to another target within 30 feet. Short/long rest to reuse." },
-      { name: "Master of Moderation", level: 20, text: "Dexterity and Wisdom or Charisma scores increase by 2 (max +2). For 1 minute: resistance to kinetic/energy from unenhanced weapons; advantage and resistance vs. force powers; an at-will universal power targeting one creature can also hit an adjacent target. Long rest to reuse." },
+      { name: "Master of Moderation", level: 20, text: "Dexterity and Wisdom or Charisma scores increase by 2 (max +2). For 1 minute: resistance to kinetic/energy from unenhanced weapons; advantage and resistance vs. force powers; an at-will universal power targeting one creature can also hit an adjacent target. Long rest to reuse.", abilityScoreIncrease: [{ amount: 2, options: ["dex"] }, { amount: 2, options: ["wis", "cha"] }] },
     ],
   },
   {
@@ -61,7 +61,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
       { name: "Channel the Force", level: 3, text: "Choose Blade Barrier (Shien: forgo Strength damage to reduce incoming energy/kinetic damage) or Falling Avalanche (Djem So: gain advantage on a Strength check/attack by halving speed)." },
       { name: "Determination", level: 7, text: "Choose Aggressive Negotiations (Shien: Intimidation/Persuasion proficiency, no disadvantage while wielding a proficient weapon) or Reliable Vigor (Djem So: use guardian level in place of a low Strength check/save result, 3 uses growing)." },
       { name: "Presence", level: 15, text: "Choose Precise Reflection (Shien: force points add damage to saber reflect hits) or Brutal Strikes (Djem So: Force-Empowered Strikes gain a minimum roll threshold and grant temp HP)." },
-      { name: "Master of Perseverance", level: 20, text: "Strength and Constitution scores increase by 2 (max +2). For 1 minute: resistance to kinetic/energy from unenhanced weapons; free 1st-level Force-Empowered Strikes on Strength melee hits granting temp HP; reaction counter-attack with advantage. Long rest to reuse." },
+      { name: "Master of Perseverance", level: 20, text: "Strength and Constitution scores increase by 2 (max +2). For 1 minute: resistance to kinetic/energy from unenhanced weapons; free 1st-level Force-Empowered Strikes on Strength melee hits granting temp HP; reaction counter-attack with advantage. Long rest to reuse.", abilityScoreIncrease: [{ amount: 2, options: ["str"] }, { amount: 2, options: ["con"] }] },
     ],
   },
   {
@@ -74,7 +74,7 @@ export const ARCHETYPES_CATALOG: ArchetypeEntry[] = [
       { name: "Channel the Force: Advancing Defender", level: 3, text: "When you cast saber reflect, expend a Channel the Force use to move up to 10 feet as part of the reaction without provoking opportunity attacks." },
       { name: "Circle of Shelter", level: 7, text: "Reaction to ward yourself or a creature within 5 feet: roll 1d8 added to their AC against the triggering attack; if it still hits, they gain resistance to the damage. 3 uses, more at 9th/13th/17th level." },
       { name: "Stand Against the Tide", level: 15, text: "Reaction to force a creature that misses you with a melee attack to repeat the attack against another creature of your choice." },
-      { name: "Master of Resilience", level: 20, text: "Constitution and Wisdom or Charisma scores increase by 2 (max +2). For 1 minute: resistance to kinetic/energy from unenhanced weapons; saber reflect can include a melee attack; advantage on Dexterity saves for you and allies within 30 feet. Long rest to reuse." },
+      { name: "Master of Resilience", level: 20, text: "Constitution and Wisdom or Charisma scores increase by 2 (max +2). For 1 minute: resistance to kinetic/energy from unenhanced weapons; saber reflect can include a melee attack; advantage on Dexterity saves for you and allies within 30 feet. Long rest to reuse.", abilityScoreIncrease: [{ amount: 2, options: ["con"] }, { amount: 2, options: ["wis", "cha"] }] },
     ],
   },
 

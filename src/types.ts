@@ -102,6 +102,14 @@ export interface ClassLevelRow {
   extra?: string; // other per-level resource columns, formatted for display
 }
 
+// A single "slot" of a level-based ability score increase (e.g. a class/archetype capstone like
+// Monk's Perfect Self or Guardian's "Master of X" forms). `options.length === 1` means the ability
+// is fixed (no player choice); more than one means the player picks which of these gets the bonus.
+export interface AbilityScoreIncreaseGrant {
+  amount: number;
+  options: AbilityKey[];
+}
+
 export interface ClassFeature {
   name: string;
   level: number;
@@ -109,6 +117,7 @@ export interface ClassFeature {
   grantsProficiency?: string; // fixed proficiency this feature grants once its level is reached
   grantsSkills?: SkillName[]; // fixed skill proficiencies this feature grants once its level is reached
   choices?: SpeciesTraitChoice[]; // reused choice structure (skill/language/tool/weapon picks)
+  abilityScoreIncrease?: AbilityScoreIncreaseGrant[]; // one-time permanent ability score increase(s) once this level is reached (e.g. capstone features)
 }
 
 export interface ClassEntry {
@@ -388,6 +397,8 @@ export interface Character {
   classGrantedProficiencies: string[];
   classAbilityBonus: AbilityScores;
   asiChoices: Record<number, AbilityKey[]>;
+  classCapstoneChoice: (AbilityKey | null)[]; // player's pick for each choice-slot of the class's abilityScoreIncrease feature (if any), index-aligned; fixed (single-option) slots auto-fill
+  classCapstoneBonus: AbilityScores; // currently-applied bonus from that feature, tracked for clean revert/relevel
   classTraitsText: string;
   classEquipmentText: string[];
   classGrantedEquipmentIds: string[]; // EquipmentItem ids created by applyClass, so revert only removes class-granted items
@@ -397,6 +408,8 @@ export interface Character {
   archetypeTraitsText: string;
   archetypeFeatureChoiceSelections: Record<string, string[][]>; // keyed by feature name
   archetypeFeatureGrantedSkills: SkillName[]; // tracked so revert/relevel can cleanly un-proficient
+  archetypeCapstoneChoice: (AbilityKey | null)[]; // same as classCapstoneChoice, but for the applied archetype's own abilityScoreIncrease feature (e.g. Guardian's "Master of X" forms)
+  archetypeCapstoneBonus: AbilityScores;
   classResources: ClassResourceState[];
   classSubChoicePicks: Record<string, string[]>;
   classSubChoiceDetails: Record<string, ClassSubChoicePickDetail[]>; // parallel to classSubChoicePicks[key]
@@ -590,6 +603,8 @@ export function createBlankCharacter(): Character {
     classGrantedProficiencies: [],
     classAbilityBonus: emptyAbilities0(),
     asiChoices: {},
+    classCapstoneChoice: [],
+    classCapstoneBonus: emptyAbilities0(),
     classTraitsText: "",
     classEquipmentText: [],
     classGrantedEquipmentIds: [],
@@ -599,6 +614,8 @@ export function createBlankCharacter(): Character {
     archetypeTraitsText: "",
     archetypeFeatureChoiceSelections: {},
     archetypeFeatureGrantedSkills: [],
+    archetypeCapstoneChoice: [],
+    archetypeCapstoneBonus: emptyAbilities0(),
     classResources: [],
     classSubChoicePicks: {},
     classSubChoiceDetails: {},

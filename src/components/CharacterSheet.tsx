@@ -31,13 +31,17 @@ import { applySpecies, recalcSpeciesForLevel, revertSpecies, speciesNeedsChoices
 import { applyBackground, backgroundNeedsChoices, revertBackground } from "../backgroundLogic";
 import {
   applyArchetype,
+  applyArchetypeCapstoneChoice,
   applyArchetypeFeatureChoice,
   applyAsi,
   applyClass,
+  applyClassCapstoneChoice,
   classNeedsChoices,
+  pendingArchetypeCapstone,
   pendingArchetypeChoice,
   pendingArchetypeFeatureChoice,
   pendingAsiLevel,
+  pendingClassCapstone,
   recalcArchetypeFeatureChoices,
   recalcArchetypeForLevel,
   recalcClassForLevel,
@@ -57,6 +61,7 @@ import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
 import BackgroundChoiceDialog from "./BackgroundChoiceDialog";
 import ClassChoiceDialog from "./ClassChoiceDialog";
 import AbilityImprovementDialog from "./AbilityImprovementDialog";
+import CapstoneAbilityDialog from "./CapstoneAbilityDialog";
 import ClassFeaturesSection from "./ClassFeaturesSection";
 import FeatsSection from "./FeatsSection";
 import FeatChoiceDialog from "./FeatChoiceDialog";
@@ -102,6 +107,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [pendingBackground, setPendingBackground] = useState<BackgroundEntry | null>(null);
   const [pendingClass, setPendingClass] = useState<ClassEntry | null>(null);
   const [pendingAsi, setPendingAsi] = useState<{ level: number; className: string } | null>(null);
+  const [pendingClassCapstoneFeature, setPendingClassCapstoneFeature] = useState<ClassFeature | null>(null);
+  const [pendingArchetypeCapstoneFeature, setPendingArchetypeCapstoneFeature] = useState<ClassFeature | null>(null);
   const [pendingFeat, setPendingFeat] = useState<FeatEntry | null>(null);
   const [pendingArchetypeClass, setPendingArchetypeClass] = useState<ClassEntry | null>(null);
   const [pendingSubChoiceDef, setPendingSubChoiceDef] = useState<{ def: ClassSubChoiceDef; needed: number } | null>(
@@ -160,6 +167,13 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       } else if (pendingArchetypeClass) {
         setPendingArchetypeClass(null);
       }
+
+      const capstone = pendingClassCapstone(character, classEntry);
+      if (capstone && capstone.name !== pendingClassCapstoneFeature?.name) {
+        setPendingClassCapstoneFeature(capstone);
+      } else if (!capstone && pendingClassCapstoneFeature) {
+        setPendingClassCapstoneFeature(null);
+      }
     }
     const archetypeEntry = ARCHETYPES_CATALOG.find(
       (a) => a.name === character.archetypeAppliedName
@@ -172,8 +186,16 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       } else if (!pendingFeature && pendingArchetypeFeature) {
         setPendingArchetypeFeature(null);
       }
-    } else if (pendingArchetypeFeature) {
-      setPendingArchetypeFeature(null);
+
+      const archCapstone = pendingArchetypeCapstone(character, archetypeEntry);
+      if (archCapstone && archCapstone.name !== pendingArchetypeCapstoneFeature?.name) {
+        setPendingArchetypeCapstoneFeature(archCapstone);
+      } else if (!archCapstone && pendingArchetypeCapstoneFeature) {
+        setPendingArchetypeCapstoneFeature(null);
+      }
+    } else {
+      if (pendingArchetypeFeature) setPendingArchetypeFeature(null);
+      if (pendingArchetypeCapstoneFeature) setPendingArchetypeCapstoneFeature(null);
     }
 
     setCharacter((prev) => recalcClassSubChoices(recalcClassResources(prev)));
@@ -341,6 +363,20 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     if (!pendingAsi) return;
     setCharacter((prev) => applyAsi(prev, pendingAsi.level, abilities));
     setPendingAsi(null);
+  }
+
+  function handleClassCapstoneConfirm(picks: (AbilityKey | null)[]) {
+    const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
+    if (!classEntry) return;
+    setCharacter((prev) => applyClassCapstoneChoice(prev, classEntry, picks));
+    setPendingClassCapstoneFeature(null);
+  }
+
+  function handleArchetypeCapstoneConfirm(picks: (AbilityKey | null)[]) {
+    const archetypeEntry = ARCHETYPES_CATALOG.find((a) => a.name === character.archetypeAppliedName);
+    if (!archetypeEntry) return;
+    setCharacter((prev) => applyArchetypeCapstoneChoice(prev, archetypeEntry, picks));
+    setPendingArchetypeCapstoneFeature(null);
   }
 
   function handleArchetypeChoiceConfirm(name: string) {
@@ -902,6 +938,24 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           className={pendingAsi.className}
           onCancel={() => setPendingAsi(null)}
           onConfirm={handleAsiConfirm}
+        />
+      )}
+
+      {pendingClassCapstoneFeature && (
+        <CapstoneAbilityDialog
+          feature={pendingClassCapstoneFeature}
+          sourceLabel={character.classAppliedName}
+          onCancel={() => setPendingClassCapstoneFeature(null)}
+          onConfirm={handleClassCapstoneConfirm}
+        />
+      )}
+
+      {pendingArchetypeCapstoneFeature && (
+        <CapstoneAbilityDialog
+          feature={pendingArchetypeCapstoneFeature}
+          sourceLabel={character.archetypeAppliedName}
+          onCancel={() => setPendingArchetypeCapstoneFeature(null)}
+          onConfirm={handleArchetypeCapstoneConfirm}
         />
       )}
 

@@ -1,5 +1,7 @@
 import type {
   AbilityKey,
+  AbilityScores,
+  AbilityScoreIncreaseGrant,
   ArchetypeEntry,
   Character,
   ClassEntry,
@@ -123,6 +125,129 @@ function levelGrantedSavingThrows(className: string, level: number): AbilityKey[
   return [];
 }
 
+// --- Capstone ability score increases (e.g. Monk's Perfect Self, Guardian's "Master of X" forms) ---
+// A capstone feature's abilityScoreIncrease slots that have only one option are fixed and always
+// apply once the feature's level is reached; slots with multiple options need a player pick, which
+// is what `choice[i]` holds. Auto-fills fixed slots and leaves choice-slots as-is (null if unset).
+function fillCapstoneChoice(
+  grant: AbilityScoreIncreaseGrant[] | undefined,
+  choice: (AbilityKey | null)[]
+): (AbilityKey | null)[] {
+  if (!grant) return [];
+  return grant.map((slot, i) => {
+    if (slot.options.length === 1) return slot.options[0];
+    const existing = choice[i];
+    return existing && slot.options.includes(existing) ? existing : null;
+  });
+}
+
+function capstoneBonusFromChoice(
+  grant: AbilityScoreIncreaseGrant[] | undefined,
+  choice: (AbilityKey | null)[]
+): AbilityScores {
+  const bonus = emptyAbilities0();
+  if (!grant) return bonus;
+  grant.forEach((slot, i) => {
+    const ability = choice[i];
+    if (ability) bonus[ability] += slot.amount;
+  });
+  return bonus;
+}
+
+function applyAbilityBonusDiff(abilities: AbilityScores, oldBonus: AbilityScores, newBonus: AbilityScores): AbilityScores {
+  const next = { ...abilities };
+  (Object.keys(next) as AbilityKey[]).forEach((k) => {
+    next[k] += newBonus[k] - oldBonus[k];
+  });
+  return next;
+}
+
+function abilityScoresEqual(a: AbilityScores, b: AbilityScores): boolean {
+  return (Object.keys(a) as AbilityKey[]).every((k) => a[k] === b[k]);
+}
+
+function capstoneChoicesEqual(a: (AbilityKey | null)[], b: (AbilityKey | null)[]): boolean {
+  return a.length === b.length && a.every((v, i) => v === b[i]);
+}
+
+// The class's own capstone feature (if any) reached at the current level — there is at most one
+// per class in the catalog today, but this scans the full features list rather than assuming a
+// fixed index.
+function classCapstoneFeature(classEntry: ClassEntry, level: number): ClassFeature | undefined {
+  return classEntry.features.find((f) => f.abilityScoreIncrease && f.level <= level);
+}
+
+function archetypeCapstoneFeature(archetypeEntry: ArchetypeEntry, level: number): ClassFeature | undefined {
+  return archetypeEntry.features.find((f) => f.abilityScoreIncrease && f.level <= level);
+}
+
+// Recomputes the class capstone's applied bonus for the current level, auto-filling any
+// fixed (single-option) slots. Leaves choice-slots null until the player picks via
+// applyClassCapstoneChoice — pendingClassCapstone() surfaces that as a dialog trigger.
+// Returns `character` unchanged (same reference) when nothing actually needs to change — critical
+// here, not just an optimization: this runs inside the level-reactive effect, which watches
+// character.abilities, so producing a fresh (even if value-identical) abilities object on every
+// call would retrigger that effect forever.
+function recalcClassCapstone(character: Character, classEntry: ClassEntry): Character {
+  const level = Math.max(1, Math.min(20, character.level || 1));
+  const feature = classCapstoneFeature(classEntry, level);
+  const choice = fillCapstoneChoice(feature?.abilityScoreIncrease, character.classCapstoneChoice);
+  const bonus = capstoneBonusFromChoice(feature?.abilityScoreIncrease, choice);
+  if (capstoneChoicesEqual(choice, character.classCapstoneChoice) && abilityScoresEqual(bonus, character.classCapstoneBonus)) {
+    return character;
+  }
+  return {
+    ...character,
+    abilities: applyAbilityBonusDiff(character.abilities, character.classCapstoneBonus, bonus),
+    classCapstoneChoice: choice,
+    classCapstoneBonus: bonus,
+  };
+}
+
+function recalcArchetypeCapstone(character: Character, archetypeEntry: ArchetypeEntry): Character {
+  const level = Math.max(1, Math.min(20, character.level || 1));
+  const feature = archetypeCapstoneFeature(archetypeEntry, level);
+  const choice = fillCapstoneChoice(feature?.abilityScoreIncrease, character.archetypeCapstoneChoice);
+  const bonus = capstoneBonusFromChoice(feature?.abilityScoreIncrease, choice);
+  if (capstoneChoicesEqual(choice, character.archetypeCapstoneChoice) && abilityScoresEqual(bonus, character.archetypeCapstoneBonus)) {
+    return character;
+  }
+  return {
+    ...character,
+    abilities: applyAbilityBonusDiff(character.abilities, character.archetypeCapstoneBonus, bonus),
+    archetypeCapstoneChoice: choice,
+    archetypeCapstoneBonus: bonus,
+  };
+}
+
+// The class capstone feature is visible (level reached) but has at least one choice-slot the
+// player hasn't picked yet — used to trigger the ability-choice dialog, same shape as pendingAsiLevel.
+export function pendingClassCapstone(character: Character, classEntry: ClassEntry): ClassFeature | null {
+  const level = Math.max(1, Math.min(20, character.level || 1));
+  const feature = classCapstoneFeature(classEntry, level);
+  if (!feature?.abilityScoreIncrease) return null;
+  const choice = fillCapstoneChoice(feature.abilityScoreIncrease, character.classCapstoneChoice);
+  return choice.some((c) => c === null) ? feature : null;
+}
+
+export function pendingArchetypeCapstone(character: Character, archetypeEntry: ArchetypeEntry): ClassFeature | null {
+  const level = Math.max(1, Math.min(20, character.level || 1));
+  const feature = archetypeCapstoneFeature(archetypeEntry, level);
+  if (!feature?.abilityScoreIncrease) return null;
+  const choice = fillCapstoneChoice(feature.abilityScoreIncrease, character.archetypeCapstoneChoice);
+  return choice.some((c) => c === null) ? feature : null;
+}
+
+// `picks` is index-aligned with the feature's abilityScoreIncrease slots; entries for fixed
+// (single-option) slots are ignored (recalcClassCapstone re-fills them regardless).
+export function applyClassCapstoneChoice(character: Character, classEntry: ClassEntry, picks: (AbilityKey | null)[]): Character {
+  return recalcClassCapstone({ ...character, classCapstoneChoice: picks }, classEntry);
+}
+
+export function applyArchetypeCapstoneChoice(character: Character, archetypeEntry: ArchetypeEntry, picks: (AbilityKey | null)[]): Character {
+  return recalcArchetypeCapstone({ ...character, archetypeCapstoneChoice: picks }, archetypeEntry);
+}
+
 export function revertClass(character: Character): Character {
   if (!character.classAppliedName) return character;
   const savingThrows = { ...character.savingThrows };
@@ -138,8 +263,10 @@ export function revertClass(character: Character): Character {
   }
   const grantedEquipmentIds = new Set(character.classGrantedEquipmentIds);
   const grantedWeaponIds = new Set(character.classGrantedWeaponIds);
+  const abilities = applyAbilityBonusDiff(character.abilities, character.classCapstoneBonus, emptyAbilities0());
   return {
     ...character,
+    abilities,
     savingThrows,
     skills,
     credits: character.credits - character.classCreditsApplied,
@@ -150,6 +277,8 @@ export function revertClass(character: Character): Character {
     classLevelSavingThrowsApplied: [],
     classGrantedSkills: [],
     classGrantedProficiencies: [],
+    classCapstoneChoice: [],
+    classCapstoneBonus: emptyAbilities0(),
     classTraitsText: "",
     classEquipmentText: [],
     classGrantedEquipmentIds: [],
@@ -259,7 +388,7 @@ export function recalcClassForLevel(character: Character, classEntry: ClassEntry
         : character.techPoints,
   };
   next.classTraitsText = buildClassTraitsText(classEntry, next);
-  return next;
+  return recalcClassCapstone(next, classEntry);
 }
 
 function buildClassTraitsText(classEntry: ClassEntry, character: Character): string {
@@ -293,13 +422,17 @@ export function revertArchetype(character: Character): Character {
   for (const sk of character.archetypeFeatureGrantedSkills) {
     skills[sk] = { ...skills[sk], proficient: false };
   }
+  const abilities = applyAbilityBonusDiff(character.abilities, character.archetypeCapstoneBonus, emptyAbilities0());
   return {
     ...character,
+    abilities,
     skills,
     archetypeAppliedName: "",
     archetypeTraitsText: "",
     archetypeFeatureChoiceSelections: {},
     archetypeFeatureGrantedSkills: [],
+    archetypeCapstoneChoice: [],
+    archetypeCapstoneBonus: emptyAbilities0(),
   };
 }
 
@@ -311,11 +444,12 @@ export function applyArchetype(character: Character, archetypeEntry: ArchetypeEn
   };
   const next = resyncArchetypeFeatureGrantedSkills(base, archetypeEntry);
   next.archetypeTraitsText = buildArchetypeTraitsText(archetypeEntry, next);
-  return next;
+  return recalcArchetypeCapstone(next, archetypeEntry);
 }
 
 export function recalcArchetypeForLevel(character: Character, archetypeEntry: ArchetypeEntry): Character {
-  return { ...character, archetypeTraitsText: buildArchetypeTraitsText(archetypeEntry, character) };
+  const next = { ...character, archetypeTraitsText: buildArchetypeTraitsText(archetypeEntry, character) };
+  return recalcArchetypeCapstone(next, archetypeEntry);
 }
 
 function buildArchetypeTraitsText(archetypeEntry: ArchetypeEntry, character: Character): string {
