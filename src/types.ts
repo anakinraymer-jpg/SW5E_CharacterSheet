@@ -65,6 +65,7 @@ export interface SpeciesTrait {
   naturalWeapon?: { damage: string; damageType: string; finesse?: boolean }; // e.g. Wookiee's Claws: "unarmed strikes deal 1d4 kinetic damage" — replaces the flat 1-point Unarmed Strike catalog damage
   speeds?: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" }; // extra movement modes beyond the base walking speed; "walking" for e.g. Toydarian's Flight ("equal to your walking speed")
   grantsResistance?: string; // display text auto-filled into Combat's Advantages/Resistances/Immunities field (e.g. "Resistance to poison damage."), non-destructively — see applySpecies
+  hpBonusPerLevel?: number; // e.g. Gamorrean/Zabrak Toughness: "+1 max HP, and again every level" — total bonus = this * character.level, shown as an "Effective Max HP" overlay (Max HP itself stays player-editable)
   choices?: SpeciesTraitChoice[];
 }
 
@@ -81,6 +82,11 @@ export interface SpeciesNaturalWeapon {
   damageType: string;
   finesse: boolean;
   sourceLabel: string; // e.g. "Wookiee Claws", shown in the Unarmed Strike hover breakdown
+}
+
+export interface SpeciesHpBonus {
+  perLevel: number;
+  sourceLabel: string; // e.g. "Gamorrean Toughness", shown in the Max HP hover breakdown
 }
 
 export interface AbilityChoiceIncrease {
@@ -287,6 +293,7 @@ export interface FeatEntry {
   grantsSavingThrowForAbilityChoice?: boolean; // Resilient: proficiency in the saving throw of the chosen ability
   grantsProficiency?: string; // fixed non-skill proficiency (armor/weapon/tool), if any (e.g. Weapon Expert)
   speedBonus?: number; // flat bonus to walking speed while this feat is known (e.g. Mobile, Tiny Terror)
+  hpBonusPerLevel?: number; // e.g. Durable: "+2x level" total bonus (2x level when taken, +2/level after — always equals 2*current level), shown as an "Effective Max HP" overlay
   choices?: SpeciesTraitChoice[]; // reused choice structure (tool/instrument/kit/skill/other picks)
 }
 
@@ -410,6 +417,7 @@ export interface Character {
   speciesGrantedVision: string; // exact text last auto-filled into Combat's Vision field, so revert can tell a player edit from an untouched grant
   speciesNaturalArmor: SpeciesNaturalArmor | null;
   speciesNaturalWeapon: SpeciesNaturalWeapon | null;
+  speciesHpBonus: SpeciesHpBonus | null;
   speciesSpeeds: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" } | null;
   speciesGrantedSpecialMovement: string; // exact text last auto-filled into Combat's Special Movement field, mirrors speciesGrantedVision's non-destructive pattern
   speciesGrantedResistances: string; // exact text last auto-filled into Combat's Advantages/Resistances/Immunities field, same pattern
@@ -624,6 +632,7 @@ export function createBlankCharacter(): Character {
     speciesGrantedVision: "",
     speciesNaturalArmor: null,
     speciesNaturalWeapon: null,
+    speciesHpBonus: null,
     speciesSpeeds: null,
     speciesGrantedSpecialMovement: "",
     speciesGrantedResistances: "",

@@ -270,7 +270,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
     traits: [
       { name: "Age", text: "Gamorreans reach adulthood in their early teens and live no more than 70 years." },
       { name: "Alignment", text: "Gamorrean culture causes them to tend toward chaos, though there are exceptions." },
-      { name: "Gamorrean Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level. You have advantage on Constitution saving throws." },
+      { name: "Gamorrean Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level. You have advantage on Constitution saving throws.", hpBonusPerLevel: 1 },
       { name: "Gamorrean Weaponry", text: "You have proficiency with the vibroaxe, vibromace, and vibrosword.", grantsProficiency: "Vibroaxe, vibromace, vibrosword" },
       { name: "Savage Attacks", text: "When you score a critical hit with a melee weapon attack, you can roll one of the weapon's damage dice one additional time." },
     ],
@@ -535,7 +535,7 @@ export const SPECIES_CATALOG: SpeciesEntry[] = [
       { name: "Coercive", text: "You have proficiency with Persuasion or Intimidation (your choice).", choices: [skillChoice("Skill", ["Persuasion", "Intimidation"])] },
       { name: "Crafters", text: "You have proficiency with one set of artisan's implements of your choice.", choices: [toolChoice("Implements", TOOLS)] },
       { name: "Second Heart", text: "When you are reduced to 0 hit points but not killed outright, you can drop to 1 hit point instead. Requires a long rest to use again." },
-      { name: "Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level." },
+      { name: "Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level.", hpBonusPerLevel: 1 },
       { name: "Unarmed Combatant", text: "Your unarmed strikes deal 1d4 kinetic damage and have the finesse property.", naturalWeapon: { damage: "1d4", damageType: "Kinetic", finesse: true } },
     ],
   },

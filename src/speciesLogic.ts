@@ -3,6 +3,7 @@ import type {
   Character,
   SkillName,
   SpeciesEntry,
+  SpeciesHpBonus,
   SpeciesNaturalArmor,
   SpeciesNaturalWeapon,
   SpeciesSelections,
@@ -18,6 +19,11 @@ export const ABILITY_LABEL: Record<AbilityKey, string> = {
   wis: "Wisdom",
   cha: "Charisma",
 };
+
+// Some trait names already start with the species name (e.g. "Gamorrean Toughness"); avoid "Gamorrean Gamorrean Toughness".
+function speciesTraitLabel(species: SpeciesEntry, traitName: string): string {
+  return traitName.startsWith(species.name) ? traitName : `${species.name} ${traitName}`;
+}
 
 // Sums bonus credits from traits like Wealthy: level * proficiency bonus * the trait's multiplier.
 function computeSpeciesCredits(species: SpeciesEntry, level: number): number {
@@ -87,6 +93,7 @@ export function revertSpecies(character: Character): Character {
     speciesGrantedVision: "",
     speciesNaturalArmor: null,
     speciesNaturalWeapon: null,
+    speciesHpBonus: null,
     speciesSpeeds: null,
     speciesGrantedSpecialMovement: "",
     speciesGrantedResistances: "",
@@ -194,7 +201,7 @@ export function applySpecies(
         addDex: naturalArmorTrait.naturalArmor.addDex ?? true,
         allowLightArmor: naturalArmorTrait.naturalArmor.allowLightArmor ?? true,
         allowAnyArmor: naturalArmorTrait.naturalArmor.allowAnyArmor ?? false,
-        sourceLabel: `${species.name} ${naturalArmorTrait.name}`,
+        sourceLabel: speciesTraitLabel(species, naturalArmorTrait.name),
       }
     : null;
 
@@ -204,8 +211,13 @@ export function applySpecies(
         damage: naturalWeaponTrait.naturalWeapon.damage,
         damageType: naturalWeaponTrait.naturalWeapon.damageType,
         finesse: naturalWeaponTrait.naturalWeapon.finesse ?? false,
-        sourceLabel: `${species.name} ${naturalWeaponTrait.name}`,
+        sourceLabel: speciesTraitLabel(species, naturalWeaponTrait.name),
       }
+    : null;
+
+  const hpBonusTrait = species.traits.find((t) => t.hpBonusPerLevel);
+  const hpBonus: SpeciesHpBonus | null = hpBonusTrait?.hpBonusPerLevel
+    ? { perLevel: hpBonusTrait.hpBonusPerLevel, sourceLabel: speciesTraitLabel(species, hpBonusTrait.name) }
     : null;
 
   const speedsTrait = species.traits.find((t) => t.speeds);
@@ -235,6 +247,7 @@ export function applySpecies(
     speciesGrantedVision: grantedVision,
     speciesNaturalArmor: naturalArmor,
     speciesNaturalWeapon: naturalWeapon,
+    speciesHpBonus: hpBonus,
     speciesSpeeds: speeds,
     speciesGrantedSpecialMovement: grantedSpecialMovement,
     speciesGrantedResistances: grantedResistances,

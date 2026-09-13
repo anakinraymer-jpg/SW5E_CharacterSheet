@@ -2,7 +2,7 @@ import type { Character, EquipmentItem } from "../types";
 import { SKILL_ABILITY } from "../types";
 import type { ArmorCatalogEntry } from "../data/armor";
 import { abilityModifier, armorCatalogMatch, formatModifier, passivePerception, proficiencyBonus } from "../utils";
-import { activeTravelPaceMultiplier } from "../classFeatureLogic";
+import { activeHpBonusSources, activeTravelPaceMultiplier } from "../classFeatureLogic";
 import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { hasFeat } from "../featLogic";
 import SectionHeader from "./SectionHeader";
@@ -48,6 +48,8 @@ export default function CombatSection({
   const collapsed = !!collapsedSections["combat"];
   const pb = proficiencyBonus(character.level);
   const travelPaceMultiplier = activeTravelPaceMultiplier(character);
+  const hpBonusSources = activeHpBonusSources(character);
+  const hpBonus = hpBonusSources.reduce((sum, s) => sum + s.amount, 0);
   const equippedWeapons = character.weapons.filter((w) => w.equipped);
 
   const armorItems = character.equipment
@@ -197,6 +199,17 @@ export default function CombatSection({
             value={character.maxHp}
             onChange={(e) => update("maxHp", Number(e.target.value) || 0)}
           />
+          {hpBonus > 0 && (
+            <HoverInfo
+              title="Max HP Bonus"
+              lines={[
+                `Effective Max HP: ${character.maxHp + hpBonus} (${character.maxHp} + ${hpBonus}).`,
+                ...hpBonusSources.map((s) => `${s.label}: +${s.amount}`),
+              ]}
+            >
+              <span className="rage-damage-note">Effective {character.maxHp + hpBonus}</span>
+            </HoverInfo>
+          )}
         </div>
         <div className="field">
           <label htmlFor="current-hp">Current HP</label>

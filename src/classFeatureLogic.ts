@@ -134,6 +134,33 @@ export function activeSpeedBonusSources(character: Character): { label: string; 
   return sources;
 }
 
+// Archetype features granting "+3 max HP at the level gained, +1 more per level thereafter" —
+// since both are gained at level 3, that formula always simplifies to exactly character.level.
+const HP_BONUS_ARCHETYPES: Record<string, { level: number; label: string }> = {
+  "Path of Iron": { level: 3, label: "Physical Conditioning" },
+  "Way of Endurance": { level: 3, label: "Upheld by the Force" },
+};
+
+// Every source contributing to the character's effective Max HP bonus, shown as a non-destructive
+// "Effective Max HP" overlay (the Max HP field itself stays freely player-editable, since it's
+// normally hand-tracked from rolled Hit Dice). Mirrors activeSpeedBonusSources' shape/pattern.
+export function activeHpBonusSources(character: Character): { label: string; amount: number }[] {
+  const sources: { label: string; amount: number }[] = [];
+  const level = Math.max(1, Math.min(20, character.level || 1));
+  if (character.speciesHpBonus) {
+    sources.push({ label: character.speciesHpBonus.sourceLabel, amount: character.speciesHpBonus.perLevel * level });
+  }
+  const archetypeHp = HP_BONUS_ARCHETYPES[character.archetypeAppliedName];
+  if (archetypeHp && level >= archetypeHp.level) {
+    sources.push({ label: archetypeHp.label, amount: level });
+  }
+  for (const cf of character.feats) {
+    const feat = FEATS_BY_NAME.get(cf.name);
+    if (feat?.hpBonusPerLevel) sources.push({ label: feat.name, amount: feat.hpBonusPerLevel * level });
+  }
+  return sources;
+}
+
 export function activeSpeedBonus(character: Character): number {
   return activeSpeedBonusSources(character).reduce((sum, s) => sum + s.amount, 0);
 }

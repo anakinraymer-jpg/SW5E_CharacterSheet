@@ -519,7 +519,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Cannibalize", text: "If you spend at least 1 minute devouring the corpse of a beast or humanoid, you gain temporary hit points equal to your Constitution modifier. Usable once per short or long rest." },
       { name: "Galactic Scourge", text: "You have proficiency in the Intimidation and Piloting skills.", grantsSkills: ["Intimidation", "Piloting"] },
       { name: "Iron Guts", text: "You can eat any organic material, and can't suffer exhaustion from starvation unless in an environment completely lacking organic material." },
-      { name: "Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level." },
+      { name: "Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level.", hpBonusPerLevel: 1 },
       { name: "Unsettling Visage", text: "When a creature you can see makes an attack roll against you, you can use your reaction to impose disadvantage on the roll, before knowing whether it hits. Usable once per short or long rest." },
     ],
   },
@@ -1884,7 +1884,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Menacing", text: "You have proficiency in the Intimidation skill.", grantsSkills: ["Intimidation"] },
       { name: "Notorious Slavers", text: "Whenever you make an ability check related to buying, selling, or controlling slaves, you are considered proficient in the check (or gain expertise if already proficient)." },
       { name: "Powerful Build", text: "Your carrying capacity and the weight you can push, drag, or lift doubles (or triples if it would already double)." },
-      { name: "Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level." },
+      { name: "Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level.", hpBonusPerLevel: 1 },
     ],
   },
   {
@@ -2163,7 +2163,7 @@ export const SPECIES_CATALOG_HOMEBREW: SpeciesEntry[] = [
       { name: "Closed Mind", text: "You have advantage on Wisdom and Charisma saving throws against force powers." },
       { name: "Heat Resistance", text: "You have resistance to fire damage, but disadvantage on Constitution saving throws against extreme cold exhaustion.", grantsResistance: "Resistance to fire damage." },
       { name: "Hide", text: "While unarmored or wearing light armor, your AC is 12 + your Dexterity modifier.", naturalArmor: { base: 12 } },
-      { name: "Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level." },
+      { name: "Toughness", text: "Your hit point maximum increases by 1, and again every time you gain a level.", hpBonusPerLevel: 1 },
     ],
   },
   {
