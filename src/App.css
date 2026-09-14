@@ -1116,6 +1116,12 @@
   margin-bottom: 6px;
 }
 
+.rest-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .class-resource-controls {
   display: flex;
   align-items: center;

@@ -87,6 +87,7 @@ import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../f
 import type { ClassFeature, ClassSubChoiceDef, ClassSubChoicePickDetail, FeatEntry } from "../types";
 import { CLASS_ACCENTS } from "../data/classFeatureChoices";
 import {
+  applyRest,
   applySubChoicePicks,
   maneuverSwapDef,
   pendingSubChoice,
@@ -419,6 +420,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     setCharacter((prev) => updateClassResource(prev, key, current));
   }
 
+  function handleShortRest() {
+    setCharacter((prev) => applyRest(prev, "short"));
+  }
+
+  function handleLongRest() {
+    setCharacter((prev) => applyRest(prev, "long"));
+  }
+
   function handleAddFeat(name: string) {
     const match = FEATS_CATALOG.find((f) => f.name === name);
     if (!match) return;
@@ -725,6 +734,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             updateItem={updateItem}
             collapsedSections={collapsedSections}
             onToggleSection={toggleSection}
+            onShortRest={handleShortRest}
+            onLongRest={handleLongRest}
           />
         );
       case "skills":
@@ -849,6 +860,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         onArchetypeCommit={handleArchetypeCommit}
         onBackgroundCommit={handleBackgroundCommit}
         archetypeOptions={currentClassArchetypes.map((a) => a.name)}
+        collapsed={!!collapsedSections["identity"]}
+        onToggleSection={() => toggleSection("identity")}
       />
 
       <HealthBar character={character} update={update} />

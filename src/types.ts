@@ -464,6 +464,7 @@ export interface Character {
 
   // Combat
   maxHp: number;
+  classGrantedBaseHp: number | null; // last level-1 baseline (class hit die + Con modifier) auto-filled into maxHp — see recalcClassForLevel; maxHp is player-owned from level 2 on
   currentHp: number;
   tempHp: number;
   defense: number;
@@ -669,6 +670,7 @@ export function createBlankCharacter(): Character {
     skills: emptySkills(),
     savingThrows: emptySavingThrows(),
     maxHp: 10,
+    classGrantedBaseHp: null,
     currentHp: 10,
     tempHp: 0,
     defense: 10,

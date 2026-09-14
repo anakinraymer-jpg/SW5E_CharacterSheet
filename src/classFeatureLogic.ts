@@ -10,6 +10,7 @@ import type {
 } from "./types";
 import { isSkillName } from "./types";
 import {
+  CLASS_RESOURCES,
   CLASS_RESOURCES_BY_CLASS,
   CLASS_SUB_CHOICES_BY_CLASS,
   FIGHTING_STYLES,
@@ -159,6 +160,34 @@ export function activeHpBonusSources(character: Character): { label: string; amo
     if (feat?.hpBonusPerLevel) sources.push({ label: feat.name, amount: feat.hpBonusPerLevel * level });
   }
   return sources;
+}
+
+const CLASS_RESOURCES_BY_KEY = new Map(CLASS_RESOURCES.map((def) => [def.key, def]));
+
+// Resets every class resource pool matching the given rest type to its max, plus (on a long rest
+// only) full HP, cleared temp HP, cleared death saves, and full Force/Tech points. Feats and other
+// one-off "uses" aren't tracked as counters anywhere in this app, so there's nothing else to reset.
+export function applyRest(character: Character, kind: "short" | "long"): Character {
+  const refresh = kind === "long" ? "Long Rest" : "Short Rest";
+  const classResources = character.classResources.map((r) => {
+    const def = CLASS_RESOURCES_BY_KEY.get(r.key);
+    return def?.refresh === refresh ? { ...r, current: r.max } : r;
+  });
+
+  if (kind === "short") {
+    return { ...character, classResources };
+  }
+
+  const hpBonus = activeHpBonusSources(character).reduce((sum, s) => sum + s.amount, 0);
+  return {
+    ...character,
+    classResources,
+    currentHp: character.maxHp + hpBonus,
+    tempHp: 0,
+    deathSaves: { successes: 0, failures: 0 },
+    forcePoints: { ...character.forcePoints, current: character.forcePoints.max },
+    techPoints: { ...character.techPoints, current: character.techPoints.max },
+  };
 }
 
 export function activeSpeedBonus(character: Character): number {

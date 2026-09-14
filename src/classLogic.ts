@@ -367,6 +367,15 @@ export function recalcClassForLevel(character: Character, classEntry: ClassEntry
   const forceMod = abilityModifier(character.abilities[character.forceCastingAbility]);
   const techMod = abilityModifier(character.abilities.int);
 
+  // Level 1 HP is fixed by the rules: max hit die + Con modifier. Auto-fill it non-destructively —
+  // only while still at level 1 and only if the player hasn't typed their own value — since HP is
+  // otherwise fully player-tracked (rolled/averaged Hit Dice) from level 2 on.
+  const conMod = abilityModifier(character.abilities.con);
+  const level1BaseHp = classEntry.hitDie + conMod;
+  const maxHpUntouched = character.maxHp === 10 || character.maxHp === character.classGrantedBaseHp;
+  const maxHp = level === 1 && maxHpUntouched ? level1BaseHp : character.maxHp;
+  const classGrantedBaseHp = level === 1 ? level1BaseHp : character.classGrantedBaseHp;
+
   const savingThrows = { ...character.savingThrows };
   for (const key of character.classLevelSavingThrowsApplied) {
     // Don't strip a save that's independently granted by the class's fixed base saves —
@@ -385,6 +394,8 @@ export function recalcClassForLevel(character: Character, classEntry: ClassEntry
     savingThrows,
     classLevelSavingThrowsApplied: levelSavingThrows,
     hitDiceTotal: `${level}d${classEntry.hitDie}`,
+    maxHp,
+    classGrantedBaseHp,
     forcePoints:
       row?.forcePoints !== undefined
         ? { ...character.forcePoints, max: row.forcePoints + forceMod }

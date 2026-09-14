@@ -5,6 +5,7 @@ import { SPECIES_CATALOG_EC } from "../data/speciesEC";
 import { SPECIES_CATALOG_HOMEBREW } from "../data/speciesHomebrew";
 import { CLASSES_CATALOG } from "../data/classes";
 import { BACKGROUND_CATALOG } from "../data/backgrounds";
+import SectionHeader from "./SectionHeader";
 
 const SPECIES_CATALOG = [...SPECIES_CATALOG_PHB, ...SPECIES_CATALOG_EC, ...SPECIES_CATALOG_HOMEBREW];
 const SPECIES_NAMES = SPECIES_CATALOG.map((s) => s.name);
@@ -19,6 +20,8 @@ interface Props {
   onArchetypeCommit: (value: string) => void;
   onBackgroundCommit: (value: string) => void;
   archetypeOptions: string[];
+  collapsed: boolean;
+  onToggleSection: () => void;
 }
 
 function Datalist({ id, options }: { id: string; options: string[] }) {
@@ -39,9 +42,14 @@ export default function IdentitySection({
   onArchetypeCommit,
   onBackgroundCommit,
   archetypeOptions,
+  collapsed,
+  onToggleSection,
 }: Props) {
   return (
     <section className="sheet-section identity-section">
+      <SectionHeader title="Character" collapsed={collapsed} onToggle={onToggleSection} />
+      {!collapsed && (
+      <>
       <div className="field field-name">
         <label htmlFor="name">Character Name</label>
         <input
@@ -176,7 +184,8 @@ export default function IdentitySection({
           ))}
         </div>
       )}
-
+      </>
+      )}
     </section>
   );
 }
