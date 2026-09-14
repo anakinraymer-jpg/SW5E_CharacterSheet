@@ -9,7 +9,7 @@ import {
   SCOUT_RANGERS_QUARRY_DIE_BY_LEVEL,
 } from "../data/classFeatureChoices";
 import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
-import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, isMeleeWeapon, toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
+import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, isMeleeWeapon, toHitAbilityInfo, weaponAmmoType, weaponDamageDisplay } from "../weaponLogic";
 import { formatModifier, proficiencyBonus } from "../utils";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
@@ -63,6 +63,7 @@ interface Props {
   removeCombatFeature: (id: string) => void;
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
+  onAmmoNeeded: (ammoName: string) => void;
 }
 
 const REFRESH_OPTIONS: RefreshType[] = ["At Will", "Short Rest", "Long Rest"];
@@ -77,6 +78,7 @@ export default function WeaponsSection({
   addCombatFeature,
   updateCombatFeature,
   removeCombatFeature,
+  onAmmoNeeded,
   collapsedSections,
   onToggleSection,
 }: Props) {
@@ -145,13 +147,16 @@ export default function WeaponsSection({
                     const name = e.target.value;
                     const known = WEAPON_LOOKUP.get(name.toLowerCase());
                     if (known) {
+                      const ammoType = weaponAmmoType(known.property);
                       updateWeapon(w.id, {
                         name: known.name,
                         damage: known.damage,
                         weight: known.weight,
                         range: extractRange(known.property),
                         proficient: defaultProficient(character.classAppliedName, known),
+                        ...(ammoType ? { ammoType } : {}),
                       });
+                      if (ammoType) onAmmoNeeded(ammoType);
                     } else {
                       updateWeapon(w.id, { name });
                     }

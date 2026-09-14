@@ -83,6 +83,7 @@ import {
 } from "../layout";
 import { getStoredCollapsedSections, saveCollapsedSections } from "../collapsibleSections";
 import { FEATS_CATALOG } from "../data/feats";
+import { GEAR_CATALOG } from "../data/gear";
 import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
 import type { ClassFeature, ClassSubChoiceDef, ClassSubChoicePickDetail, FeatEntry } from "../types";
 import { CLASS_ACCENTS } from "../data/classFeatureChoices";
@@ -495,6 +496,33 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     setCharacter((prev) => ({ ...prev, equipment: [...prev.equipment, newItem] }));
   }
 
+  // Auto-stocks a starting unit of a weapon's ammo in Equipment when a catalog weapon needing it
+  // is added to Weapons & Ammunitions — incrementing quantity if that ammo is already listed.
+  function handleAmmoNeeded(ammoName: string) {
+    setCharacter((prev) => {
+      const existing = prev.equipment.find((i) => i.name.toLowerCase() === ammoName.toLowerCase());
+      if (existing) {
+        return {
+          ...prev,
+          equipment: prev.equipment.map((i) =>
+            i.id === existing.id ? { ...i, quantity: i.quantity + 1 } : i
+          ),
+        };
+      }
+      const gearEntry = GEAR_CATALOG.find((g) => g.name === ammoName);
+      const newItem: EquipmentItem = {
+        id: crypto.randomUUID(),
+        name: ammoName,
+        quantity: 1,
+        weight: gearEntry?.weight ?? 0,
+        notes: "",
+        location: "Backpack",
+        equipped: false,
+      };
+      return { ...prev, equipment: [...prev.equipment, newItem] };
+    });
+  }
+
   function updateItem(id: string, patch: Partial<EquipmentItem>) {
     setCharacter((prev) => ({
       ...prev,
@@ -763,6 +791,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             removeCombatFeature={removeCombatFeature}
             collapsedSections={collapsedSections}
             onToggleSection={toggleSection}
+            onAmmoNeeded={handleAmmoNeeded}
           />
         );
       case "powers":

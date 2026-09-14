@@ -9,6 +9,17 @@ import { abilityModifier, formatModifier } from "./utils";
 export const WEAPON_LOOKUP = new Map(WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), w]));
 const MONK_WEAPON_NAME_SET = new Set(MONK_WEAPON_NAMES.map((n) => n.toLowerCase()));
 
+// The only two ammo tokens the weapon catalog's property text actually encodes (e.g. "Power cell
+// (range 90/360)"); every other ammo-consuming weapon in the catalog leaves ammo unspecified.
+const KNOWN_AMMO_TOKENS = ["Power cell", "Slug cartridge"];
+
+// The GEAR_CATALOG ammunition name a weapon's property text implies, if any (e.g. a blaster
+// pistol's "Power cell (range 50/200)" implies "Power cell"). Used to auto-fill a weapon's Ammo
+// Type and to auto-stock a starting supply of that ammo in Equipment.
+export function weaponAmmoType(property: string): string | null {
+  return KNOWN_AMMO_TOKENS.find((token) => property.includes(token)) ?? null;
+}
+
 // Blasters use Dexterity; melee weapons use Strength unless Finesse allows the better of the two.
 // Monk unarmed strikes/monk weapons additionally gain Martial Arts' finesse while the Monk is
 // unarmored and shieldless, and Vow of Spirit replaces Str/Dex with Wis/Cha entirely (no armor
