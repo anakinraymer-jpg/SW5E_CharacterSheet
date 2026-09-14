@@ -58,6 +58,7 @@ import PowersSection from "./PowersSection";
 import EquipmentSection from "./EquipmentSection";
 import BackstorySection from "./BackstorySection";
 import TraitsFeaturesSection from "./TraitsFeaturesSection";
+import LegendSection from "./LegendSection";
 import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
 import BackgroundChoiceDialog from "./BackgroundChoiceDialog";
 import ClassChoiceDialog from "./ClassChoiceDialog";
@@ -860,6 +861,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             onToggleSection={toggleSection}
           />
         );
+      case "legend":
+        return <LegendSection collapsedSections={collapsedSections} onToggleSection={toggleSection} />;
     }
   }
 

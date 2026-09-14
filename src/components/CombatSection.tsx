@@ -5,8 +5,10 @@ import { abilityModifier, armorCatalogMatch, formatModifier, passivePerception, 
 import { activeHpBonusSources, activeTravelPaceMultiplier, extraAttackInfo } from "../classFeatureLogic";
 import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { hasFeat } from "../featLogic";
+import { ARMOR_PROPERTY_DEFINITIONS } from "../data/legend";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
+import PropertyTagList from "./PropertyTagList";
 
 interface Props {
   character: Character;
@@ -299,6 +301,9 @@ export default function CombatSection({
                   <span className="armor-equip-meta">
                     {catalog.type} · AC {catalog.ac}
                   </span>
+                  {catalog.property && (
+                    <PropertyTagList property={catalog.property} definitions={ARMOR_PROPERTY_DEFINITIONS} />
+                  )}
                 </span>
               </label>
             ))}

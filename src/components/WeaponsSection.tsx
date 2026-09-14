@@ -11,8 +11,10 @@ import {
 import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
 import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, isMeleeWeapon, toHitAbilityInfo, weaponAmmoType, weaponDamageDisplay } from "../weaponLogic";
 import { formatModifier, proficiencyBonus } from "../utils";
+import { WEAPON_PROPERTY_DEFINITIONS } from "../data/legend";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
+import PropertyTagList from "./PropertyTagList";
 
 const MONK_WEAPON_NAME_SET = new Set(MONK_WEAPON_NAMES.map((n) => n.toLowerCase()));
 
@@ -122,6 +124,7 @@ export default function WeaponsSection({
             <th>To Hit Bonus</th>
             <th>Damage/Type</th>
             <th>Range</th>
+            <th>Properties</th>
             <th>Weight</th>
             <th>Ammo Count</th>
             <th>Ammo Type</th>
@@ -136,6 +139,7 @@ export default function WeaponsSection({
               `${abilityLabel} modifier: ${formatModifier(abilityMod)}`,
               w.proficient ? `Proficiency Bonus: ${formatModifier(pb)}` : "Not proficient",
             ];
+            const catalogEntry = WEAPON_LOOKUP.get(w.name.trim().toLowerCase());
             return (
             <tr key={w.id}>
               <td>
@@ -255,6 +259,11 @@ export default function WeaponsSection({
                   value={w.range}
                   onChange={(e) => updateWeapon(w.id, { range: e.target.value })}
                 />
+              </td>
+              <td>
+                {catalogEntry && (
+                  <PropertyTagList property={catalogEntry.property} definitions={WEAPON_PROPERTY_DEFINITIONS} />
+                )}
               </td>
               <td>
                 <input

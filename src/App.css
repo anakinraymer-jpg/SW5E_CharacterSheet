@@ -1323,6 +1323,35 @@
   border-radius: 2px;
 }
 
+.legend-filter {
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 12px;
+}
+
+.property-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.property-tag {
+  display: inline-block;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 1px 6px;
+  font-size: 0.72rem;
+  color: var(--text-m);
+  cursor: default;
+}
+
+.property-tag:hover {
+  border-color: var(--accent);
+  color: var(--text-h);
+}
+
 /* Proficiency "light nodes" — small status-light badges for armor/weapon proficiencies */
 
 .prof-node-row {
