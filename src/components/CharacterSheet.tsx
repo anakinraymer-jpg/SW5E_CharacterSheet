@@ -57,6 +57,7 @@ import WeaponsSection from "./WeaponsSection";
 import PowersSection from "./PowersSection";
 import EquipmentSection from "./EquipmentSection";
 import BackstorySection from "./BackstorySection";
+import TraitsFeaturesSection from "./TraitsFeaturesSection";
 import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
 import BackgroundChoiceDialog from "./BackgroundChoiceDialog";
 import ClassChoiceDialog from "./ClassChoiceDialog";
@@ -847,6 +848,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           <BackstorySection
             character={character}
             update={update}
+            collapsedSections={collapsedSections}
+            onToggleSection={toggleSection}
+          />
+        );
+      case "traitsFeatures":
+        return (
+          <TraitsFeaturesSection
+            character={character}
             collapsedSections={collapsedSections}
             onToggleSection={toggleSection}
           />
