@@ -1323,6 +1323,146 @@
   border-radius: 2px;
 }
 
+/* Simple mode */
+
+.simple-card {
+  padding: 0;
+}
+
+.simple-card-hover {
+  display: block;
+}
+
+.simple-card-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.simple-card-button:hover .simple-card-title {
+  color: var(--accent);
+}
+
+.simple-card-title {
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-h);
+}
+
+.simple-card-headline {
+  font-size: 0.82rem;
+  color: var(--accent);
+}
+
+.simple-card-open {
+  margin-left: auto;
+  color: var(--text-m);
+}
+
+.simple-identity {
+  padding: 0;
+}
+
+.simple-identity-button {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  padding: 14px 18px;
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.simple-identity-name {
+  font-size: 1.3rem;
+  color: var(--text-h);
+}
+
+.simple-identity-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+}
+
+.simple-identity-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.simple-identity-label {
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-m);
+}
+
+.simple-identity-value {
+  font-size: 1rem;
+  color: var(--text-h);
+}
+
+.simple-weapons {
+  padding: 0;
+}
+
+.simple-weapons .section-hint {
+  padding: 0 18px 14px;
+  margin: 0;
+}
+
+.simple-weapon-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.simple-weapon-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.simple-weapon-name {
+  cursor: default;
+  border-bottom: 1px dotted var(--text-m);
+}
+
+.simple-weapon-ammo {
+  color: var(--text-m);
+  font-size: 0.82rem;
+}
+
+.modal-box.simple-modal {
+  max-width: 1100px;
+  height: 88vh;
+}
+
+.simple-modal .modal-body {
+  flex: 1;
+  min-height: 0;
+}
+
+/* The pop-up's own title already names the box, so hide the section's repeated collapse header. */
+.simple-modal .collapsible-header {
+  display: none;
+}
+
 .modal-box.picker-modal {
   max-width: 880px;
   height: 80vh;

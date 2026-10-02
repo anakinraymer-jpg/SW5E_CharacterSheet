@@ -8,10 +8,10 @@ import {
   techPowerDetails,
 } from "../pickerCatalogs";
 import PickerDialog from "./PickerDialog";
-import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
+import { formatModifier } from "../utils";
 import { ABILITY_LABEL } from "../speciesLogic";
-import { hasFeat } from "../featLogic";
-import { forceCastingAbilityKey, hasBenduAffinity } from "../classFeatureLogic";
+import { hasBenduAffinity } from "../classFeatureLogic";
+import { castingStats } from "../castingStats";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
 
@@ -56,17 +56,13 @@ export default function PowersSection({
   const [activeType, setActiveType] = useState<Power["type"]>("Force");
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const pb = proficiencyBonus(character.level);
-  const isCastingSpecialist = hasFeat(character, "Casting Specialist");
-  const specialistBonus = isCastingSpecialist ? 1 : 0;
+  const { pb, specialistBonus, forceAbility, forceMod, forceAttack, forceDC, techMod, techAttack, techDC } =
+    castingStats(character);
+  const isCastingSpecialist = specialistBonus > 0;
   const isBendu = hasBenduAffinity(character);
-  const forceAbility = forceCastingAbilityKey(character);
   const forceAbilityLabel = isBendu
     ? `${ABILITY_LABEL[forceAbility]} (Bendu — better of Wisdom/Charisma)`
     : `${ABILITY_LABEL[forceAbility]} (${forceAbility === "wis" ? "Light side" : "Dark side"})`;
-  const forceMod = abilityModifier(character.abilities[forceAbility]);
-  const forceAttack = pb + forceMod + specialistBonus;
-  const forceDC = 8 + pb + forceMod + specialistBonus;
   const forceAttackLines = [
     `Proficiency Bonus: ${formatModifier(pb)}`,
     `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`,
@@ -78,9 +74,6 @@ export default function PowersSection({
     `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`,
     ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
   ];
-  const techMod = abilityModifier(character.abilities.int);
-  const techAttack = pb + techMod + specialistBonus;
-  const techDC = 8 + pb + techMod + specialistBonus;
   const techAttackLines = [
     `Proficiency Bonus: ${formatModifier(pb)}`,
     `Intelligence modifier: ${formatModifier(techMod)}`,

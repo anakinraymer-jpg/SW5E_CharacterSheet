@@ -59,6 +59,22 @@ import EquipmentSection from "./EquipmentSection";
 import BackstorySection from "./BackstorySection";
 import TraitsFeaturesSection from "./TraitsFeaturesSection";
 import LegendSection from "./LegendSection";
+import { SimpleCard, SimpleModal } from "./SimpleCard";
+import { SimpleIdentity, SimpleWeapons } from "./SimpleViews";
+import { castingStats } from "../castingStats";
+import {
+  abilitiesSummary,
+  characterDataSummary,
+  combatSummary,
+  equipmentSummary,
+  featsSummary,
+  notesSummary,
+  powersSummary,
+  skillsSummary,
+  traitsSummary,
+} from "../simpleSummaries";
+
+type SimpleKey = SectionId | "identity" | "characterData" | "notes";
 import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
 import BackgroundChoiceDialog from "./BackgroundChoiceDialog";
 import ClassChoiceDialog from "./ClassChoiceDialog";
@@ -122,6 +138,28 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [pendingArchetypeFeature, setPendingArchetypeFeature] = useState<ClassFeature | null>(null);
   const [maneuverSwapOpen, setManeuverSwapOpen] = useState(false);
   const [editLayout, setEditLayout] = useState(false);
+  const [simpleMode, setSimpleMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem("sw5e-simple-mode") === "1";
+    } catch {
+      return false;
+    }
+  });
+  // Which Simple-mode card is currently popped open for editing.
+  const [openSimple, setOpenSimple] = useState<SimpleKey | null>(null);
+
+  function toggleSimpleMode() {
+    setSimpleMode((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem("sw5e-simple-mode", next ? "1" : "0");
+      } catch {
+        // storage unavailable: the toggle still works for this session
+      }
+      return next;
+    });
+    setOpenSimple(null);
+  }
   const [layout, setLayout] = useState<SheetLayout>(() => getStoredLayout());
   const [draggedId, setDraggedId] = useState<SectionId | null>(null);
   const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>(() =>
@@ -744,7 +782,13 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   // block entirely rather than showing an empty draggable box in edit mode.
   const hasClassFeaturesContent = Boolean(character.classTraitsText || character.archetypeTraitsText);
 
-  function renderSectionContent(id: SectionId) {
+  // `sectionCollapsed` lets Simple mode's pop-up show a section fully expanded; `opts` selects the
+  // reduced Class Features view or one half of the Backstory section.
+  function renderSectionContent(
+    id: SectionId,
+    sectionCollapsed: Record<string, boolean> = collapsedSections,
+    opts: { simple?: boolean; only?: "characterData" | "notes" } = {}
+  ) {
     switch (id) {
       case "defense":
         return <DefenseBox character={character} update={update} />;
@@ -759,7 +803,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           <AbilityScores
             character={character}
             updateAbility={updateAbility}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
           />
         );
@@ -769,7 +813,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             character={character}
             update={update}
             updateItem={updateItem}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
             onShortRest={handleShortRest}
             onLongRest={handleLongRest}
@@ -782,7 +826,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             toggleSkillProficiency={toggleSkillProficiency}
             toggleSkillExpertise={toggleSkillExpertise}
             toggleSavingThrow={toggleSavingThrow}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
           />
         );
@@ -798,7 +842,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             addCombatFeature={addCombatFeature}
             updateCombatFeature={updateCombatFeature}
             removeCombatFeature={removeCombatFeature}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
             onAmmoNeeded={handleAmmoNeeded}
           />
@@ -811,7 +855,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             addPower={addPower}
             updatePower={updatePower}
             removePower={removePower}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
           />
         );
@@ -822,8 +866,9 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             update={update}
             onUpdateResource={handleUpdateResource}
             onOpenManeuverSwap={() => setManeuverSwapOpen(true)}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
+            simple={opts.simple}
           />
         );
       case "feats":
@@ -832,7 +877,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             character={character}
             onAddFeat={handleAddFeat}
             onRemoveFeat={handleRemoveFeat}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
           />
         );
@@ -847,7 +892,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             addValuable={addValuable}
             updateValuable={updateValuable}
             removeValuable={removeValuable}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
           />
         );
@@ -856,22 +901,113 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           <BackstorySection
             character={character}
             update={update}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
+            only={opts.only}
           />
         );
       case "traitsFeatures":
         return (
           <TraitsFeaturesSection
             character={character}
-            collapsedSections={collapsedSections}
+            collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
           />
         );
       case "legend":
-        return <LegendSection collapsedSections={collapsedSections} onToggleSection={toggleSection} />;
+        return <LegendSection collapsedSections={sectionCollapsed} onToggleSection={toggleSection} />;
     }
   }
+
+  const identityProps = {
+    character,
+    update,
+    onSpeciesCommit: handleSpeciesCommit,
+    onClassCommit: handleClassCommit,
+    onArchetypeCommit: handleArchetypeCommit,
+    onBackgroundCommit: handleBackgroundCommit,
+    archetypeOptions: currentClassArchetypes.map((a) => a.name),
+  };
+
+  const SIMPLE_TITLES: Record<string, string> = {
+    identity: "Character",
+    abilities: "Ability Scores",
+    combat: "Combat",
+    skills: "Skills",
+    feats: "Feats",
+    powers: "Force & Tech Powers",
+    weapons: "Weapons & Ammunitions",
+    equipment: "Equipment",
+    characterData: "Character Data",
+    notes: "Features, Backstory & Notes",
+    traitsFeatures: "Traits & Features",
+    legend: "Legend",
+  };
+
+  // Content of the pop-up that opens when a Simple-mode card is clicked: the full section.
+  function renderSimpleModalContent(key: SimpleKey) {
+    if (key === "identity") {
+      return <IdentitySection {...identityProps} collapsed={false} onToggleSection={() => {}} />;
+    }
+    if (key === "characterData") return renderSectionContent("backstory", {}, { only: "characterData" });
+    if (key === "notes") return renderSectionContent("backstory", {}, { only: "notes" });
+    return renderSectionContent(key, {});
+  }
+
+  // Simple mode: the stat row is untouched; every other section shrinks to a title card that shows
+  // a summary on hover and opens the full section on click (Class Features and Weapons show a
+  // reduced view inline instead).
+  function renderSimpleSectionContent(id: SectionId) {
+    const open = (key: SimpleKey) => () => setOpenSimple(key);
+    switch (id) {
+      case "abilities":
+        return <SimpleCard title="Ability Scores" summary={abilitiesSummary(character)} onOpen={open("abilities")} />;
+      case "combat":
+        return <SimpleCard title="Combat" summary={combatSummary(character)} onOpen={open("combat")} />;
+      case "skills":
+        return <SimpleCard title="Skills" summary={skillsSummary(character)} onOpen={open("skills")} />;
+      case "feats":
+        return <SimpleCard title="Feats" summary={featsSummary(character)} onOpen={open("feats")} />;
+      case "powers": {
+        const s = castingStats(character);
+        return (
+          <SimpleCard
+            title="Force & Tech Powers"
+            summary={powersSummary(character)}
+            headline={`Force Save DC ${s.forceDC} · Tech Save DC ${s.techDC}`}
+            onOpen={open("powers")}
+          />
+        );
+      }
+      case "classFeatures":
+        return renderSectionContent(id, collapsedSections, { simple: true });
+      case "weapons":
+        return <SimpleWeapons character={character} onOpen={open("weapons")} />;
+      case "equipment":
+        return <SimpleCard title="Equipment" summary={equipmentSummary(character)} onOpen={open("equipment")} />;
+      case "backstory":
+        return (
+          <>
+            <SimpleCard title="Character Data" summary={characterDataSummary(character)} onOpen={open("characterData")} />
+            <SimpleCard title="Features, Backstory & Notes" summary={notesSummary(character)} onOpen={open("notes")} />
+          </>
+        );
+      case "traitsFeatures":
+        return <SimpleCard title="Traits & Features" summary={traitsSummary(character)} onOpen={open("traitsFeatures")} />;
+      case "legend":
+        return (
+          <SimpleCard
+            title="Legend"
+            summary={["Definitions for armor materials, armor and weapon properties, and ammunition."]}
+            onOpen={open("legend")}
+          />
+        );
+      default:
+        return renderSectionContent(id);
+    }
+  }
+
+  const renderForMode = simpleMode ? renderSimpleSectionContent : (id: SectionId) => renderSectionContent(id);
 
   return (
     <div
@@ -883,6 +1019,16 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           &larr; Back to Characters
         </button>
         <div className="sheet-toolbar-right">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={simpleMode}
+            className={`btn ${simpleMode ? "btn-primary" : "btn-secondary"}`}
+            onClick={toggleSimpleMode}
+            title="Simple mode shrinks most boxes to a title with a hover summary"
+          >
+            Simple: {simpleMode ? "On" : "Off"}
+          </button>
           {editLayout && (
             <button className="btn btn-secondary" onClick={handleResetLayout}>
               Reset Layout
@@ -900,17 +1046,15 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         </div>
       </div>
 
-      <IdentitySection
-        character={character}
-        update={update}
-        onSpeciesCommit={handleSpeciesCommit}
-        onClassCommit={handleClassCommit}
-        onArchetypeCommit={handleArchetypeCommit}
-        onBackgroundCommit={handleBackgroundCommit}
-        archetypeOptions={currentClassArchetypes.map((a) => a.name)}
-        collapsed={!!collapsedSections["identity"]}
-        onToggleSection={() => toggleSection("identity")}
-      />
+      {simpleMode ? (
+        <SimpleIdentity character={character} onOpen={() => setOpenSimple("identity")} />
+      ) : (
+        <IdentitySection
+          {...identityProps}
+          collapsed={!!collapsedSections["identity"]}
+          onToggleSection={() => toggleSection("identity")}
+        />
+      )}
 
       <HealthBar character={character} update={update} />
 
@@ -923,7 +1067,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             isDragging={draggedId === id}
             onHandlePointerDown={handleSectionHandlePointerDown}
           >
-            {renderSectionContent(id)}
+            {renderForMode(id)}
           </SectionBlock>
         ))}
       </div>
@@ -943,7 +1087,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
                 isDragging={draggedId === id}
                 onHandlePointerDown={handleSectionHandlePointerDown}
               >
-                {renderSectionContent(id)}
+                {renderForMode(id)}
               </SectionBlock>
             ))}
           </div>
@@ -961,10 +1105,16 @@ export default function CharacterSheet({ initial, onBack }: Props) {
               isDragging={draggedId === id}
               onHandlePointerDown={handleSectionHandlePointerDown}
             >
-              {renderSectionContent(id)}
+              {renderForMode(id)}
             </SectionBlock>
           ))}
       </div>
+
+      {simpleMode && openSimple && (
+        <SimpleModal title={SIMPLE_TITLES[openSimple] ?? "Edit"} onClose={() => setOpenSimple(null)}>
+          {renderSimpleModalContent(openSimple)}
+        </SimpleModal>
+      )}
 
       {pendingSpecies && (
         <SpeciesChoiceDialog

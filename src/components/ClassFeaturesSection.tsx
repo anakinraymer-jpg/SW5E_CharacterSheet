@@ -18,6 +18,8 @@ interface Props {
   onOpenManeuverSwap: () => void;
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
+  // Simple mode: only the resource counters (#/#) and the actual class/archetype features.
+  simple?: boolean;
 }
 
 const ABILITY_LABELS: Record<AbilityKey, string> = {
@@ -41,7 +43,7 @@ function parseFeatureLine(line: string): ParsedFeature | null {
   return { title: match[1].trim(), meta: match[2].trim(), body: match[3].trim() };
 }
 
-function FeatureChips({ text }: { text: string }) {
+function FeatureChips({ text, featuresOnly }: { text: string; featuresOnly?: boolean }) {
   const lines = text.split("\n\n").filter(Boolean);
   const notes: string[] = [];
   const features: ParsedFeature[] = [];
@@ -52,7 +54,7 @@ function FeatureChips({ text }: { text: string }) {
   }
   return (
     <>
-      {notes.map((n, i) => (
+      {!featuresOnly && notes.map((n, i) => (
         <p key={i} className="species-trait-line">
           {n}
         </p>
@@ -115,7 +117,9 @@ export default function ClassFeaturesSection({
   onOpenManeuverSwap,
   collapsedSections,
   onToggleSection,
+  simple = false,
 }: Props) {
+  const full = !simple;
   const collapsed = !!collapsedSections["classFeatures"];
   const resources = applicableClassResources(character);
   const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
@@ -165,10 +169,12 @@ export default function ClassFeaturesSection({
       />
       {!collapsed && (
       <>
-      <p className="section-hint">
-        Features unlocked by your class and archetype at your current level. Hover a title for
-        details. Level up to reveal more.
-      </p>
+      {full && (
+        <p className="section-hint">
+          Features unlocked by your class and archetype at your current level. Hover a title for
+          details. Level up to reveal more.
+        </p>
+      )}
 
       {resources.length > 0 && (
         <div className="class-resources-grid">
@@ -204,7 +210,7 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {character.classAppliedName === "Berserker" && (
+      {full && character.classAppliedName === "Berserker" && (
         <div className="species-traits-box">
           <div className="species-traits-header">Rage</div>
           <button
@@ -263,7 +269,7 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {hasManeuvers && (
+      {full && hasManeuvers && (
         <div className="species-traits-box">
           <div className="species-traits-header">Maneuver Save DC</div>
           <div className="combat-grid">
@@ -334,7 +340,7 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {(passiveBuffOptions.length > 0 ||
+      {full && (passiveBuffOptions.length > 0 ||
         hasVowOfDeflection ||
         hasReliableTalent ||
         hasSlipperyMind ||
@@ -448,7 +454,7 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {hasChosenSubChoices && (
+      {full && hasChosenSubChoices && (
         <div className="species-traits-box">
           <div className="species-traits-header">{character.classAppliedName} Choices</div>
           <div className="chip-row">
@@ -484,7 +490,7 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {classEntry && (
+      {full && classEntry && (
         <ProficiencyNodes
           label={character.classAppliedName}
           armor={classEntry.armorProficiencies}
@@ -492,7 +498,7 @@ export default function ClassFeaturesSection({
         />
       )}
 
-      {character.classEquipmentText.length > 0 && (
+      {full && character.classEquipmentText.length > 0 && (
         <div className="species-traits-box">
           <div className="species-traits-header">{character.classAppliedName} Starting Equipment</div>
           {character.classEquipmentText.map((line, i) => (
@@ -510,14 +516,14 @@ export default function ClassFeaturesSection({
       {character.classTraitsText && (
         <div className="species-traits-box">
           <div className="species-traits-header">{character.classAppliedName} Features</div>
-          <FeatureChips text={character.classTraitsText} />
+          <FeatureChips text={character.classTraitsText} featuresOnly={simple} />
         </div>
       )}
 
       {character.archetypeTraitsText && (
         <div className="species-traits-box">
           <div className="species-traits-header">{character.archetypeAppliedName} Features</div>
-          <FeatureChips text={character.archetypeTraitsText} />
+          <FeatureChips text={character.archetypeTraitsText} featuresOnly={simple} />
         </div>
       )}
       </>

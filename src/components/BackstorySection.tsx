@@ -11,6 +11,8 @@ interface Props {
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
+  // Render just one of the two boxes (Simple mode shows them as separate cards).
+  only?: "characterData" | "notes";
 }
 
 const PORTRAIT_MAX_SIDE = 480;
@@ -37,7 +39,7 @@ function downscaleImage(file: File): Promise<string> {
   });
 }
 
-export default function BackstorySection({ character, update, collapsedSections, onToggleSection }: Props) {
+export default function BackstorySection({ character, update, collapsedSections, onToggleSection, only }: Props) {
   const languages = grantedLanguages(character);
   const proficiencies = grantedProficiencies(character);
   const characterDataCollapsed = !!collapsedSections["characterData"];
@@ -45,6 +47,7 @@ export default function BackstorySection({ character, update, collapsedSections,
 
   return (
     <>
+      {(!only || only === "characterData") && (
       <section className="sheet-section backstory-section">
         <SectionHeader
           title="Character Data"
@@ -199,7 +202,9 @@ export default function BackstorySection({ character, update, collapsedSections,
         </>
         )}
       </section>
+      )}
 
+      {(!only || only === "notes") && (
       <section className="sheet-section notes-section">
         <SectionHeader
           title="Features, Backstory & Notes"
@@ -273,6 +278,7 @@ export default function BackstorySection({ character, update, collapsedSections,
         </>
         )}
       </section>
+      )}
     </>
   );
 }
