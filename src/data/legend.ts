@@ -91,7 +91,62 @@ export const ARMOR_PROPERTY_DEFINITIONS: LegendEntry[] = [
   { name: "Versatile", description: "A shield with this property can be used with one or two hands. While wielded in two hands, you gain an additional bonus to AC equal to the versatile number." },
 ];
 
+// Alternative armor materials (Wretched Hives, chapter 5). Armor and shields made from these gain
+// the listed properties, each with a drawback, and cost extra by armor type.
+export const ARMOR_MATERIAL_NOTE =
+  "Beyond the standard materials, scarce materials give armor a unique strength and a weakness, and raise its cost by armor type: light armor +1,000 cr, medium +2,000 cr, heavy +6,000 cr, light shield +250 cr, medium shield +750 cr, heavy shield +1,500 cr. Only physical shields can use these materials (barding too). Armor can combine materials, raising the cost for each; the number of materials can't exceed half the crafter's proficiency bonus, rounded up.";
+
 export const ARMOR_MATERIAL_DEFINITIONS: LegendEntry[] = [
+  { name: "Beskar", description: "Armor and shields made from beskar gain the regulated property, but also the strength 11 property. If the armor or shield would already have the strength property, instead increase the strength number by 2." },
+  { name: "Bone", description: "Bone armor and shields have the barbed (1d4) and spiked (1d4) properties, respectively, but suffer a -1 penalty to Armor Class." },
+  { name: "Crystadium", description: "Armor and shields made from crystadium have the absorptive 1 property, but also the rigid and imbalanced properties, respectively." },
+  { name: "Durafiber", description: "Durafiber armor and shields have their strength number reduced by one step (from 19 to 17, 17 to 15, 15 to 13, or 13 to 11). If the strength number is 11, this removes the strength property from it entirely. If the armor or shield lacks the strength property, it instead gains the lightweight property. Additionally, durafiber armor and shields suffer a -1 penalty to Armor Class." },
+  { name: "Duranium", description: "Armor and shields made from duranium gain the reactive 1 and responsive 1 properties, respectively, but also the cumbersome property." },
+  { name: "Durasteel", description: "Durasteel armor has the impermeable 2 and rigid properties. Durasteel shields have the interlocking and imbalanced properties." },
+  { name: "Duravlex", description: "Armor and shields made from duravlex have the silent and concealing properties, respectively, but suffer a -1 penalty to Armor Class." },
+  { name: "Fleximetal", description: "Fleximetal armor and shields gain the avoidant 1 property, but also the strength 11 property. If the armor or shield would already have the strength property, instead increase the strength number by 2." },
+  { name: "Laminanium", description: "Armor and shields made from laminanium gain the obscured and lambent properties, respectively, but also the cumbersome property." },
+  { name: "Neutronium", description: "Neutronium armor and shields gain the insulated 1 property, but also the strength 11 property. If the armor or shield would already have the strength property, instead increase the strength number by 2." },
+  { name: "Plastoid", description: "Armor made from plastoid has the reinforced and rigid properties. Shields made from plastoid have the anchor and imbalanced properties." },
+  { name: "Quadanium", description: "Quadanium armor and shields gain the charging 1 property, but also the cumbersome property." },
+];
+
+// Properties for focuses (Wretched Hives, chapter 5): see the focus items in Equipment, e.g.
+// "Repelling wristpad" (repelling, constitution 11).
+export const CASTING_PROPERTY_NOTE =
+  "Some focuses have special properties related to their use. Each property can be used to create a new unenhanced focus generator wristpad: each positive property should be offset by a level of Constitution, and each property adds 1,000 cr (scaling with the number of properties) on top of the item's base cost. Unenhanced focuses can't exceed 1 level in a single property.";
+
+export const CASTING_PROPERTY_DEFINITIONS: LegendEntry[] = [
+  { name: "Absorbing", description: "While using this item as your focus, when you take damage from any source, you can reduce that damage by an amount up to the absorptive number, provided you have a number of force or tech points equal to half the damage absorbed. When you do so, you lose half the damage taken in force or tech points." },
+  { name: "Accessing", description: "While using this item as your focus, you gain access to a number of new powers (chosen by the GM) of a combined total no greater than the access number. The powers count as known by you, and you can't unlearn the powers." },
+  { name: "Amplifying", description: "While using this item as your focus, your critical hit range with melee force or tech attacks increases by an amount equal to the amplifying number." },
+  { name: "Bolstering", description: "Prerequisite: Focus generator property. While using this item as your focus, your maximum force points increase by the bolstering number." },
+  { name: "Constitution", description: "While using an item with this property as your focus, you gain no benefit from any additional properties the item has unless your Constitution score meets or exceeds the constitution number." },
+  { name: "Dispelling", description: "While using this item as your focus, your level of proficiency in force- or tech-casting ability checks increases by a number of steps equal to the dispelling number (to trained, from trained to proficient, from proficient to expertise, from expertise to mastery, from mastery to high mastery, or from high mastery to grand mastery)." },
+  { name: "Elongating", description: "While using this item as your focus, when you cast a power that affects a cylinder, the height of the cylinder increases by an amount equal to the elongating number, and the radius of the cylinder increases by an amount equal to half the elongating number." },
+  { name: "Enlarging", description: "While using this item as your focus, when you cast a power that affects a cube, the length of each side of the cube increases by an amount equal to the enlarging number." },
+  { name: "Expanding", description: "While using this item as your focus, when you cast a power that affects a cone, the length of that cone increases by an amount equal to the expanding number." },
+  { name: "Extending", description: "While using this item as your focus, when you cast a power that affects a line, the length of the line increases by an amount equal to the extending number, and the width of the line increases by an amount equal to half the extending number." },
+  { name: "Fading", description: "While using this item as your focus, the critical fail range of force or tech powers that require a Strength or Constitution saving throw increases by an amount equal to the fading number." },
+  { name: "Focused", description: "While using this item as your focus, you can't have disadvantage on Constitution saving throws to maintain concentration." },
+  { name: "Increasing", description: "While using this item as your focus, when you cast a power that has a range of 5 feet or greater, the range of that power increases by an amount equal to the increasing number." },
+  { name: "Inflating", description: "While using this item as your focus, when you cast a power that affects a sphere, the radius of the sphere increases by an amount equal to the inflating number." },
+  { name: "Mitigating", description: "While using this item as your focus, using the Ready action to cast a force or tech power no longer requires concentration. You can only have one instance of this feature active at a time. Additionally, if the power would not be released, and the power was 1st level or higher, the cost of the power is reduced by a number of points equal to the mitigating number, to a minimum of 1." },
+  { name: "Ranging", description: "While using this item as your focus, your critical hit range with ranged force or tech attacks increases by an amount equal to the ranging number." },
+  { name: "Rending", description: "While using this item as your focus, the critical fail range of force or tech powers that require a Dexterity or Intelligence saving throw increases by an amount equal to the rending number." },
+  { name: "Repelling", description: "While using this item as your focus, your powers are no longer automatically dispelled or interrupted. Instead, the DC to interrupt or dispel your powers is equal to 10 + the power's level, or 8 + half your proficiency bonus + your casting modifier for that power, whichever is greater." },
+  { name: "Storing", description: "While using this item as your focus, you can store 1st-level or higher powers of a combined total no greater than the storing number within the focus for later use. You can cast a power into this item while touching it. The power has no effect other than to be stored in the item. If the item can't hold the power, the power is expended without effect. You can cast any power stored in it at its base level, causing the power to no longer be stored, freeing up the space." },
+  { name: "Surging", description: "Prerequisite: Wristpad property. While using this item as your focus, your maximum tech points increase by the surging number." },
+  { name: "Withering", description: "While using this item as your focus, the critical fail range of force or tech powers that require a Wisdom or Charisma saving throw increases by an amount equal to the withering number." },
+];
+
+// Focus items in the gear catalog that carry casting properties (from their sw5e descriptions).
+export const FOCUS_ITEM_CASTING_PROPERTIES: Record<string, string> = {
+  "repelling wristpad": "Repelling, Constitution 11",
+  "storing, withering focus generator": "Storing 1, Withering 1, Constitution 13",
+};
+
+export const ARMOR_TYPE_DEFINITIONS: LegendEntry[] = [
   { name: "Assault armor", description: "Assault armor improved on battle armor, with the benefit of micro-hydraulics that boost the efficacy of the operator. It offers better protection, but increased weight." },
   { name: "Battle armor", description: "Battle armor is an armor that reduced weight, but restricts movement. The armor is commonly used by mercenaries, bounty hunters, soldiers, and civilians that live in dangerous areas." },
   { name: "Combat suit", description: "Combat suits are seen all over the galaxy, and can be found for sale by almost any merchant who dealt in weapons and armor. Many such suits are used by military organizations, such as the Galactic Republic's military, as well as by mercenaries, criminals, bounty hunters and even some Jedi. The suit itself offers decent protection from most types of attacks while maintaining maximum flexibility and minimum weight. However this armor is only recommended for light skirmishes." },

@@ -6,8 +6,10 @@ import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
 import { ARMOR_CATALOG } from "../data/armor";
 import { EQUIPMENT_OPTIONS, equipmentCatalogWeight, equipmentDetails } from "../pickerCatalogs";
+import { CASTING_PROPERTY_DEFINITIONS, FOCUS_ITEM_CASTING_PROPERTIES } from "../data/legend";
 import HoverInfo from "./HoverInfo";
 import PickerDialog from "./PickerDialog";
+import PropertyTagList from "./PropertyTagList";
 import SectionHeader from "./SectionHeader";
 
 const ITEM_INFO_LINES = new Map<string, string[]>([
@@ -139,6 +141,12 @@ export default function EquipmentSection({
                   </HoverInfo>
                 ) : (
                   nameInput
+                )}
+                {FOCUS_ITEM_CASTING_PROPERTIES[item.name.trim().toLowerCase()] && (
+                  <PropertyTagList
+                    property={FOCUS_ITEM_CASTING_PROPERTIES[item.name.trim().toLowerCase()]}
+                    definitions={CASTING_PROPERTY_DEFINITIONS}
+                  />
                 )}
               </td>
               <td>

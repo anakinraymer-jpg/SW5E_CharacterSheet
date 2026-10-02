@@ -234,6 +234,7 @@ export const GEAR_CATALOG: GearCatalogEntry[] = [
   { name: "Quiver", category: "Weapon Or Armor Accessory", cost: 10, weight: 0 },
   { name: "Raava", category: "Alcoholic Beverage", cost: 95, weight: 0 },
   { name: "Repelling wristpad", category: "Data Recording And Storage", cost: 1600, weight: 2 },
+  { name: "Storing, withering focus generator", category: "Data Recording And Storage", cost: 3200, weight: 1 },
   { name: "Repulsor pack", category: "Weapon Or Armor Accessory", cost: 300, weight: 10 },
   { name: "Rocket, fragmentation", category: "Ammunition", cost: 350, weight: 2 },
   { name: "Rocket, incendiary", category: "Ammunition", cost: 535, weight: 2 },
