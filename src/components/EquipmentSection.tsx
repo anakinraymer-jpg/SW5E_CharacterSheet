@@ -1,17 +1,14 @@
+import { useState } from "react";
 import type { Character, EquipmentItem, ItemLocation, Valuable } from "../types";
 import { carryingCapacity, formatModifier } from "../utils";
 import { activeCarryingCapacityMultiplier } from "../classFeatureLogic";
 import { GEAR_CATALOG } from "../data/gear";
 import { WEAPON_CATALOG } from "../data/weapons";
 import { ARMOR_CATALOG } from "../data/armor";
+import { EQUIPMENT_OPTIONS, equipmentCatalogWeight, equipmentDetails } from "../pickerCatalogs";
 import HoverInfo from "./HoverInfo";
+import PickerDialog from "./PickerDialog";
 import SectionHeader from "./SectionHeader";
-
-const ITEM_LOOKUP = new Map<string, { name: string; weight: number }>([
-  ...GEAR_CATALOG.map((g) => [g.name.toLowerCase(), { name: g.name, weight: g.weight }] as const),
-  ...WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), { name: w.name, weight: w.weight }] as const),
-  ...ARMOR_CATALOG.map((a) => [a.name.toLowerCase(), { name: a.name, weight: a.weight }] as const),
-]);
 
 const ITEM_INFO_LINES = new Map<string, string[]>([
   ...GEAR_CATALOG.map(
@@ -40,7 +37,7 @@ const ITEM_INFO_LINES = new Map<string, string[]>([
 interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
-  addItem: () => void;
+  addItem: (patch?: Partial<EquipmentItem>) => void;
   updateItem: (id: string, patch: Partial<EquipmentItem>) => void;
   removeItem: (id: string) => void;
   addValuable: () => void;
@@ -65,6 +62,7 @@ export default function EquipmentSection({
   onToggleSection,
 }: Props) {
   const collapsed = !!collapsedSections["equipment"];
+  const [pickerOpen, setPickerOpen] = useState(false);
   const totalWeight = character.equipment.reduce(
     (sum, item) => sum + item.weight * item.quantity,
     0
@@ -110,18 +108,6 @@ export default function EquipmentSection({
         </HoverInfo>
       </div>
 
-      <datalist id="gear-catalog-list">
-        {GEAR_CATALOG.map((g) => (
-          <option key={g.name} value={g.name} />
-        ))}
-        {WEAPON_CATALOG.map((w) => (
-          <option key={w.name} value={w.name} />
-        ))}
-        {ARMOR_CATALOG.map((a) => (
-          <option key={a.name} value={a.name} />
-        ))}
-      </datalist>
-
       <div className="table-scroll">
       <table className="equipment-table">
         <thead>
@@ -140,17 +126,8 @@ export default function EquipmentSection({
             const nameInput = (
                 <input
                   type="text"
-                  list="gear-catalog-list"
                   value={item.name}
-                  onChange={(e) => {
-                    const name = e.target.value;
-                    const known = ITEM_LOOKUP.get(name.toLowerCase());
-                    if (known) {
-                      updateItem(item.id, { name: known.name, weight: known.weight });
-                    } else {
-                      updateItem(item.id, { name });
-                    }
-                  }}
+                  onChange={(e) => updateItem(item.id, { name: e.target.value })}
                 />
             );
             return (
@@ -235,9 +212,23 @@ export default function EquipmentSection({
       </table>
       </div>
 
-      <button className="btn btn-secondary" onClick={addItem}>
+      <button className="btn btn-secondary" onClick={() => setPickerOpen(true)}>
         + Add Item
       </button>
+      {pickerOpen && (
+        <PickerDialog
+          title="Add an item"
+          options={EQUIPMENT_OPTIONS}
+          getDetails={equipmentDetails}
+          allowCustom
+          onClose={() => setPickerOpen(false)}
+          onPick={(name) => {
+            setPickerOpen(false);
+            const known = equipmentCatalogWeight(name);
+            addItem(known ? { name: known.name, weight: known.weight } : { name });
+          }}
+        />
+      )}
 
       {activeCarryingCapacityMultiplier(character) > 1 && (
         <p className="section-hint" style={{ marginBottom: 4 }}>

@@ -1,5 +1,6 @@
+import { useState } from "react";
 import type { Character, CombatFeature, RefreshType, Weapon } from "../types";
-import { WEAPON_CATALOG, type WeaponCatalogEntry } from "../data/weapons";
+import type { WeaponCatalogEntry } from "../data/weapons";
 import { GEAR_CATALOG } from "../data/gear";
 import { CLASSES_CATALOG, MONK_WEAPON_NAMES } from "../data/classes";
 import {
@@ -12,8 +13,10 @@ import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
 import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, isMeleeWeapon, toHitAbilityInfo, weaponAmmoType, weaponDamageDisplay } from "../weaponLogic";
 import { formatModifier, proficiencyBonus } from "../utils";
 import { WEAPON_PROPERTY_DEFINITIONS } from "../data/legend";
+import { WEAPON_OPTIONS, weaponDetails } from "../pickerCatalogs";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
+import PickerDialog from "./PickerDialog";
 import PropertyTagList from "./PropertyTagList";
 
 const MONK_WEAPON_NAME_SET = new Set(MONK_WEAPON_NAMES.map((n) => n.toLowerCase()));
@@ -56,7 +59,7 @@ function defaultProficient(className: string, entry: WeaponCatalogEntry): boolea
 interface Props {
   character: Character;
   weapons: Weapon[];
-  addWeapon: () => void;
+  addWeapon: (patch?: Partial<Weapon>) => void;
   updateWeapon: (id: string, patch: Partial<Weapon>) => void;
   removeWeapon: (id: string) => void;
   combatFeatures: CombatFeature[];
@@ -85,6 +88,28 @@ export default function WeaponsSection({
   onToggleSection,
 }: Props) {
   const collapsed = !!collapsedSections["weapons"];
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  // Adds the picked catalog weapon with its stats filled in (and stocks its ammo); a custom name
+  // just adds a blank weapon with that name.
+  function handlePickWeapon(name: string) {
+    setPickerOpen(false);
+    const known = WEAPON_LOOKUP.get(name.toLowerCase());
+    if (!known) {
+      addWeapon({ name });
+      return;
+    }
+    const ammoType = weaponAmmoType(known.property);
+    addWeapon({
+      name: known.name,
+      damage: known.damage,
+      weight: known.weight,
+      range: extractRange(known.property),
+      proficient: defaultProficient(character.classAppliedName, known),
+      ...(ammoType ? { ammoType } : {}),
+    });
+    if (ammoType) onAmmoNeeded(ammoType);
+  }
   const pb = proficiencyBonus(character.level);
   const isRaging = character.classAppliedName === "Berserker" && character.isRaging;
   const rageDamageBonus = BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
@@ -104,16 +129,6 @@ export default function WeaponsSection({
       />
       {!collapsed && (
       <>
-      <datalist id="weapon-catalog-list">
-        {WEAPON_CATALOG.map((w) => (
-          <option key={w.name} value={w.name} />
-        ))}
-      </datalist>
-      <datalist id="ammo-type-list">
-        {AMMO_TYPES.map((a) => (
-          <option key={a} value={a} />
-        ))}
-      </datalist>
       <div className="table-scroll">
       <table className="weapons-table">
         <thead>
@@ -145,26 +160,8 @@ export default function WeaponsSection({
               <td>
                 <input
                   type="text"
-                  list="weapon-catalog-list"
                   value={w.name}
-                  onChange={(e) => {
-                    const name = e.target.value;
-                    const known = WEAPON_LOOKUP.get(name.toLowerCase());
-                    if (known) {
-                      const ammoType = weaponAmmoType(known.property);
-                      updateWeapon(w.id, {
-                        name: known.name,
-                        damage: known.damage,
-                        weight: known.weight,
-                        range: extractRange(known.property),
-                        proficient: defaultProficient(character.classAppliedName, known),
-                        ...(ammoType ? { ammoType } : {}),
-                      });
-                      if (ammoType) onAmmoNeeded(ammoType);
-                    } else {
-                      updateWeapon(w.id, { name });
-                    }
-                  }}
+                  onChange={(e) => updateWeapon(w.id, { name: e.target.value })}
                 />
               </td>
               <td>
@@ -286,13 +283,19 @@ export default function WeaponsSection({
                 />
               </td>
               <td>
-                <input
-                  type="text"
-                  list="ammo-type-list"
+                <select
                   className="ammo-type-input"
                   value={w.ammoType}
                   onChange={(e) => updateWeapon(w.id, { ammoType: e.target.value })}
-                />
+                >
+                  <option value="">—</option>
+                  {w.ammoType && !AMMO_TYPES.includes(w.ammoType) && <option value={w.ammoType}>{w.ammoType}</option>}
+                  {AMMO_TYPES.map((a) => (
+                    <option key={a} value={a}>
+                      {a}
+                    </option>
+                  ))}
+                </select>
               </td>
               <td>
                 <button
@@ -308,9 +311,19 @@ export default function WeaponsSection({
         </tbody>
       </table>
       </div>
-      <button className="btn btn-secondary" onClick={addWeapon}>
+      <button className="btn btn-secondary" onClick={() => setPickerOpen(true)}>
         + Add Weapon
       </button>
+      {pickerOpen && (
+        <PickerDialog
+          title="Add a weapon"
+          options={WEAPON_OPTIONS}
+          getDetails={weaponDetails}
+          allowCustom
+          onClose={() => setPickerOpen(false)}
+          onPick={handlePickWeapon}
+        />
+      )}
 
       <h3>Combat Features</h3>
       <p className="section-hint">Feats, abilities, and other features for quick reference in combat.</p>

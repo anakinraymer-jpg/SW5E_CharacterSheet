@@ -1,7 +1,10 @@
 import type { Character } from "../types";
 import { ALLEGIANCES } from "../data/sw5eData";
 import { grantedLanguages, grantedProficiencies } from "../grantsSummary";
+import PickerField from "./PickerField";
 import SectionHeader from "./SectionHeader";
+
+const ALLEGIANCE_OPTIONS = ALLEGIANCES.map((name) => ({ name }));
 
 interface Props {
   character: Character;
@@ -219,17 +222,14 @@ export default function BackstorySection({ character, update, collapsedSections,
         <div className="field-grid">
           <div className="field">
             <label htmlFor="allegiance">Allegiance</label>
-            <input
+            <PickerField
               id="allegiance"
-              list="allegiance-list"
+              title="Choose an allegiance"
               value={character.allegiance}
-              onChange={(e) => update("allegiance", e.target.value)}
+              options={ALLEGIANCE_OPTIONS}
+              allowCustom
+              onPick={(name) => update("allegiance", name)}
             />
-            <datalist id="allegiance-list">
-              {ALLEGIANCES.map((a) => (
-                <option key={a} value={a} />
-              ))}
-            </datalist>
           </div>
           <div className="field">
             <label htmlFor="homeworld">Homeworld</label>

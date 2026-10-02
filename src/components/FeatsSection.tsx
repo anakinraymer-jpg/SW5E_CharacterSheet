@@ -2,11 +2,12 @@ import { useState } from "react";
 import type { Character } from "../types";
 import { FEATS_CATALOG } from "../data/feats";
 import { buildFeatText } from "../featLogic";
+import { FEAT_OPTIONS, featDetails } from "../pickerCatalogs";
 import HoverInfo from "./HoverInfo";
+import PickerDialog from "./PickerDialog";
 import SectionHeader from "./SectionHeader";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
-const FEAT_NAMES = FEATS_CATALOG.map((f) => f.name);
 
 interface Props {
   character: Character;
@@ -24,14 +25,7 @@ export default function FeatsSection({
   onToggleSection,
 }: Props) {
   const collapsed = !!collapsedSections["feats"];
-  const [pendingName, setPendingName] = useState("");
-
-  function handleAdd() {
-    const match = FEATS_CATALOG.find((f) => f.name.toLowerCase() === pendingName.trim().toLowerCase());
-    if (!match) return;
-    onAddFeat(match.name);
-    setPendingName("");
-  }
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <section className="sheet-section feats-section">
@@ -43,26 +37,23 @@ export default function FeatsSection({
         skills) apply automatically; feats with choices will prompt you.
       </p>
 
-      <datalist id="feats-catalog-list">
-        {FEAT_NAMES.map((n) => (
-          <option key={n} value={n} />
-        ))}
-      </datalist>
       <div className="choice-selects">
-        <input
-          type="text"
-          list="feats-catalog-list"
-          placeholder="Feat name…"
-          value={pendingName}
-          onChange={(e) => setPendingName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleAdd();
-          }}
-        />
-        <button className="btn btn-secondary" onClick={handleAdd}>
+        <button className="btn btn-secondary" onClick={() => setPickerOpen(true)}>
           + Add Feat
         </button>
       </div>
+      {pickerOpen && (
+        <PickerDialog
+          title="Add a feat"
+          options={FEAT_OPTIONS}
+          getDetails={featDetails}
+          onClose={() => setPickerOpen(false)}
+          onPick={(name) => {
+            setPickerOpen(false);
+            onAddFeat(name);
+          }}
+        />
+      )}
 
       {character.feats.length === 0 && <p className="section-hint">No feats added yet.</p>}
 

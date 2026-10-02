@@ -198,25 +198,30 @@ export function effectiveMaxHp(character: Character): number {
   return Math.max(0, character.maxHp + bonus);
 }
 
-const CLASS_RESOURCES_BY_KEY =new Map(CLASS_RESOURCES.map((def) => [def.key, def]));
+const CLASS_RESOURCES_BY_KEY = new Map(CLASS_RESOURCES.map((def) => [def.key, def]));
 
-// Resets every class resource pool matching the given rest type to its max, plus (on a long rest
-// only) full HP, cleared temp HP, cleared death saves, and full Force/Tech points. Feats and other
-// one-off "uses" aren't tracked as counters anywhere in this app, so there's nothing else to reset.
+// A short rest refreshes everything marked "Short Rest" (class resource pools, and Combat Features'
+// Used boxes) and ends a Berserker's rage. A long rest includes all of that, plus everything marked
+// "Long Rest", full HP, cleared temp HP and death saves, and full Force/Tech points.
 export function applyRest(character: Character, kind: "short" | "long"): Character {
-  const refresh = kind === "long" ? "Long Rest" : "Short Rest";
+  const refreshes = kind === "long" ? ["Short Rest", "Long Rest"] : ["Short Rest"];
   const classResources = character.classResources.map((r) => {
     const def = CLASS_RESOURCES_BY_KEY.get(r.key);
-    return def?.refresh === refresh ? { ...r, current: r.max } : r;
+    return def && refreshes.includes(def.refresh) ? { ...r, current: r.max } : r;
   });
+  const combatFeatures = character.combatFeatures.map((f) =>
+    refreshes.includes(f.refresh) ? { ...f, used: false } : f
+  );
 
   if (kind === "short") {
-    return { ...character, classResources };
+    return { ...character, classResources, combatFeatures, isRaging: false };
   }
 
   return {
     ...character,
     classResources,
+    combatFeatures,
+    isRaging: false,
     currentHp: effectiveMaxHp(character),
     tempHp: 0,
     deathSaves: { successes: 0, failures: 0 },

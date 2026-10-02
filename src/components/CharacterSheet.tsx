@@ -459,7 +459,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     (a) => a.className === character.classAppliedName
   );
 
-  function addPower(type: Power["type"]) {
+  function addPower(type: Power["type"], patch: Partial<Power> = {}) {
     const newPower: Power = {
       id: crypto.randomUUID(),
       name: "",
@@ -471,6 +471,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       duration: "",
       description: "",
       prepared: false,
+      ...patch,
     };
     setCharacter((prev) => ({ ...prev, powers: [...prev.powers, newPower] }));
   }
@@ -489,7 +490,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     }));
   }
 
-  function addItem() {
+  function addItem(patch: Partial<EquipmentItem> = {}) {
     const newItem: EquipmentItem = {
       id: crypto.randomUUID(),
       name: "",
@@ -498,6 +499,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       notes: "",
       location: "Backpack",
       equipped: false,
+      ...patch,
     };
     setCharacter((prev) => ({ ...prev, equipment: [...prev.equipment, newItem] }));
   }
@@ -543,7 +545,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     }));
   }
 
-  function addWeapon() {
+  function addWeapon(patch: Partial<Weapon> = {}) {
     const newWeapon: Weapon = {
       id: crypto.randomUUID(),
       name: "",
@@ -554,6 +556,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       ammoCount: 0,
       ammoType: "",
       equipped: false,
+      ...patch,
     };
     setCharacter((prev) => ({ ...prev, weapons: [...prev.weapons, newWeapon] }));
   }

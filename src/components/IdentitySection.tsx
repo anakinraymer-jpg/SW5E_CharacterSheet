@@ -1,16 +1,19 @@
 import type { Character } from "../types";
 import { ARCHETYPES, ALIGNMENTS, SIZES } from "../data/sw5eData";
-import { SPECIES_CATALOG as SPECIES_CATALOG_PHB } from "../data/species";
-import { SPECIES_CATALOG_EC } from "../data/speciesEC";
-import { SPECIES_CATALOG_HOMEBREW } from "../data/speciesHomebrew";
-import { CLASSES_CATALOG } from "../data/classes";
-import { BACKGROUND_CATALOG } from "../data/backgrounds";
+import {
+  BACKGROUND_OPTIONS,
+  CLASS_OPTIONS,
+  SPECIES_OPTIONS,
+  archetypeDetails,
+  archetypeOptionsFor,
+  backgroundDetails,
+  classDetails,
+  speciesDetails,
+} from "../pickerCatalogs";
+import PickerField from "./PickerField";
 import SectionHeader from "./SectionHeader";
 
-const SPECIES_CATALOG = [...SPECIES_CATALOG_PHB, ...SPECIES_CATALOG_EC, ...SPECIES_CATALOG_HOMEBREW];
-const SPECIES_NAMES = SPECIES_CATALOG.map((s) => s.name);
-const CLASS_NAMES = CLASSES_CATALOG.map((c) => c.name);
-const BACKGROUND_NAMES = BACKGROUND_CATALOG.map((b) => b.name);
+const ALIGNMENT_OPTIONS = ALIGNMENTS.map((name) => ({ name }));
 
 interface Props {
   character: Character;
@@ -24,16 +27,6 @@ interface Props {
   onToggleSection: () => void;
 }
 
-function Datalist({ id, options }: { id: string; options: string[] }) {
-  return (
-    <datalist id={id}>
-      {options.map((o) => (
-        <option key={o} value={o} />
-      ))}
-    </datalist>
-  );
-}
-
 export default function IdentitySection({
   character,
   update,
@@ -45,6 +38,10 @@ export default function IdentitySection({
   collapsed,
   onToggleSection,
 }: Props) {
+  const archetypePickerOptions = archetypeOptionsFor(
+    character.classAppliedName,
+    archetypeOptions.length > 0 ? archetypeOptions : ARCHETYPES
+  );
   return (
     <section className="sheet-section identity-section">
       <SectionHeader title="Character" collapsed={collapsed} onToggle={onToggleSection} />
@@ -73,40 +70,49 @@ export default function IdentitySection({
 
         <div className="field">
           <label htmlFor="species">Species</label>
-          <input
+          <PickerField
             id="species"
-            list="species-list"
+            title="Choose a species"
             value={character.species}
-            onChange={(e) => update("species", e.target.value)}
-            onBlur={(e) => onSpeciesCommit(e.target.value)}
+            options={SPECIES_OPTIONS}
+            getDetails={speciesDetails}
+            allowCustom
+            onPick={(name) => {
+              update("species", name);
+              onSpeciesCommit(name);
+            }}
           />
-          <Datalist id="species-list" options={SPECIES_NAMES} />
         </div>
 
         <div className="field">
           <label htmlFor="class">Class</label>
-          <input
+          <PickerField
             id="class"
-            list="class-list"
+            title="Choose a class"
             value={character.characterClass}
-            onChange={(e) => update("characterClass", e.target.value)}
-            onBlur={(e) => onClassCommit(e.target.value)}
+            options={CLASS_OPTIONS}
+            getDetails={classDetails}
+            allowCustom
+            onPick={(name) => {
+              update("characterClass", name);
+              onClassCommit(name);
+            }}
           />
-          <Datalist id="class-list" options={CLASS_NAMES} />
         </div>
 
         <div className="field">
           <label htmlFor="archetype">Archetype</label>
-          <input
+          <PickerField
             id="archetype"
-            list="archetype-list"
+            title="Choose an archetype"
             value={character.archetype}
-            onChange={(e) => update("archetype", e.target.value)}
-            onBlur={(e) => onArchetypeCommit(e.target.value)}
-          />
-          <Datalist
-            id="archetype-list"
-            options={archetypeOptions.length > 0 ? archetypeOptions : ARCHETYPES}
+            options={archetypePickerOptions}
+            getDetails={archetypeDetails}
+            allowCustom
+            onPick={(name) => {
+              update("archetype", name);
+              onArchetypeCommit(name);
+            }}
           />
         </div>
 
@@ -146,25 +152,30 @@ export default function IdentitySection({
 
         <div className="field">
           <label htmlFor="background">Background</label>
-          <input
+          <PickerField
             id="background"
-            list="background-list"
+            title="Choose a background"
             value={character.background}
-            onChange={(e) => update("background", e.target.value)}
-            onBlur={(e) => onBackgroundCommit(e.target.value)}
+            options={BACKGROUND_OPTIONS}
+            getDetails={backgroundDetails}
+            allowCustom
+            onPick={(name) => {
+              update("background", name);
+              onBackgroundCommit(name);
+            }}
           />
-          <Datalist id="background-list" options={BACKGROUND_NAMES} />
         </div>
 
         <div className="field">
           <label htmlFor="alignment">Force Alignment</label>
-          <input
+          <PickerField
             id="alignment"
-            list="alignment-list"
+            title="Choose a Force alignment"
             value={character.alignment}
-            onChange={(e) => update("alignment", e.target.value)}
+            options={ALIGNMENT_OPTIONS}
+            allowCustom
+            onPick={(name) => update("alignment", name)}
           />
-          <Datalist id="alignment-list" options={ALIGNMENTS} />
         </div>
 
         <div className="field">

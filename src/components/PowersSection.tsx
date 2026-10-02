@@ -1,7 +1,13 @@
 import { useState } from "react";
 import type { Character, Power, PowerAlignment } from "../types";
-import { FORCE_POWERS, TECH_POWERS, type ForcePowerEntry, type TechPowerEntry } from "../data/powers";
-import PowerNameField, { type PowerPickerOption } from "./PowerNameField";
+import { FORCE_POWERS, TECH_POWERS } from "../data/powers";
+import {
+  FORCE_POWER_OPTIONS,
+  TECH_POWER_OPTIONS,
+  forcePowerDetails,
+  techPowerDetails,
+} from "../pickerCatalogs";
+import PickerDialog from "./PickerDialog";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import { ABILITY_LABEL } from "../speciesLogic";
 import { hasFeat } from "../featLogic";
@@ -19,35 +25,10 @@ function levelLabel(level: number): string {
   return `${level}${suffix} Level`;
 }
 
-function buildEntryTooltip(entry: ForcePowerEntry | TechPowerEntry): string[] {
-  return [
-    `Level: ${levelLabel(entry.level)}`,
-    "alignment" in entry ? `Alignment: ${entry.alignment}` : "",
-    entry.castingTime ? `Casting Time: ${entry.castingTime}` : "",
-    entry.range ? `Range: ${entry.range}` : "",
-    entry.duration ? `Duration: ${entry.duration}` : "",
-    `Concentration: ${entry.concentration ? "Yes" : "No"}`,
-    "prerequisite" in entry && entry.prerequisite !== "-" ? `Prerequisite: ${entry.prerequisite}` : "",
-    entry.description,
-  ].filter(Boolean);
-}
-
-const FORCE_OPTIONS: PowerPickerOption[] = FORCE_POWERS.map((p) => ({
-  name: p.name,
-  level: p.level,
-  tooltip: buildEntryTooltip(p),
-}));
-
-const TECH_OPTIONS: PowerPickerOption[] = TECH_POWERS.map((p) => ({
-  name: p.name,
-  level: p.level,
-  tooltip: buildEntryTooltip(p),
-}));
-
 interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
-  addPower: (type: Power["type"]) => void;
+  addPower: (type: Power["type"], patch?: Partial<Power>) => void;
   updatePower: (id: string, patch: Partial<Power>) => void;
   removePower: (id: string) => void;
   collapsedSections: Record<string, boolean>;
@@ -73,6 +54,7 @@ export default function PowersSection({
 }: Props) {
   const collapsed = !!collapsedSections["powers"];
   const [activeType, setActiveType] = useState<Power["type"]>("Force");
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const pb = proficiencyBonus(character.level);
   const isCastingSpecialist = hasFeat(character, "Casting Specialist");
@@ -120,11 +102,13 @@ export default function PowersSection({
     .sort((a, b) => a.level - b.level);
   let lastLevel: number | null = null;
 
-  function handleSelect(power: Power, name: string) {
-    if (power.type === "Force") {
+  // Adds the picked catalog power with its stats filled in; a custom name adds a blank power.
+  function handlePickPower(name: string) {
+    setPickerOpen(false);
+    if (activeType === "Force") {
       const knownPower = FORCE_POWER_LOOKUP.get(name.toLowerCase());
       if (knownPower) {
-        updatePower(power.id, {
+        addPower("Force", {
           name: knownPower.name,
           level: knownPower.level,
           alignment: knownPower.alignment,
@@ -137,7 +121,7 @@ export default function PowersSection({
     } else {
       const knownPower = TECH_POWER_LOOKUP.get(name.toLowerCase());
       if (knownPower) {
-        updatePower(power.id, {
+        addPower("Tech", {
           name: knownPower.name,
           level: knownPower.level,
           castingTime: knownPower.castingTime,
@@ -147,7 +131,7 @@ export default function PowersSection({
         return;
       }
     }
-    updatePower(power.id, { name });
+    addPower(activeType, { name });
   }
 
   return (
@@ -313,13 +297,12 @@ export default function PowersSection({
             <div key={power.id}>
               {showHeader && <h3 className="power-level-header">{levelLabel(power.level)}</h3>}
               <div className="power-row">
-                <PowerNameField
-                  value={power.name}
-                  options={power.type === "Force" ? FORCE_OPTIONS : TECH_OPTIONS}
-                  onSelect={(name) => handleSelect(power, name)}
-                  onTextChange={(name) => updatePower(power.id, { name })}
+                <input
+                  type="text"
                   placeholder="Power name"
                   className="power-name"
+                  value={power.name}
+                  onChange={(e) => updatePower(power.id, { name: e.target.value })}
                 />
                 {power.type === "Force" && power.name && (
                   <span className="power-alignment-suffix">({power.alignment})</span>
@@ -354,9 +337,19 @@ export default function PowersSection({
         })}
       </div>
 
-      <button className="btn btn-secondary" onClick={() => addPower(activeType)}>
+      <button className="btn btn-secondary" onClick={() => setPickerOpen(true)}>
         + Add {activeType} Power
       </button>
+      {pickerOpen && (
+        <PickerDialog
+          title={`Add a ${activeType.toLowerCase()} power`}
+          options={activeType === "Force" ? FORCE_POWER_OPTIONS : TECH_POWER_OPTIONS}
+          getDetails={activeType === "Force" ? forcePowerDetails : techPowerDetails}
+          allowCustom
+          onClose={() => setPickerOpen(false)}
+          onPick={handlePickPower}
+        />
+      )}
       </>
       )}
     </section>
