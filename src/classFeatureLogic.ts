@@ -19,6 +19,7 @@ import {
 } from "./data/classFeatureChoices";
 import { FEATS_CATALOG } from "./data/feats";
 import { abilityModifier, armorCatalogMatch } from "./utils";
+import { revokeSkill } from "./grantOwnership";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 
@@ -330,7 +331,7 @@ export function grantedLanguagesFromSubChoices(character: Character): string[] {
 function resyncSubChoiceGrantedSkills(character: Character): Character {
   const skills = { ...character.skills };
   for (const sk of character.classSubChoiceGrantedSkills) {
-    skills[sk] = { ...skills[sk], proficient: false };
+    revokeSkill(skills, sk, character, { except: "subChoice" });
   }
   const granted: SkillName[] = [];
   for (const detailsArr of Object.values(character.classSubChoiceDetails)) {

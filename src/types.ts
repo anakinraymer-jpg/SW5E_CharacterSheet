@@ -305,6 +305,7 @@ export interface CharacterFeat {
   skillProficiencyGranted?: SkillName;
   skillExpertiseGranted?: SkillName;
   savingThrowGranted?: AbilityKey;
+  choiceSkillsGranted?: SkillName[]; // skills this feat's choices newly made proficient (not ones already held)
   choiceSelections: string[][]; // per feat.choices index -> selected options
 }
 
@@ -397,6 +398,7 @@ export interface Character {
   backgroundGrantedEquipmentIds: string[]; // EquipmentItem ids created by applyBackground, so revert only removes background-granted items
   backgroundGrantedWeaponIds: string[]; // Weapon ids created by applyBackground, so revert only removes background-granted weapons
   backgroundCreditsApplied: number;
+  backgroundGrantedFeature: string; // exact feature text last auto-filled into backgroundFeature, cleared on revert if untouched
   level: number;
   alignment: string;
   allegiance: string;
@@ -421,7 +423,8 @@ export interface Character {
   speciesHpBonus: SpeciesHpBonus | null;
   speciesSpeeds: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" } | null;
   speciesGrantedSpecialMovement: string; // exact text last auto-filled into Combat's Special Movement field, mirrors speciesGrantedVision's non-destructive pattern
-  speciesGrantedResistances: string; // exact text last auto-filled into Combat's Advantages/Resistances/Immunities field, same pattern
+  speciesGrantedResistances: string; // exact text last auto-filled into Combat's Advantages/Resistances/Immunities field; removed by substring on revert since feats/the player share that field
+  speciesBaseline: { size: string; speed: number; prevSize: string; prevSpeed: number } | null; // what the species set vs what was there before, so revert can restore it
   speciesTraitsText: string;
   speciesCreditsApplied: number; // bonus credits from traits like Wealthy, so revert/relevel can cleanly adjust
 
@@ -464,6 +467,8 @@ export interface Character {
 
   // Combat
   maxHp: number;
+  maxHpByLevel: Record<number, number>; // Max HP the player had at each level visited, restored when the level changes back
+  maxHpTrackedLevel: number; // the level maxHp currently belongs to
   classGrantedBaseHp: number | null; // last level-1 baseline (class hit die + Con modifier) auto-filled into maxHp — see recalcClassForLevel; maxHp is player-owned from level 2 on
   currentHp: number;
   tempHp: number;
@@ -616,6 +621,7 @@ export function createBlankCharacter(): Character {
     backgroundGrantedEquipmentIds: [],
     backgroundGrantedWeaponIds: [],
     backgroundCreditsApplied: 0,
+    backgroundGrantedFeature: "",
     level: 1,
     alignment: "",
     allegiance: "",
@@ -639,6 +645,7 @@ export function createBlankCharacter(): Character {
     speciesSpeeds: null,
     speciesGrantedSpecialMovement: "",
     speciesGrantedResistances: "",
+    speciesBaseline: null,
     speciesTraitsText: "",
     speciesCreditsApplied: 0,
     classAppliedName: "",
@@ -671,6 +678,8 @@ export function createBlankCharacter(): Character {
     skills: emptySkills(),
     savingThrows: emptySavingThrows(),
     maxHp: 10,
+    maxHpByLevel: {},
+    maxHpTrackedLevel: 1,
     classGrantedBaseHp: null,
     currentHp: 10,
     tempHp: 0,

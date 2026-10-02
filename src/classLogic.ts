@@ -14,8 +14,9 @@ import type {
 import { emptyAbilities0, isSkillName } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
 import { resolveEquipmentParts } from "./equipmentLogic";
-import { forcePointsAbilityBonus, monkSubstituteAbility } from "./classFeatureLogic";
+import { effectiveMaxHp, forcePointsAbilityBonus, monkSubstituteAbility } from "./classFeatureLogic";
 import { abilityModifier } from "./utils";
+import { revokeSkill, saveGrantedByOther } from "./grantOwnership";
 
 export interface UnarmoredDefenseBonus {
   modifier: number; // the class's secondary ability modifier, added on top of 10 + Dex
@@ -251,18 +252,23 @@ export function applyArchetypeCapstoneChoice(character: Character, archetypeEntr
   return recalcArchetypeCapstone({ ...character, archetypeCapstoneChoice: picks }, archetypeEntry);
 }
 
-export function revertClass(character: Character): Character {
-  if (!character.classAppliedName) return character;
+export function revertClass(original: Character): Character {
+  if (!original.classAppliedName) return original;
+  // An archetype and the ability score improvements both belong to the class being removed.
+  const character = revertAsisAboveLevel(
+    { ...revertArchetype(original), archetype: original.archetypeAppliedName ? "" : original.archetype },
+    0
+  );
   const savingThrows = { ...character.savingThrows };
-  for (const key of character.classSavingThrowsApplied) {
-    savingThrows[key] = false;
-  }
-  for (const key of character.classLevelSavingThrowsApplied) {
-    savingThrows[key] = false;
+  for (const key of [...character.classSavingThrowsApplied, ...character.classLevelSavingThrowsApplied]) {
+    if (!saveGrantedByOther(character, key, { except: "class" })) savingThrows[key] = false;
   }
   const skills = { ...character.skills };
   for (const skillName of character.classGrantedSkills) {
-    skills[skillName] = { ...skills[skillName], proficient: false };
+    revokeSkill(skills, skillName, character, { except: "class" });
+  }
+  for (const skillName of character.classSubChoiceGrantedSkills) {
+    revokeSkill(skills, skillName, character, { except: "subChoice" });
   }
   const grantedEquipmentIds = new Set(character.classGrantedEquipmentIds);
   const grantedWeaponIds = new Set(character.classGrantedWeaponIds);
@@ -275,6 +281,20 @@ export function revertClass(character: Character): Character {
     credits: character.credits - character.classCreditsApplied,
     equipment: character.equipment.filter((item) => !grantedEquipmentIds.has(item.id)),
     weapons: character.weapons.filter((w) => !grantedWeaponIds.has(w.id)),
+    // Class-driven numbers go back to a blank character's; HP is only reset if still untouched.
+    maxHp: character.maxHp === character.classGrantedBaseHp ? 10 : character.maxHp,
+    maxHpByLevel: {},
+    maxHpTrackedLevel: 1,
+    classGrantedBaseHp: null,
+    forcePoints: { current: 0, max: 0 },
+    techPoints: { current: 0, max: 0 },
+    hitDiceTotal: "1d8",
+    hitDiceRemaining: "1d8",
+    classSubChoicePicks: {},
+    classSubChoiceDetails: {},
+    classSubChoiceGrantedSkills: [],
+    classResources: [],
+    isRaging: false,
     classAppliedName: "",
     classSavingThrowsApplied: [],
     classLevelSavingThrowsApplied: [],
@@ -342,9 +362,13 @@ export function applyClass(
     hitDiceTotal: `${level}d${classEntry.hitDie}`,
     hitDiceRemaining: `${level}d${classEntry.hitDie}`,
     forcePoints:
-      row?.forcePoints !== undefined ? { ...base.forcePoints, max: row.forcePoints + forceMod } : base.forcePoints,
+      row?.forcePoints !== undefined
+        ? { current: row.forcePoints + forceMod, max: row.forcePoints + forceMod }
+        : base.forcePoints,
     techPoints:
-      row?.techPoints !== undefined ? { ...base.techPoints, max: row.techPoints + techMod } : base.techPoints,
+      row?.techPoints !== undefined
+        ? { current: row.techPoints + techMod, max: row.techPoints + techMod }
+        : base.techPoints,
     classAppliedName: classEntry.name,
     classSavingThrowsApplied: [...classEntry.savingThrows],
     classLevelSavingThrowsApplied: levelSavingThrows,
@@ -372,9 +396,32 @@ export function recalcClassForLevel(character: Character, classEntry: ClassEntry
   // at level 1 and only if the player hasn't typed their own value — since HP is otherwise fully
   // player-tracked (rolled/averaged Hit Dice) from level 2 on.
   const level1BaseHp = classEntry.hitDie;
-  const maxHpUntouched = character.maxHp === 10 || character.maxHp === character.classGrantedBaseHp;
-  const maxHp = level === 1 && maxHpUntouched ? level1BaseHp : character.maxHp;
+
+  // Remember the Max HP the player had at each level they've visited, so lowering the level puts
+  // back the HP they had there (and raising it again restores what they entered before).
+  const maxHpByLevel = { ...character.maxHpByLevel };
+  const trackedLevel = character.maxHpTrackedLevel || 1;
+  let currentMaxHp = character.maxHp;
+  if (level !== trackedLevel) {
+    maxHpByLevel[trackedLevel] = character.maxHp;
+    if (maxHpByLevel[level] !== undefined) currentMaxHp = maxHpByLevel[level];
+  }
+  const maxHpUntouched = currentMaxHp === 10 || currentMaxHp === character.classGrantedBaseHp;
+  const maxHp = level === 1 && maxHpUntouched ? level1BaseHp : currentMaxHp;
   const classGrantedBaseHp = level === 1 ? level1BaseHp : character.classGrantedBaseHp;
+
+  // Hit dice: one die is gained/lost per level, and Force/Tech points keep the same offset from
+  // their new maximum, so leveling down never leaves more remaining than the new total allows.
+  const prevTotal = parseHitDice(character.hitDiceTotal);
+  const prevRemaining = parseHitDice(character.hitDiceRemaining);
+  const hitDiceRemaining =
+    prevTotal && prevRemaining && prevRemaining.sides === classEntry.hitDie
+      ? `${Math.max(0, Math.min(level, prevRemaining.count + (level - prevTotal.count)))}d${classEntry.hitDie}`
+      : character.hitDiceRemaining;
+  const adjustPoints = (pts: { current: number; max: number }, newMax: number) => ({
+    max: newMax,
+    current: Math.max(0, Math.min(newMax, pts.current + (newMax - pts.max))),
+  });
 
   const savingThrows = { ...character.savingThrows };
   for (const key of character.classLevelSavingThrowsApplied) {
@@ -394,19 +441,28 @@ export function recalcClassForLevel(character: Character, classEntry: ClassEntry
     savingThrows,
     classLevelSavingThrowsApplied: levelSavingThrows,
     hitDiceTotal: `${level}d${classEntry.hitDie}`,
+    hitDiceRemaining,
     maxHp,
+    maxHpByLevel,
+    maxHpTrackedLevel: level,
     classGrantedBaseHp,
     forcePoints:
       row?.forcePoints !== undefined
-        ? { ...character.forcePoints, max: row.forcePoints + forceMod }
+        ? adjustPoints(character.forcePoints, row.forcePoints + forceMod)
         : character.forcePoints,
     techPoints:
       row?.techPoints !== undefined
-        ? { ...character.techPoints, max: row.techPoints + techMod }
+        ? adjustPoints(character.techPoints, row.techPoints + techMod)
         : character.techPoints,
   };
+  next.currentHp = Math.min(next.currentHp, effectiveMaxHp(next));
   next.classTraitsText = buildClassTraitsText(classEntry, next);
   return recalcClassCapstone(next, classEntry);
+}
+
+function parseHitDice(text: string): { count: number; sides: number } | null {
+  const m = text.trim().match(/^(\d+)d(\d+)$/i);
+  return m ? { count: Number(m[1]), sides: Number(m[2]) } : null;
 }
 
 function buildClassTraitsText(classEntry: ClassEntry, character: Character): string {
@@ -438,7 +494,7 @@ export function revertArchetype(character: Character): Character {
   if (!character.archetypeAppliedName) return character;
   const skills = { ...character.skills };
   for (const sk of character.archetypeFeatureGrantedSkills) {
-    skills[sk] = { ...skills[sk], proficient: false };
+    revokeSkill(skills, sk, character, { except: "archetype" });
   }
   const abilities = applyAbilityBonusDiff(character.abilities, character.archetypeCapstoneBonus, emptyAbilities0());
   return {
@@ -455,8 +511,13 @@ export function revertArchetype(character: Character): Character {
 }
 
 export function applyArchetype(character: Character, archetypeEntry: ArchetypeEntry): Character {
+  // Switching archetypes undoes the old one's skills, capstone bonus and feature choices first.
+  const cleared =
+    character.archetypeAppliedName && character.archetypeAppliedName !== archetypeEntry.name
+      ? revertArchetype(character)
+      : character;
   const base: Character = {
-    ...character,
+    ...cleared,
     archetype: archetypeEntry.name,
     archetypeAppliedName: archetypeEntry.name,
   };
@@ -547,7 +608,7 @@ export function applyArchetypeFeatureChoice(
 function resyncArchetypeFeatureGrantedSkills(character: Character, archetypeEntry: ArchetypeEntry): Character {
   const skills = { ...character.skills };
   for (const sk of character.archetypeFeatureGrantedSkills) {
-    skills[sk] = { ...skills[sk], proficient: false };
+    revokeSkill(skills, sk, character, { except: "archetype" });
   }
   const level = Math.max(1, Math.min(20, character.level || 1));
   const granted: SkillName[] = [];

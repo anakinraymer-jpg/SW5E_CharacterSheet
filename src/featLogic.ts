@@ -2,6 +2,7 @@ import type { AbilityKey, Character, CharacterFeat, FeatEntry, SkillName } from 
 import { isSkillName } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
 import { FEATS_CATALOG } from "./data/feats";
+import { appendFragment, removeFragment, revokeSkill, saveGrantedByOther } from "./grantOwnership";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 
@@ -53,19 +54,25 @@ export function addFeat(character: Character, feat: FeatEntry, selections: FeatS
   const savingThrows = { ...character.savingThrows };
   let savingThrowGranted: AbilityKey | undefined;
   if (feat.grantsSavingThrowForAbilityChoice && abilityChosen.length) {
-    savingThrows[abilityChosen[0]] = true;
-    savingThrowGranted = abilityChosen[0];
+    if (!savingThrows[abilityChosen[0]]) {
+      savingThrows[abilityChosen[0]] = true;
+      savingThrowGranted = abilityChosen[0];
+    }
   } else if (feat.grantsSavingThrow && !savingThrows[feat.grantsSavingThrow]) {
     savingThrows[feat.grantsSavingThrow] = true;
     savingThrowGranted = feat.grantsSavingThrow;
   }
 
+  // Only skills the feat newly made proficient are remembered, so removing it can't strip a skill
+  // the character already had from elsewhere.
+  const choiceSkillsGranted: SkillName[] = [];
   feat.choices?.forEach((choiceDef, i) => {
     if (choiceDef.kind !== "skill" && choiceDef.kind !== "skillOrTool") return;
     const chosen = (selections.choiceSelections[i] ?? []).filter(Boolean);
     chosen.forEach((val) => {
-      if (!isSkillName(val)) return;
+      if (!isSkillName(val) || skills[val].proficient) return;
       skills[val] = { ...skills[val], proficient: true };
+      choiceSkillsGranted.push(val);
     });
   });
 
@@ -76,15 +83,13 @@ export function addFeat(character: Character, feat: FeatEntry, selections: FeatS
     skillProficiencyGranted,
     skillExpertiseGranted,
     savingThrowGranted,
+    choiceSkillsGranted,
     choiceSelections: selections.choiceSelections.map((arr) => arr.filter(Boolean)),
   };
 
   // Non-destructively append this feat's advantage/resistance blurb to the Combat tab's
   // Advantages/Resistances/Immunities field, unless it's already present (e.g. re-adding after undo).
-  let resistances = character.resistances;
-  if (feat.grantsResistance && !resistances.includes(feat.grantsResistance)) {
-    resistances = resistances.trim() ? `${resistances.trim()} ${feat.grantsResistance}` : feat.grantsResistance;
-  }
+  const resistances = appendFragment(character.resistances, feat.grantsResistance ?? "");
 
   return {
     ...character,
@@ -109,36 +114,36 @@ export function removeFeat(character: Character, featId: string): Character {
     abilities[a] -= 1;
   });
 
+  const ex = { ignoreFeatId: cf.id };
   const skills = { ...character.skills };
   if (cf.skillProficiencyGranted) {
-    skills[cf.skillProficiencyGranted] = { ...skills[cf.skillProficiencyGranted], proficient: false };
+    revokeSkill(skills, cf.skillProficiencyGranted, character, ex);
   }
   if (cf.skillExpertiseGranted) {
     skills[cf.skillExpertiseGranted] = { ...skills[cf.skillExpertiseGranted], expertise: false };
   }
-  feat?.choices?.forEach((choiceDef, i) => {
-    if (choiceDef.kind !== "skill" && choiceDef.kind !== "skillOrTool") return;
-    const chosen = cf.choiceSelections[i] ?? [];
-    chosen.forEach((val) => {
-      if (!isSkillName(val)) return;
-      skills[val] = { ...skills[val], proficient: false };
-    });
-  });
+  // Feats added before choice skills were tracked fall back to every skill their choices named.
+  const choiceSkills: string[] =
+    cf.choiceSkillsGranted ??
+    (feat?.choices ?? []).flatMap((choiceDef, i) =>
+      choiceDef.kind === "skill" || choiceDef.kind === "skillOrTool" ? (cf.choiceSelections[i] ?? []) : []
+    );
+  for (const val of choiceSkills) {
+    if (isSkillName(val)) revokeSkill(skills, val, character, ex);
+  }
 
   const savingThrows = { ...character.savingThrows };
-  if (cf.savingThrowGranted) {
+  if (cf.savingThrowGranted && !saveGrantedByOther(character, cf.savingThrowGranted, ex)) {
     savingThrows[cf.savingThrowGranted] = false;
   }
 
-  // Remove this feat's auto-filled resistance blurb, leaving any other text (species-granted or
-  // player-typed) untouched — only an exact substring match is removed.
-  let resistances = character.resistances;
-  if (feat?.grantsResistance) {
-    resistances = resistances
-      .replace(feat.grantsResistance, "")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
+  // Remove this feat's auto-filled resistance blurb (unless another copy of the same feat still
+  // needs it), leaving any other text — species-granted or player-typed — untouched.
+  const blurbStillNeeded = character.feats.some((f) => f.id !== cf.id && f.name === cf.name);
+  const resistances =
+    feat?.grantsResistance && !blurbStillNeeded
+      ? removeFragment(character.resistances, feat.grantsResistance)
+      : character.resistances;
 
   return {
     ...character,

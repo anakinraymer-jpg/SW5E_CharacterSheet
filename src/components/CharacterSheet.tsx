@@ -970,7 +970,10 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         <SpeciesChoiceDialog
           species={pendingSpecies}
           skills={character.skills}
-          onCancel={() => setPendingSpecies(null)}
+          onCancel={() => {
+            setPendingSpecies(null);
+            update("species", character.speciesAppliedName);
+          }}
           onConfirm={handleSpeciesConfirm}
         />
       )}
@@ -979,7 +982,10 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         <BackgroundChoiceDialog
           background={pendingBackground}
           skills={character.skills}
-          onCancel={() => setPendingBackground(null)}
+          onCancel={() => {
+            setPendingBackground(null);
+            update("background", character.backgroundAppliedName);
+          }}
           onConfirm={handleBackgroundConfirm}
         />
       )}
@@ -988,7 +994,10 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         <ClassChoiceDialog
           classEntry={pendingClass}
           skills={character.skills}
-          onCancel={() => setPendingClass(null)}
+          onCancel={() => {
+            setPendingClass(null);
+            update("characterClass", character.classAppliedName);
+          }}
           onConfirm={handleClassConfirm}
         />
       )}

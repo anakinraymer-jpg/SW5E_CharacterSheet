@@ -1,5 +1,6 @@
 import type { BackgroundEntry, BackgroundSelections, Character, SkillName } from "./types";
 import { resolveEquipmentParts } from "./equipmentLogic";
+import { revokeSkill } from "./grantOwnership";
 
 export function backgroundNeedsChoices(bg: BackgroundEntry): boolean {
   return bg.skillChoice.count > 0 || bg.languages.choiceCount > 0 || bg.toolChoices.length > 0;
@@ -9,13 +10,16 @@ export function revertBackground(character: Character): Character {
   if (!character.backgroundAppliedName) return character;
   const skills = { ...character.skills };
   for (const skillName of character.backgroundGrantedSkills) {
-    skills[skillName] = { ...skills[skillName], proficient: false };
+    revokeSkill(skills, skillName, character, { except: "background" });
   }
   const grantedEquipmentIds = new Set(character.backgroundGrantedEquipmentIds);
   const grantedWeaponIds = new Set(character.backgroundGrantedWeaponIds);
   return {
     ...character,
     skills,
+    backgroundFeature:
+      character.backgroundFeature === character.backgroundGrantedFeature ? "" : character.backgroundFeature,
+    backgroundGrantedFeature: "",
     credits: character.credits - character.backgroundCreditsApplied,
     equipment: character.equipment.filter((item) => !grantedEquipmentIds.has(item.id)),
     weapons: character.weapons.filter((w) => !grantedWeaponIds.has(w.id)),
@@ -67,6 +71,7 @@ export function applyBackground(
     backgroundGrantedWeaponIds: grantedItems.weapons.map((w) => w.id),
     backgroundCreditsApplied: bg.startingCredits,
     backgroundFeature: `${bg.featureName}. ${bg.featureText}`,
+    backgroundGrantedFeature: `${bg.featureName}. ${bg.featureText}`,
     equipment: [...base.equipment, ...grantedItems.equipment],
     weapons: [...base.weapons, ...grantedItems.weapons],
   };

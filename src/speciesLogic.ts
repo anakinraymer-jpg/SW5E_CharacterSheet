@@ -10,6 +10,7 @@ import type {
 } from "./types";
 import { emptyAbilities0 } from "./types";
 import { proficiencyBonus } from "./utils";
+import { appendFragment, removeFragment, revokeSkill } from "./grantOwnership";
 
 export const ABILITY_LABEL: Record<AbilityKey, string> = {
   str: "Strength",
@@ -68,15 +69,19 @@ export function revertSpecies(character: Character): Character {
   });
   const skills = { ...character.skills };
   for (const skillName of character.speciesGrantedSkills) {
-    skills[skillName] = { ...skills[skillName], proficient: false };
+    revokeSkill(skills, skillName, character, { except: "species" });
   }
   // Only clear Vision/Special Movement if they still hold exactly what was auto-filled — leaves a
   // player's own edit alone.
   const vision = character.vision === character.speciesGrantedVision ? "" : character.vision;
   const specialMovement =
     character.specialMovement === character.speciesGrantedSpecialMovement ? "" : character.specialMovement;
-  const resistances =
-    character.resistances === character.speciesGrantedResistances ? "" : character.resistances;
+  // Resistances may now also hold feat blurbs and the player's notes, so strip just our text.
+  const resistances = removeFragment(character.resistances, character.speciesGrantedResistances);
+  // Size and speed go back to what they were before this species set them (if still untouched).
+  const baseline = character.speciesBaseline;
+  const size = baseline && character.size === baseline.size ? baseline.prevSize : character.size;
+  const speedBase = baseline && character.speedBase === baseline.speed ? baseline.prevSpeed : character.speedBase;
   return {
     ...character,
     abilities,
@@ -84,6 +89,9 @@ export function revertSpecies(character: Character): Character {
     vision,
     specialMovement,
     resistances,
+    size,
+    speedBase,
+    speciesBaseline: null,
     credits: character.credits - character.speciesCreditsApplied,
     speciesAppliedName: "",
     speciesAbilityBonus: emptyAbilities0(),
@@ -189,10 +197,7 @@ export function applySpecies(
     .map((t) => t.grantsResistance!)
     .join(" ");
   // Same non-destructive auto-fill pattern as Vision.
-  const resistances =
-    grantedResistances && (!base.resistances || base.resistances === base.speciesGrantedResistances)
-      ? grantedResistances
-      : base.resistances;
+  const resistances = appendFragment(base.resistances, grantedResistances);
 
   const naturalArmorTrait = species.traits.find((t) => t.naturalArmor);
   const naturalArmor: SpeciesNaturalArmor | null = naturalArmorTrait?.naturalArmor
@@ -233,6 +238,7 @@ export function applySpecies(
     species: species.name,
     size: species.size,
     speedBase: species.speed,
+    speciesBaseline: { size: species.size, speed: species.speed, prevSize: base.size, prevSpeed: base.speedBase },
     abilities,
     skills,
     vision,
