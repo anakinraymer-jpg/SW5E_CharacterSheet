@@ -1,4 +1,5 @@
 import type { Character } from "../types";
+import { effectiveMaxHp } from "../classFeatureLogic";
 
 interface Props {
   character: Character;
@@ -6,7 +7,7 @@ interface Props {
 }
 
 export default function HealthBar({ character, update }: Props) {
-  const max = Math.max(0, character.maxHp);
+  const max = effectiveMaxHp(character);
   const pct = max > 0 ? Math.max(0, Math.min(100, (character.currentHp / max) * 100)) : 0;
   const state = pct <= 25 ? "health-critical" : pct <= 50 ? "health-wounded" : "health-healthy";
 
@@ -20,7 +21,7 @@ export default function HealthBar({ character, update }: Props) {
       <div className="health-bar-track">
         <div className="health-bar-fill" style={{ width: `${pct}%` }} />
         <div className="health-bar-label">
-          {character.currentHp} / {character.maxHp || 0} HP
+          {character.currentHp} / {max} HP
           {character.tempHp > 0 && <span className="health-bar-temp">+{character.tempHp} temp</span>}
         </div>
       </div>

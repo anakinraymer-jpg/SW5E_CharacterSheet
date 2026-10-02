@@ -169,8 +169,14 @@ export default function IdentitySection({
 
         <div className="field">
           <label htmlFor="size">Size</label>
-          <input id="size" list="size-list" value={character.size} onChange={(e) => update("size", e.target.value)} />
-          <Datalist id="size-list" options={SIZES} />
+          <select id="size" value={character.size} onChange={(e) => update("size", e.target.value)}>
+            {!SIZES.includes(character.size) && <option value={character.size}>{character.size || "—"}</option>}
+            {SIZES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

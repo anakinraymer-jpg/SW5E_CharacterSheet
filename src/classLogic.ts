@@ -14,7 +14,7 @@ import type {
 import { emptyAbilities0, isSkillName } from "./types";
 import { ABILITY_LABEL } from "./speciesLogic";
 import { resolveEquipmentParts } from "./equipmentLogic";
-import { monkSubstituteAbility } from "./classFeatureLogic";
+import { forcePointsAbilityBonus, monkSubstituteAbility } from "./classFeatureLogic";
 import { abilityModifier } from "./utils";
 
 export interface UnarmoredDefenseBonus {
@@ -330,7 +330,7 @@ export function applyClass(
     ? { weapons: [], equipment: [] }
     : resolveClassEquipmentGrants(classEntry, selections);
 
-  const forceMod = abilityModifier(base.abilities[base.forceCastingAbility]);
+  const forceMod = forcePointsAbilityBonus(base);
   const techMod = abilityModifier(base.abilities.int);
 
   const next: Character = {
@@ -364,14 +364,14 @@ export function applyClass(
 export function recalcClassForLevel(character: Character, classEntry: ClassEntry): Character {
   const level = Math.max(1, Math.min(20, character.level || 1));
   const row = classEntry.levels[level - 1];
-  const forceMod = abilityModifier(character.abilities[character.forceCastingAbility]);
+  const forceMod = forcePointsAbilityBonus(character);
   const techMod = abilityModifier(character.abilities.int);
 
-  // Level 1 HP is fixed by the rules: max hit die + Con modifier. Auto-fill it non-destructively —
-  // only while still at level 1 and only if the player hasn't typed their own value — since HP is
-  // otherwise fully player-tracked (rolled/averaged Hit Dice) from level 2 on.
-  const conMod = abilityModifier(character.abilities.con);
-  const level1BaseHp = classEntry.hitDie + conMod;
+  // Level 1 HP is fixed by the rules: max hit die (+ Con modifier, which activeHpBonusSources adds
+  // automatically for every level). Auto-fill the hit-die part non-destructively — only while still
+  // at level 1 and only if the player hasn't typed their own value — since HP is otherwise fully
+  // player-tracked (rolled/averaged Hit Dice) from level 2 on.
+  const level1BaseHp = classEntry.hitDie;
   const maxHpUntouched = character.maxHp === 10 || character.maxHp === character.classGrantedBaseHp;
   const maxHp = level === 1 && maxHpUntouched ? level1BaseHp : character.maxHp;
   const classGrantedBaseHp = level === 1 ? level1BaseHp : character.classGrantedBaseHp;

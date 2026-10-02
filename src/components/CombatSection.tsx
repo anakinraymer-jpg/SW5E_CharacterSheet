@@ -2,7 +2,7 @@ import type { Character, EquipmentItem } from "../types";
 import { SKILL_ABILITY } from "../types";
 import type { ArmorCatalogEntry } from "../data/armor";
 import { abilityModifier, armorCatalogMatch, formatModifier, passivePerception, proficiencyBonus } from "../utils";
-import { activeHpBonusSources, activeTravelPaceMultiplier, extraAttackInfo } from "../classFeatureLogic";
+import { activeHpBonusSources, activeTravelPaceMultiplier, effectiveMaxHp, extraAttackInfo } from "../classFeatureLogic";
 import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { hasFeat } from "../featLogic";
 import { ARMOR_PROPERTY_DEFINITIONS } from "../data/legend";
@@ -162,7 +162,7 @@ export default function CombatSection({
             </HoverInfo>
           )}
         </div>
-        <div className="field">
+        <div className="field field-wide">
           <label htmlFor="vision">Vision</label>
           <input
             id="vision"
@@ -214,15 +214,15 @@ export default function CombatSection({
             value={character.maxHp}
             onChange={(e) => update("maxHp", Number(e.target.value) || 0)}
           />
-          {hpBonus > 0 && (
+          {hpBonus !== 0 && (
             <HoverInfo
               title="Max HP Bonus"
               lines={[
-                `Effective Max HP: ${character.maxHp + hpBonus} (${character.maxHp} + ${hpBonus}).`,
-                ...hpBonusSources.map((s) => `${s.label}: +${s.amount}`),
+                `Effective Max HP: ${effectiveMaxHp(character)} (${character.maxHp} ${hpBonus >= 0 ? "+" : "−"} ${Math.abs(hpBonus)}).`,
+                ...hpBonusSources.map((s) => `${s.label}: ${s.amount >= 0 ? "+" : "−"}${Math.abs(s.amount)}`),
               ]}
             >
-              <span className="rage-damage-note">Effective {character.maxHp + hpBonus}</span>
+              <span className="rage-damage-note">Effective {effectiveMaxHp(character)}</span>
             </HoverInfo>
           )}
         </div>

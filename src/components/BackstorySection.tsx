@@ -10,6 +10,30 @@ interface Props {
   onToggleSection: (id: string) => void;
 }
 
+const PORTRAIT_MAX_SIDE = 480;
+
+// Shrinks an uploaded picture to a small JPEG data URL so it fits comfortably in localStorage.
+function downscaleImage(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, PORTRAIT_MAX_SIDE / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.max(1, Math.round(img.width * scale));
+      canvas.height = Math.max(1, Math.round(img.height * scale));
+      canvas.getContext("2d")?.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", 0.85));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve("");
+    };
+    img.src = url;
+  });
+}
+
 export default function BackstorySection({ character, update, collapsedSections, onToggleSection }: Props) {
   const languages = grantedLanguages(character);
   const proficiencies = grantedProficiencies(character);
@@ -82,14 +106,43 @@ export default function BackstorySection({ character, update, collapsedSections,
           </div>
         </div>
 
-        <div className="field">
-          <label htmlFor="appearance">Appearance</label>
-          <textarea
-            id="appearance"
-            rows={2}
-            value={character.appearance}
-            onChange={(e) => update("appearance", e.target.value)}
-          />
+        <div className="portrait-row">
+          <div className="portrait-box">
+            {character.portrait ? (
+              <img src={character.portrait} alt={`${character.name || "Character"} portrait`} />
+            ) : (
+              <span className="portrait-placeholder">No image</span>
+            )}
+            <div className="portrait-actions">
+              <label className="btn btn-secondary btn-small portrait-upload">
+                {character.portrait ? "Change" : "Add image"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = "";
+                    if (file) update("portrait", await downscaleImage(file));
+                  }}
+                />
+              </label>
+              {character.portrait && (
+                <button type="button" className="btn btn-danger btn-small" onClick={() => update("portrait", "")}>
+                  Remove
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="field portrait-appearance">
+            <label htmlFor="appearance">Appearance</label>
+            <textarea
+              id="appearance"
+              rows={5}
+              value={character.appearance}
+              onChange={(e) => update("appearance", e.target.value)}
+            />
+          </div>
         </div>
 
         <div className="field-grid">

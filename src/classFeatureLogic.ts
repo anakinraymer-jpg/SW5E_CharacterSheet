@@ -89,6 +89,30 @@ export function allChosenSubChoiceOptions(character: Character): ClassSubChoiceO
   return out;
 }
 
+// Consular's Force Affinity "Bendu": both Wisdom and Charisma count instead of picking a side.
+export function hasBenduAffinity(character: Character): boolean {
+  return (
+    character.classAppliedName === "Consular" &&
+    allChosenSubChoiceOptions(character).some((o) => o.name === "Bendu")
+  );
+}
+
+// Modifier added to maximum Force points: the chosen side's ability, or both (Bendu).
+export function forcePointsAbilityBonus(character: Character): number {
+  if (hasBenduAffinity(character)) {
+    return abilityModifier(character.abilities.wis) + abilityModifier(character.abilities.cha);
+  }
+  return abilityModifier(character.abilities[character.forceCastingAbility]);
+}
+
+// Ability used for Force attack/save DC. Bendu has no single side, so the better of Wisdom/Charisma.
+export function forceCastingAbilityKey(character: Character): "wis" | "cha" {
+  if (hasBenduAffinity(character)) {
+    return abilityModifier(character.abilities.cha) > abilityModifier(character.abilities.wis) ? "cha" : "wis";
+  }
+  return character.forceCastingAbility;
+}
+
 // True while a Monk keeps their Martial Arts/Unarmored Movement benefits: unarmored and
 // shieldless, or (with Vow of the Sentry) in light/medium armor and still shieldless.
 export function monkRetainsUnarmoredBenefits(character: Character): boolean {
@@ -148,6 +172,12 @@ const HP_BONUS_ARCHETYPES: Record<string, { level: number; label: string }> = {
 export function activeHpBonusSources(character: Character): { label: string; amount: number }[] {
   const sources: { label: string; amount: number }[] = [];
   const level = Math.max(1, Math.min(20, character.level || 1));
+  // Every character gains their Constitution modifier in extra HP per level; the Max HP field itself
+  // holds only the hit-die portion (max die at level 1, then whatever the player rolls/takes).
+  const conMod = abilityModifier(character.abilities.con);
+  if (conMod !== 0) {
+    sources.push({ label: `Constitution modifier (${conMod >= 0 ? "+" : ""}${conMod}) × level ${level}`, amount: conMod * level });
+  }
   if (character.speciesHpBonus) {
     sources.push({ label: character.speciesHpBonus.sourceLabel, amount: character.speciesHpBonus.perLevel * level });
   }
@@ -162,7 +192,13 @@ export function activeHpBonusSources(character: Character): { label: string; amo
   return sources;
 }
 
-const CLASS_RESOURCES_BY_KEY = new Map(CLASS_RESOURCES.map((def) => [def.key, def]));
+// Max HP including every automatic bonus (Con × level, Toughness, Durable, ...), never below 0.
+export function effectiveMaxHp(character: Character): number {
+  const bonus = activeHpBonusSources(character).reduce((sum, s) => sum + s.amount, 0);
+  return Math.max(0, character.maxHp + bonus);
+}
+
+const CLASS_RESOURCES_BY_KEY =new Map(CLASS_RESOURCES.map((def) => [def.key, def]));
 
 // Resets every class resource pool matching the given rest type to its max, plus (on a long rest
 // only) full HP, cleared temp HP, cleared death saves, and full Force/Tech points. Feats and other
@@ -178,11 +214,10 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
     return { ...character, classResources };
   }
 
-  const hpBonus = activeHpBonusSources(character).reduce((sum, s) => sum + s.amount, 0);
   return {
     ...character,
     classResources,
-    currentHp: character.maxHp + hpBonus,
+    currentHp: effectiveMaxHp(character),
     tempHp: 0,
     deathSaves: { successes: 0, failures: 0 },
     forcePoints: { ...character.forcePoints, current: character.forcePoints.max },

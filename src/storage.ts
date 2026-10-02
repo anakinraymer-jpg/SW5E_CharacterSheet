@@ -1,13 +1,20 @@
 import type { Character } from "./types";
+import { createBlankCharacter } from "./types";
 
 const STORAGE_KEY = "sw5e-characters";
+
+// Characters saved by an older version of the app lack any fields added since; fill those in
+// from a blank character so newer code never sees `undefined`.
+function withDefaults(saved: Partial<Character>): Character {
+  return { ...createBlankCharacter(), ...saved } as Character;
+}
 
 export function loadAllCharacters(): Character[] {
   const raw = localStorage.getItem(STORAGE_KEY);
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.map(withDefaults) : [];
   } catch {
     return [];
   }
@@ -54,7 +61,7 @@ export function importCharacterFromFile(file: File): Promise<Character> {
     const reader = new FileReader();
     reader.onload = () => {
       try {
-        const parsed = JSON.parse(reader.result as string) as Character;
+        const parsed = withDefaults(JSON.parse(reader.result as string) as Partial<Character>);
         if (!parsed.id) {
           parsed.id = crypto.randomUUID();
         }

@@ -92,6 +92,7 @@ import { CLASS_ACCENTS } from "../data/classFeatureChoices";
 import {
   applyRest,
   applySubChoicePicks,
+  hasBenduAffinity,
   maneuverSwapDef,
   pendingSubChoice,
   recalcClassResources,
@@ -143,6 +144,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   useEffect(() => {
     saveCollapsedSections(collapsedSections);
   }, [collapsedSections]);
+
+  const hasBendu = hasBenduAffinity(character);
 
   // Reactive level engine: recompute class/archetype resources & feature text,
   // revert any ASI above the new level, and surface a pending ASI prompt.
@@ -218,6 +221,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     character.speciesAppliedName,
     character.abilities,
     character.forceCastingAbility,
+    hasBendu,
   ]);
 
   function update<K extends keyof Character>(key: K, value: Character[K]) {

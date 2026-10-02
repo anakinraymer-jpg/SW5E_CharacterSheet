@@ -503,6 +503,7 @@ export interface Character {
   languages: string;
   featsAndFeatures: string;
   appearance: string;
+  portrait: string; // downscaled JPEG data URL of the character's picture, "" if none
   personalityTraits: string;
   ideals: string;
   bonds: string;
@@ -703,6 +704,7 @@ export function createBlankCharacter(): Character {
     languages: "",
     featsAndFeatures: "",
     appearance: "",
+    portrait: "",
     personalityTraits: "",
     ideals: "",
     bonds: "",

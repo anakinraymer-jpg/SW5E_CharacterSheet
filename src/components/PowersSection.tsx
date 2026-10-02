@@ -5,6 +5,7 @@ import PowerNameField, { type PowerPickerOption } from "./PowerNameField";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import { ABILITY_LABEL } from "../speciesLogic";
 import { hasFeat } from "../featLogic";
+import { forceCastingAbilityKey, hasBenduAffinity } from "../classFeatureLogic";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
 
@@ -76,10 +77,12 @@ export default function PowersSection({
   const pb = proficiencyBonus(character.level);
   const isCastingSpecialist = hasFeat(character, "Casting Specialist");
   const specialistBonus = isCastingSpecialist ? 1 : 0;
-  const forceAbilityLabel = `${ABILITY_LABEL[character.forceCastingAbility]} (${
-    character.forceCastingAbility === "wis" ? "Light side" : "Dark side"
-  })`;
-  const forceMod = abilityModifier(character.abilities[character.forceCastingAbility]);
+  const isBendu = hasBenduAffinity(character);
+  const forceAbility = forceCastingAbilityKey(character);
+  const forceAbilityLabel = isBendu
+    ? `${ABILITY_LABEL[forceAbility]} (Bendu — better of Wisdom/Charisma)`
+    : `${ABILITY_LABEL[forceAbility]} (${forceAbility === "wis" ? "Light side" : "Dark side"})`;
+  const forceMod = abilityModifier(character.abilities[forceAbility]);
   const forceAttack = pb + forceMod + specialistBonus;
   const forceDC = 8 + pb + forceMod + specialistBonus;
   const forceAttackLines = [
@@ -209,21 +212,26 @@ export default function PowersSection({
           </div>
           <div className="field">
             <label>Force Casting Ability</label>
-            <div className="power-type-toggle">
-              <button
-                type="button"
-                className={`btn btn-small ${character.forceCastingAbility === "wis" ? "btn-primary" : "btn-secondary"}`}
-                onClick={() => update("forceCastingAbility", "wis")}
-              >
-                Light side (Wisdom)
-              </button>
-              <button
-                type="button"
-                className={`btn btn-small ${character.forceCastingAbility === "cha" ? "btn-primary" : "btn-secondary"}`}
-                onClick={() => update("forceCastingAbility", "cha")}
-              >
-                Dark side (Charisma)
-              </button>
+            {isBendu && <span className="alignment-bendu-label">(Bendu)</span>}
+            <div className="alignment-toggle">
+              <span className={`alignment-side${isBendu || character.forceCastingAbility === "wis" ? " is-active" : ""}`}>
+                Light (WIS)
+              </span>
+              {!isBendu && (
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={character.forceCastingAbility === "cha"}
+                  aria-label="Light side or dark side"
+                  className={`alignment-switch${character.forceCastingAbility === "cha" ? " is-dark" : ""}`}
+                  onClick={() => update("forceCastingAbility", character.forceCastingAbility === "wis" ? "cha" : "wis")}
+                >
+                  <span className="alignment-switch-knob" />
+                </button>
+              )}
+              <span className={`alignment-side${isBendu || character.forceCastingAbility === "cha" ? " is-active" : ""}`}>
+                Dark (CHA)
+              </span>
             </div>
           </div>
           <div className="field">

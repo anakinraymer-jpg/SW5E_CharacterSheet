@@ -87,14 +87,13 @@ export function computeDefense(
   dexModifier: number,
   unarmoredDefense?: UnarmoredDefenseInput | null,
   naturalArmor?: SpeciesNaturalArmor | null
-): EquippedDefense | null {
+): EquippedDefense {
   const equippedMatches = equipment
     .filter((item) => item.equipped)
     .map((item) => armorCatalogMatch(item.name))
     .filter((a): a is ArmorCatalogEntry => Boolean(a));
   const shields = equippedMatches.filter((a) => a.type === "Shield");
   const armor = equippedMatches.find((a) => a.type !== "Shield") ?? null;
-  if (!armor && shields.length === 0 && !unarmoredDefense && !naturalArmor) return null;
 
   const usesUnarmoredDefense = Boolean(
     !armor && unarmoredDefense && (unarmoredDefense.allowShield || shields.length === 0)
