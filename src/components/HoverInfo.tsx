@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent as ReactMouseEvent, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 interface Props {
@@ -6,12 +6,17 @@ interface Props {
   lines: string[];
   children: ReactNode;
   className?: string;
+  // Skip the tooltip on touch screens (the child handles taps itself and shows its own summary).
+  disableOnTouch?: boolean;
 }
+
+// Touch screens have no hover, so tooltips open on tap there and close on the next tap elsewhere.
+const IS_TOUCH = typeof window !== "undefined" && !!window.matchMedia?.("(hover: none)").matches;
 
 const TYPE_TICK_MS = 16;
 const TYPE_MAX_TICKS = 90; // caps total typing duration regardless of text length
 
-export default function HoverInfo({ title, lines, children, className }: Props) {
+export default function HoverInfo({ title, lines, children, className, disableOnTouch }: Props) {
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLSpanElement>(null);
@@ -29,6 +34,10 @@ export default function HoverInfo({ title, lines, children, className }: Props) 
       return;
     }
     if (totalChars === 0) return;
+    if (IS_TOUCH) {
+      setTypedCount(totalChars);
+      return;
+    }
     const charsPerTick = Math.max(1, Math.ceil(totalChars / TYPE_MAX_TICKS));
     const id = setInterval(() => {
       setTypedCount((prev) => {
@@ -73,15 +82,38 @@ export default function HoverInfo({ title, lines, children, className }: Props) 
     setPlacement(nextPlacement);
   }, [open]);
 
+  useEffect(() => {
+    if (!IS_TOUCH || !open) return;
+    const close = () => setOpen(false);
+    const onPointerDown = (e: PointerEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) close();
+    };
+    document.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("scroll", close, true);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("scroll", close, true);
+    };
+  }, [open]);
+
+  const handlers = IS_TOUCH
+    ? {
+        onClick: (e: ReactMouseEvent) => {
+          if (disableOnTouch) return;
+          // Tapping a field is for typing; a tooltip over it would fight the on-screen keyboard.
+          if ((e.target as HTMLElement).closest("input, textarea, select")) return;
+          setOpen((o) => !o);
+        },
+      }
+    : {
+        onMouseEnter: () => setOpen(true),
+        onMouseLeave: () => setOpen(false),
+        onFocus: () => setOpen(true),
+        onBlur: () => setOpen(false),
+      };
+
   return (
-    <span
-      ref={wrapRef}
-      className={`hover-info${className ? ` ${className}` : ""}`}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      onFocus={() => setOpen(true)}
-      onBlur={() => setOpen(false)}
-    >
+    <span ref={wrapRef} className={`hover-info${className ? ` ${className}` : ""}`} {...handlers}>
       {children}
       {open &&
         createPortal(

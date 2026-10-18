@@ -54,15 +54,17 @@ export default function LegendSection({ collapsedSections, onToggleSection }: Pr
             const matches = needle ? entries.filter((e) => e.name.toLowerCase().includes(needle)) : entries;
             if (matches.length === 0) return null;
             return (
-              <div className="species-traits-box" key={title}>
-                <div className="species-traits-header">{title}</div>
+              <details className="species-traits-box legend-group" key={title} open={needle ? true : undefined}>
+                <summary className="species-traits-header">
+                  {title} <span className="legend-count">({matches.length})</span>
+                </summary>
                 {note && !needle && <p className="section-hint">{note}</p>}
                 {matches.map((entry) => (
                   <p key={entry.name} className="species-trait-line">
                     <strong>{entry.name}.</strong> {entry.description}
                   </p>
                 ))}
-              </div>
+              </details>
             );
           })}
         </>

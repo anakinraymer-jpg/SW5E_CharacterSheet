@@ -87,7 +87,7 @@ body::before {
   position: absolute;
   top: 16px;
   right: 16px;
-  z-index: 10000;
+  z-index: 50; /* below pop-ups (z-index 100) so it never covers their close button */
   display: inline-flex;
   align-items: center;
   gap: 6px;

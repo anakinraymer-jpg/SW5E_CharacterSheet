@@ -1769,3 +1769,551 @@
 .backstory-section .field-grid {
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
 }
+
+/* ------------------------------------------------------------------ */
+/* Phones & touch screens                                             */
+/* ------------------------------------------------------------------ */
+
+.section-nav {
+  display: none;
+}
+
+.simple-card-summary {
+  display: none;
+}
+
+/* Touch: bigger tap targets, and form controls at 16px so iOS does not zoom in on focus. */
+@media (pointer: coarse) {
+  .btn {
+    min-height: 40px;
+  }
+
+  .btn-small {
+    min-height: 36px;
+    padding: 6px 12px;
+  }
+
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  select {
+    min-height: 40px;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 22px !important;
+    height: 22px;
+    min-height: 0;
+    flex: none;
+  }
+
+  .pip {
+    width: 28px;
+    height: 28px;
+  }
+
+  .modal-close {
+    font-size: 2rem;
+    padding: 0 10px;
+  }
+
+  .simple-card-summary {
+    flex-basis: 100%;
+    order: 5;
+    font-size: 0.8rem;
+    opacity: 0.7;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .simple-card-button {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 760px) {
+  .app-header {
+    padding: 44px 12px 12px;
+  }
+
+  .character-list-page,
+  .character-sheet-page {
+    padding: 10px max(10px, env(safe-area-inset-right)) calc(48px + env(safe-area-inset-bottom))
+      max(10px, env(safe-area-inset-left));
+  }
+
+  .list-actions {
+    flex-wrap: wrap;
+  }
+
+  .character-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Toolbar: Back gets its own row; the other buttons share one row. */
+  .sheet-toolbar {
+    margin-bottom: 8px;
+    padding-top: 34px;
+  }
+
+  .sheet-toolbar > .btn {
+    flex: 1 1 100%;
+  }
+
+  .sheet-toolbar-right {
+    flex: 1 1 100%;
+    flex-wrap: nowrap;
+  }
+
+  .sheet-toolbar-right .btn {
+    flex: 1 1 0;
+    padding: 6px 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+
+  .theme-toggle {
+    top: 10px;
+    right: 10px;
+  }
+
+  /* Sticky quick-jump bar */
+  .section-nav {
+    display: flex;
+    gap: 6px;
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    margin: 0 -10px 10px;
+    padding: 8px 10px;
+    overflow-x: auto;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .section-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .section-nav-chip {
+    flex: none;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .section-nav-chip:active {
+    border-color: var(--accent);
+    color: var(--text-h);
+  }
+
+  [data-nav-anchor],
+  .sheet-block {
+    scroll-margin-top: 56px;
+  }
+
+  .sheet-section {
+    padding: 14px 12px;
+    margin-bottom: 12px;
+  }
+
+  .sheet-columns-wrap,
+  .sheet-column,
+  .sheet-wide-stack {
+    gap: 12px;
+  }
+
+  .sheet-columns-wrap {
+    margin-bottom: 12px;
+  }
+
+  .collapsible-header {
+    min-height: 32px;
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 10px;
+  }
+
+  .field-credits {
+    max-width: none;
+  }
+
+  /* Four stat boxes read better as a 2x2 grid than four cramped columns. */
+  .sheet-stat-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .stat-box-section input,
+  .stat-box-section .readonly-box {
+    font-size: 1rem;
+    padding: 6px;
+  }
+
+  .stat-box-section .field label {
+    font-size: 0.7rem;
+  }
+
+  .health-bar-wrap {
+    flex-wrap: wrap;
+    padding: 10px 12px;
+  }
+
+  .health-bar-track {
+    flex: 1 1 100%;
+    height: 32px;
+  }
+
+  .health-bar-controls {
+    flex: 1 1 100%;
+  }
+
+  .health-bar-controls .btn {
+    flex: 1;
+  }
+
+  .ability-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .ability-box {
+    padding: 8px 4px;
+  }
+
+  .ability-box label {
+    font-size: 0.62rem;
+  }
+
+  .combat-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .hp-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .carrying-capacity {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .points-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rest-buttons .btn {
+    flex: 1;
+  }
+
+  .portrait-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .portrait-box {
+    width: 100%;
+    max-width: 220px;
+    margin: 0 auto;
+  }
+
+  .portrait-box img,
+  .portrait-placeholder {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 9 / 11;
+  }
+
+  .legend-filter {
+    max-width: none;
+  }
+
+  .hover-info-panel {
+    max-width: calc(100vw - 24px);
+    min-width: 0;
+  }
+
+  /* Pop-ups (Simple mode sections, pickers, choice dialogs) fill the phone screen. */
+  .modal-overlay {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  .modal-box {
+    max-width: none;
+    max-height: 100dvh;
+    height: 100dvh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .modal-box.simple-modal,
+  .modal-box.picker-modal {
+    height: 100dvh;
+    max-width: none;
+  }
+
+  .modal-header {
+    padding: 12px 14px;
+  }
+
+  .modal-body {
+    padding: 12px 14px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .modal-footer {
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    flex-wrap: wrap;
+  }
+
+  .modal-footer .btn {
+    flex: 1 1 auto;
+  }
+
+  .picker-layout {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .picker-list {
+    flex: 1 1 60%;
+  }
+
+  .picker-details {
+    flex: 0 1 34%;
+    min-height: 90px;
+  }
+
+  .picker-row {
+    padding: 8px 10px;
+    min-height: 48px;
+  }
+
+  .picker-add {
+    min-width: 44px;
+    min-height: 40px;
+    font-size: 1.2rem;
+  }
+
+  .choice-selects select {
+    min-width: 0;
+    flex: 1 1 100%;
+  }
+
+  /* Wide data tables become one card per row. */
+  .weapons-table,
+  .equipment-table,
+  .valuables-table,
+  .weapons-table tbody,
+  .equipment-table tbody,
+  .valuables-table tbody,
+  .equipment-table tfoot {
+    display: block;
+  }
+
+  .weapons-table thead,
+  .equipment-table thead,
+  .valuables-table thead {
+    display: none;
+  }
+
+  .weapons-table tbody tr,
+  .equipment-table tbody tr,
+  .valuables-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .weapons-table tbody td,
+  .equipment-table tbody td,
+  .valuables-table tbody td {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 0;
+    border: none;
+    min-width: 0;
+  }
+
+  .weapons-table tbody td::before,
+  .equipment-table tbody td::before,
+  .valuables-table tbody td::before {
+    font-size: 0.66rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.6;
+  }
+
+  .weapons-table tbody td:empty {
+    display: none;
+  }
+
+  .weapons-table tbody td input:not([type="checkbox"]),
+  .weapons-table tbody td select,
+  .equipment-table tbody td input:not([type="checkbox"]),
+  .equipment-table tbody td select,
+  .valuables-table tbody td input {
+    width: 100%;
+  }
+
+  .weapons-table .to-hit-box {
+    width: 100%;
+    text-align: left;
+  }
+
+  .weapons-table tbody td:nth-child(1)::before { content: "Weapon"; }
+  .weapons-table tbody td:nth-child(2)::before { content: "Equipped"; }
+  .weapons-table tbody td:nth-child(3)::before { content: "Proficient"; }
+  .weapons-table tbody td:nth-child(4)::before { content: "To hit"; }
+  .weapons-table tbody td:nth-child(5)::before { content: "Damage / type"; }
+  .weapons-table tbody td:nth-child(6)::before { content: "Range"; }
+  .weapons-table tbody td:nth-child(7)::before { content: "Properties"; }
+  .weapons-table tbody td:nth-child(8)::before { content: "Weight"; }
+  .weapons-table tbody td:nth-child(9)::before { content: "Ammo count"; }
+  .weapons-table tbody td:nth-child(10)::before { content: "Ammo type"; }
+  .weapons-table tbody td:nth-child(11)::before { content: none; }
+
+  /* To hit and range pair up; the wide damage cell follows. */
+  .weapons-table tbody td:nth-child(5) {
+    order: 6;
+  }
+
+  .weapons-table tbody td:nth-child(n + 7) {
+    order: 7;
+  }
+
+  .weapons-table tbody td:nth-child(1),
+  .weapons-table tbody td:nth-child(5),
+  .weapons-table tbody td:nth-child(7),
+  .weapons-table tbody td:nth-child(11) {
+    grid-column: 1 / -1;
+  }
+
+  /* Checkbox cells: box first, label after, side by side. */
+  .weapons-table tbody td:nth-child(2),
+  .weapons-table tbody td:nth-child(3) {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .equipment-table tbody td:nth-child(1)::before { content: "Item"; }
+  .equipment-table tbody td:nth-child(2)::before { content: "Qty"; }
+  .equipment-table tbody td:nth-child(3)::before { content: "Weight (kg)"; }
+  .equipment-table tbody td:nth-child(4)::before { content: "Location"; }
+  .equipment-table tbody td:nth-child(5)::before { content: "Notes"; }
+  .equipment-table tbody td:nth-child(6)::before { content: none; }
+
+  .equipment-table tbody td:nth-child(1),
+  .equipment-table tbody td:nth-child(4),
+  .equipment-table tbody td:nth-child(5),
+  .equipment-table tbody td:nth-child(6) {
+    grid-column: 1 / -1;
+  }
+
+  .equipment-table .qty-input,
+  .equipment-table .weight-input {
+    width: 100%;
+  }
+
+  .equipment-table tfoot tr {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 2px;
+  }
+
+  .equipment-table tfoot td {
+    padding: 0;
+  }
+
+  .equipment-table tfoot td:empty {
+    display: none;
+  }
+
+  .valuables-table tbody td:nth-child(1)::before { content: "Where"; }
+  .valuables-table tbody td:nth-child(2)::before { content: "How much"; }
+  .valuables-table tbody td:nth-child(3)::before { content: "When"; }
+  .valuables-table tbody td:nth-child(4)::before { content: none; }
+
+  .valuables-table tbody td:nth-child(1),
+  .valuables-table tbody td:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
+  .weapons-table tbody td .btn-danger,
+  .equipment-table tbody td .btn-danger,
+  .valuables-table tbody td .btn-danger {
+    width: 100%;
+  }
+}
+
+/* Very narrow phones */
+@media (max-width: 340px) {
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Legend categories fold up so the long glossary is easy to skim on a phone. */
+.legend-group > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 28px;
+  margin-bottom: 0;
+}
+
+.legend-group > summary::-webkit-details-marker {
+  display: none;
+}
+
+.legend-group > summary::after {
+  content: "▸";
+  margin-left: auto;
+  transition: transform 0.15s ease;
+}
+
+.legend-group[open] > summary {
+  margin-bottom: 8px;
+}
+
+.legend-group[open] > summary::after {
+  transform: rotate(90deg);
+}
+
+.legend-count {
+  opacity: 0.6;
+  font-weight: 400;
+}

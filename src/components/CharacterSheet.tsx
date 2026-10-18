@@ -88,6 +88,7 @@ import ArchetypeFeatureChoiceDialog from "./ArchetypeFeatureChoiceDialog";
 import ClassSubChoiceDialog from "./ClassSubChoiceDialog";
 import ManeuverSwapDialog from "./ManeuverSwapDialog";
 import SectionBlock from "./SectionBlock";
+import SectionNav from "./SectionNav";
 import HealthBar from "./HealthBar";
 import { DefenseBox, InitiativeBox, ProficiencyBonusBox, SpeedBaseBox } from "./StatBoxes";
 import {
@@ -1009,6 +1010,38 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
   const renderForMode = simpleMode ? renderSimpleSectionContent : (id: SectionId) => renderSectionContent(id);
 
+  const NAV_LABELS: Partial<Record<SectionId, string>> = {
+    abilities: "Abilities",
+    combat: "Combat",
+    skills: "Skills",
+    powers: "Powers",
+    feats: "Feats",
+    classFeatures: "Class",
+    weapons: "Weapons",
+    equipment: "Gear",
+    backstory: "Backstory",
+    traitsFeatures: "Traits",
+    legend: "Legend",
+  };
+  const navIds: SectionId[] = [
+    ...layout.columns.flat(),
+    ...layout.wide.filter((id) => id !== "classFeatures" || hasClassFeaturesContent),
+  ];
+  const navItems = [
+    { id: "identity", label: "Character" },
+    ...navIds.flatMap((id) => (NAV_LABELS[id] ? [{ id, label: NAV_LABELS[id] as string }] : [])),
+  ];
+
+  function jumpToSection(id: string) {
+    // Open the section first if it was collapsed so the jump lands on its contents.
+    if (collapsedSections[id]) toggleSection(id);
+    const target =
+      id === "identity"
+        ? document.querySelector('[data-nav-anchor="identity"]')
+        : document.querySelector(`[data-section-id="${id}"]`);
+    target?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <div
       className="character-sheet-page"
@@ -1046,15 +1079,19 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         </div>
       </div>
 
-      {simpleMode ? (
-        <SimpleIdentity character={character} onOpen={() => setOpenSimple("identity")} />
-      ) : (
-        <IdentitySection
-          {...identityProps}
-          collapsed={!!collapsedSections["identity"]}
-          onToggleSection={() => toggleSection("identity")}
-        />
-      )}
+      <SectionNav items={navItems} onJump={jumpToSection} />
+
+      <div data-nav-anchor="identity">
+        {simpleMode ? (
+          <SimpleIdentity character={character} onOpen={() => setOpenSimple("identity")} />
+        ) : (
+          <IdentitySection
+            {...identityProps}
+            collapsed={!!collapsedSections["identity"]}
+            onToggleSection={() => toggleSection("identity")}
+          />
+        )}
+      </div>
 
       <HealthBar character={character} update={update} />
 

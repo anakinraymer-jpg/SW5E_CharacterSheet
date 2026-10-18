@@ -16,10 +16,11 @@ interface CardProps {
 export function SimpleCard({ title, summary, headline, onOpen }: CardProps) {
   return (
     <section className="sheet-section simple-card">
-      <HoverInfo title={title} lines={summary} className="simple-card-hover">
+      <HoverInfo title={title} lines={summary} className="simple-card-hover" disableOnTouch>
         <button type="button" className="simple-card-button" onClick={onOpen}>
           <span className="simple-card-title">{title}</span>
           {headline && <span className="simple-card-headline">{headline}</span>}
+          <span className="simple-card-summary">{summary.join(" · ")}</span>
           <span className="simple-card-open" aria-hidden="true">
             ▸
           </span>
