@@ -4,6 +4,7 @@ import { computeUnarmoredDefenseBonus } from "../classLogic";
 import { activeSpeedBonusSources } from "../classFeatureLogic";
 import { hasFeat } from "../featLogic";
 import HoverInfo from "./HoverInfo";
+import NumberInput from "./NumberInput";
 
 interface Props {
   character: Character;
@@ -91,11 +92,10 @@ export function SpeedBaseBox({ character, update }: Props) {
     <section className="sheet-section stat-box-section">
       <div className="field">
         <label htmlFor="speed-base">Speed (Base)</label>
-        <input
+        <NumberInput
           id="speed-base"
-          type="number"
           value={character.speedBase}
-          onChange={(e) => update("speedBase", Number(e.target.value) || 0)}
+          onValue={(n) => update("speedBase", n)}
         />
         {bonus > 0 && (
           <HoverInfo

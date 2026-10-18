@@ -1,6 +1,7 @@
 import type { AbilityKey, Character } from "../types";
 import { abilityModifier, formatModifier } from "../utils";
 import SectionHeader from "./SectionHeader";
+import NumberInput from "./NumberInput";
 
 const ABILITY_LABELS: Record<AbilityKey, string> = {
   str: "Strength",
@@ -31,11 +32,10 @@ export default function AbilityScores({ character, updateAbility, collapsedSecti
             return (
               <div className="ability-box" key={key}>
                 <label htmlFor={`ability-${key}`}>{ABILITY_LABELS[key]}</label>
-                <input
+                <NumberInput
                   id={`ability-${key}`}
-                  type="number"
                   value={score}
-                  onChange={(e) => updateAbility(key, Number(e.target.value) || 0)}
+                  onValue={(n) => updateAbility(key, n)}
                 />
                 <div className="ability-mod">{formatModifier(mod)}</div>
               </div>

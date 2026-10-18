@@ -14,6 +14,7 @@ import { hasBenduAffinity } from "../classFeatureLogic";
 import { castingStats } from "../castingStats";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
+import NumberInput from "./NumberInput";
 
 const FORCE_POWER_LOOKUP = new Map(FORCE_POWERS.map((p) => [p.name.toLowerCase(), p]));
 const TECH_POWER_LOOKUP = new Map(TECH_POWERS.map((p) => [p.name.toLowerCase(), p]));
@@ -154,25 +155,23 @@ export default function PowersSection({
           <div className="field">
             <label htmlFor="force-current">Force Points</label>
             <div className="points-pair">
-              <input
+              <NumberInput
                 id="force-current"
-                type="number"
                 value={character.forcePoints.current}
-                onChange={(e) =>
+                onValue={(n) =>
                   update("forcePoints", {
                     ...character.forcePoints,
-                    current: Number(e.target.value) || 0,
+                    current: n,
                   })
                 }
               />
               <span>/</span>
-              <input
-                type="number"
+              <NumberInput
                 value={character.forcePoints.max}
-                onChange={(e) =>
+                onValue={(n) =>
                   update("forcePoints", {
                     ...character.forcePoints,
-                    max: Number(e.target.value) || 0,
+                    max: n,
                   })
                 }
               />
@@ -233,25 +232,23 @@ export default function PowersSection({
           <div className="field">
             <label htmlFor="tech-current">Tech Points</label>
             <div className="points-pair">
-              <input
+              <NumberInput
                 id="tech-current"
-                type="number"
                 value={character.techPoints.current}
-                onChange={(e) =>
+                onValue={(n) =>
                   update("techPoints", {
                     ...character.techPoints,
-                    current: Number(e.target.value) || 0,
+                    current: n,
                   })
                 }
               />
               <span>/</span>
-              <input
-                type="number"
+              <NumberInput
                 value={character.techPoints.max}
-                onChange={(e) =>
+                onValue={(n) =>
                   update("techPoints", {
                     ...character.techPoints,
-                    max: Number(e.target.value) || 0,
+                    max: n,
                   })
                 }
               />
@@ -300,12 +297,12 @@ export default function PowersSection({
                 {power.type === "Force" && power.name && (
                   <span className="power-alignment-suffix">({power.alignment})</span>
                 )}
-                <input
-                  type="number"
+                <NumberInput
+                  stepper={false}
                   min={0}
                   max={9}
                   value={power.level}
-                  onChange={(e) => updatePower(power.id, { level: Number(e.target.value) || 0 })}
+                  onValue={(n) => updatePower(power.id, { level: n })}
                   title="Power level"
                   className="power-level"
                 />

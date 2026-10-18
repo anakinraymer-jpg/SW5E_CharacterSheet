@@ -2317,3 +2317,97 @@
   opacity: 0.6;
   font-weight: 400;
 }
+
+/* Number fields: on desktop the wrapper is invisible and the browser spinner is used; on touch
+   screens it becomes a -/+ stepper around the field. */
+.num-input {
+  display: contents;
+}
+
+.num-step {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .num-input {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .num-input input {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .num-input input::-webkit-outer-spin-button,
+  .num-input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .num-step {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 34px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: var(--bg-panel);
+    font-size: 1.2rem;
+    line-height: 1;
+    font-weight: 700;
+  }
+
+  .num-step:active:not(:disabled) {
+    border-color: var(--accent);
+    color: var(--text-h);
+  }
+
+  .num-step:disabled {
+    opacity: 0.35;
+  }
+
+  /* Ability boxes are too narrow for a side-by-side stepper: field on top, - and + beneath. */
+  .ability-box .num-input {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ability-box .num-input input {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .ability-box .num-step {
+    width: auto;
+    min-height: 34px;
+  }
+
+  .points-pair {
+    grid-column: 1 / -1;
+  }
+
+  .points-pair .num-input {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .points-pair .num-input input {
+    grid-column: 1 / -1;
+    order: -1;
+  }
+
+  .points-pair .num-step {
+    width: auto;
+    min-height: 34px;
+  }
+}

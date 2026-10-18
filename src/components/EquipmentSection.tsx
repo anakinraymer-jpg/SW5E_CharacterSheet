@@ -11,6 +11,7 @@ import HoverInfo from "./HoverInfo";
 import PickerDialog from "./PickerDialog";
 import PropertyTagList from "./PropertyTagList";
 import SectionHeader from "./SectionHeader";
+import NumberInput from "./NumberInput";
 
 const ITEM_INFO_LINES = new Map<string, string[]>([
   ...GEAR_CATALOG.map(
@@ -101,11 +102,10 @@ export default function EquipmentSection({
       <div className="field field-credits">
         <label htmlFor="credits">Credits</label>
         <HoverInfo title="Credits Breakdown" lines={creditLines}>
-          <input
+          <NumberInput
             id="credits"
-            type="number"
             value={character.credits}
-            onChange={(e) => update("credits", Number(e.target.value) || 0)}
+            onValue={(n) => update("credits", n)}
           />
         </HoverInfo>
       </div>
@@ -150,25 +150,23 @@ export default function EquipmentSection({
                 )}
               </td>
               <td>
-                <input
-                  type="number"
+                <NumberInput
                   min={0}
                   className="qty-input"
                   value={item.quantity}
-                  onChange={(e) =>
-                    updateItem(item.id, { quantity: Number(e.target.value) || 0 })
+                  onValue={(n) =>
+                    updateItem(item.id, { quantity: n })
                   }
                 />
               </td>
               <td>
-                <input
-                  type="number"
+                <NumberInput
                   min={0}
                   step={0.1}
                   className="weight-input"
                   value={item.weight}
-                  onChange={(e) =>
-                    updateItem(item.id, { weight: Number(e.target.value) || 0 })
+                  onValue={(n) =>
+                    updateItem(item.id, { weight: n })
                   }
                 />
               </td>

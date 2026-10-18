@@ -18,6 +18,7 @@ import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
 import PickerDialog from "./PickerDialog";
 import PropertyTagList from "./PropertyTagList";
+import NumberInput from "./NumberInput";
 
 const MONK_WEAPON_NAME_SET = new Set(MONK_WEAPON_NAMES.map((n) => n.toLowerCase()));
 
@@ -263,23 +264,21 @@ export default function WeaponsSection({
                 )}
               </td>
               <td>
-                <input
-                  type="number"
+                <NumberInput
                   min={0}
                   className="weight-input"
                   value={w.weight}
-                  onChange={(e) =>
-                    updateWeapon(w.id, { weight: Number(e.target.value) || 0 })
+                  onValue={(n) =>
+                    updateWeapon(w.id, { weight: n })
                   }
                 />
               </td>
               <td>
-                <input
-                  type="number"
+                <NumberInput
                   min={0}
                   className="ammo-count-input"
                   value={w.ammoCount}
-                  onChange={(e) => updateWeapon(w.id, { ammoCount: Number(e.target.value) || 0 })}
+                  onValue={(n) => updateWeapon(w.id, { ammoCount: n })}
                 />
               </td>
               <td>

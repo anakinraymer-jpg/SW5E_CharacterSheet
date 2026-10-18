@@ -10,6 +10,7 @@ import {
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
+import NumberInput from "./NumberInput";
 
 interface Props {
   character: Character;
@@ -191,12 +192,12 @@ export default function ClassFeaturesSection({
                   {die ? ` (${die})` : ""}
                 </div>
                 <div className="class-resource-controls">
-                  <input
-                    type="number"
+                  <NumberInput
+                    stepper={false}
                     min={0}
                     max={max}
                     value={current}
-                    onChange={(e) => onUpdateResource(def.key, Number(e.target.value) || 0)}
+                    onValue={(n) => onUpdateResource(def.key, n)}
                   />
                   <span>/ {max >= 99 ? "∞" : max}</span>
                   <button className="btn btn-secondary btn-small" onClick={() => onUpdateResource(def.key, max)}>

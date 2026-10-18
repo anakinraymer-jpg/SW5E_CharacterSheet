@@ -12,6 +12,7 @@ import {
 } from "../pickerCatalogs";
 import PickerField from "./PickerField";
 import SectionHeader from "./SectionHeader";
+import NumberInput from "./NumberInput";
 
 const ALIGNMENT_OPTIONS = ALIGNMENTS.map((name) => ({ name }));
 
@@ -118,35 +119,35 @@ export default function IdentitySection({
 
         <div className="field">
           <label htmlFor="level">Level</label>
-          <input
+          <NumberInput
+            emptyValue={1}
             id="level"
-            type="number"
             min={1}
             max={20}
             value={character.level}
-            onChange={(e) => update("level", Number(e.target.value) || 1)}
+            onValue={(n) => {
+              if (n >= 1 && n <= 20) update("level", n);
+            }}
           />
         </div>
 
         <div className="field">
           <label htmlFor="xp">Experience Points</label>
-          <input
+          <NumberInput
             id="xp"
-            type="number"
             min={0}
             value={character.experiencePoints}
-            onChange={(e) => update("experiencePoints", Number(e.target.value) || 0)}
+            onValue={(n) => update("experiencePoints", n)}
           />
         </div>
 
         <div className="field">
           <label htmlFor="xp-next">XP Next Level</label>
-          <input
+          <NumberInput
             id="xp-next"
-            type="number"
             min={0}
             value={character.xpNextLevel}
-            onChange={(e) => update("xpNextLevel", Number(e.target.value) || 0)}
+            onValue={(n) => update("xpNextLevel", n)}
           />
         </div>
 

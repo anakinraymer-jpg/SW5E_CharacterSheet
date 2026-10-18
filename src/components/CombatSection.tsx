@@ -9,6 +9,7 @@ import { ARMOR_PROPERTY_DEFINITIONS } from "../data/legend";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
 import PropertyTagList from "./PropertyTagList";
+import NumberInput from "./NumberInput";
 
 interface Props {
   character: Character;
@@ -126,11 +127,10 @@ export default function CombatSection({
       <div className="combat-grid">
         <div className="field">
           <label htmlFor="speed-hour">Speed (hour)</label>
-          <input
+          <NumberInput
             id="speed-hour"
-            type="number"
             value={character.speedHour}
-            onChange={(e) => update("speedHour", Number(e.target.value) || 0)}
+            onValue={(n) => update("speedHour", n)}
           />
           {travelPaceMultiplier > 1 && (
             <HoverInfo
@@ -145,11 +145,10 @@ export default function CombatSection({
         </div>
         <div className="field">
           <label htmlFor="speed-day">Speed (day)</label>
-          <input
+          <NumberInput
             id="speed-day"
-            type="number"
             value={character.speedDay}
-            onChange={(e) => update("speedDay", Number(e.target.value) || 0)}
+            onValue={(n) => update("speedDay", n)}
           />
           {travelPaceMultiplier > 1 && (
             <HoverInfo
@@ -208,11 +207,10 @@ export default function CombatSection({
       <div className="hp-grid">
         <div className="field">
           <label htmlFor="max-hp">Max HP</label>
-          <input
+          <NumberInput
             id="max-hp"
-            type="number"
             value={character.maxHp}
-            onChange={(e) => update("maxHp", Number(e.target.value) || 0)}
+            onValue={(n) => update("maxHp", n)}
           />
           {hpBonus !== 0 && (
             <HoverInfo
@@ -228,20 +226,18 @@ export default function CombatSection({
         </div>
         <div className="field">
           <label htmlFor="current-hp">Current HP</label>
-          <input
+          <NumberInput
             id="current-hp"
-            type="number"
             value={character.currentHp}
-            onChange={(e) => update("currentHp", Number(e.target.value) || 0)}
+            onValue={(n) => update("currentHp", n)}
           />
         </div>
         <div className="field">
           <label htmlFor="temp-hp">Temp HP</label>
-          <input
+          <NumberInput
             id="temp-hp"
-            type="number"
             value={character.tempHp}
-            onChange={(e) => update("tempHp", Number(e.target.value) || 0)}
+            onValue={(n) => update("tempHp", n)}
           />
         </div>
       </div>
