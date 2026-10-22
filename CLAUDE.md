@@ -66,3 +66,18 @@ el.dispatchEvent(new Event('input', { bubbles: true }));
 For `<select>`, use `HTMLSelectElement.prototype`'s setter instead. For fields gated behind `onBlur` (e.g. class/species/archetype commit), prefer the `form_input` tool over synthetic dispatch — it reliably triggers blur-driven handlers where raw `dispatchEvent` sometimes doesn't.
 
 **PowerShell here-string gotcha:** commit messages with embedded double quotes (e.g. quoting a formula like `"N + Dex modifier"`) can get mis-split into separate `git commit -m` arguments by PowerShell's native-command argument marshaling, producing `pathspec did not match` errors. If a commit message needs embedded quotes, write it to a scratch file and use `git commit -F <file>` instead of `-m`.
+
+## PersonalAPI (memory across sessions)
+
+This PC runs PersonalAPI (`C:\Users\anaki\Dev\PersonalAPI`). It's a local, private memory of past Claude Code sessions, commits and the user's Obsidian notes, and this repo is opted in as **SW5E_CharacterSheet**. Each session here starts with a briefing for SW5E_CharacterSheet: saved memories, a project brief, recent commits, open For Claude items, and Claude usage.
+
+- Before asking the user to re-explain past work, check the `personalapi` tools:
+  - `search_history` / `get_session` for past sessions
+  - `search_commits` / `get_commit` for git history
+  - `project_brief` for the project summary
+  - `search_notes` / `read_note` for the user's plans and lore
+- `Projects/SW5E_CharacterSheet/For Claude.md` in the vault is the user's list of requests for this project. They add to it themselves, by dictation, or by talking with Muse, their voice companion. Look at it with `for_claude` when starting work here. When an item is done, tick it off with `resolve_item` and a one-line reply.
+- Use `remember` for lasting preferences, decisions (with the reason) and corrections, one short sentence each. Don't save one-off task details.
+- Project briefs are written by a small local model and can be outdated or wrong. Verify details in the code before relying on them.
+- If the briefing says Claude usage is high or near the limit, be economical and say so before starting a big task.
+- The user's activity-tracker data is deliberately walled off from Claude. Don't try to reach it.
