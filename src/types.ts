@@ -430,6 +430,7 @@ export interface Companion {
   feat: string; // the feat gained at 10th level; its effects apply to the companion only
   featAbilityChoice: AbilityKey | ""; // the ability a choice-of-ability feat raised
   featChoices: string[][]; // the feat's other picks (skills, tools, languages...), by choice index
+  skillPicks: { nature: string[]; class: string[] }; // skills chosen for the nature/variant and the class
   resourceUsed: Record<string, number>; // class resource uses spent so far, by resource key
   currentHp: number;
   tempHp: number;

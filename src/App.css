@@ -2503,3 +2503,60 @@
   border-color: var(--accent);
   color: var(--text-h);
 }
+
+/* Companion skills */
+.companion-skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 4px 12px;
+}
+
+.companion-skill-wrap {
+  display: block;
+}
+
+.companion-skill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.88rem;
+}
+
+.companion-skill-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  flex: none;
+}
+
+.companion-skill.is-proficient .companion-skill-dot {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.companion-skill.is-expert .companion-skill-dot {
+  box-shadow: 0 0 0 2px var(--bg-panel), 0 0 0 3px var(--accent);
+}
+
+.companion-skill-name {
+  flex: 1;
+}
+
+.companion-skill-ability {
+  font-size: 0.72rem;
+  opacity: 0.55;
+}
+
+.companion-skill-bonus {
+  min-width: 2.2em;
+  text-align: right;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.companion-skill-picks {
+  margin-bottom: 10px;
+}

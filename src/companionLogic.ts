@@ -9,7 +9,7 @@ import type {
   FeatEntry,
   SkillName,
 } from "./types";
-import { isSkillName } from "./types";
+import { SKILL_ABILITY, SKILL_LIST, isSkillName } from "./types";
 import { COMPANION_NATURES } from "./data/companions";
 import { COMPANION_CLASSES } from "./data/companionClasses";
 import { FEATS_CATALOG } from "./data/feats";
@@ -57,6 +57,7 @@ export function normalizeCompanion(c: Companion): Companion {
     feat: c.feat ?? "",
     featAbilityChoice: c.featAbilityChoice ?? "",
     featChoices: c.featChoices ?? [],
+    skillPicks: { nature: c.skillPicks?.nature ?? [], class: c.skillPicks?.class ?? [] },
     resourceUsed: c.resourceUsed ?? {},
   };
 }
@@ -219,6 +220,7 @@ export function createCompanion(nature: CompanionNature, level: number): Compani
     feat: "",
     featAbilityChoice: "",
     featChoices: [],
+    skillPicks: { nature: [], class: [] },
     resourceUsed: {},
     currentHp: 0,
     tempHp: 0,
@@ -279,4 +281,119 @@ export function restCompanion(character: Character, kind: "short" | "long"): Cha
       tempHp: 0,
     },
   };
+}
+
+// ---- Skills ----
+
+const NUMBER_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4 };
+
+export interface SkillChoiceSlot {
+  source: "nature" | "class";
+  label: string;
+  count: number;
+  options: SkillName[]; // every skill that may be picked here
+}
+
+export interface CompanionSkill {
+  name: SkillName;
+  ability: AbilityKey;
+  proficient: boolean;
+  expertise: boolean;
+  bonus: number;
+  sources: string[]; // where the proficiency comes from
+}
+
+const skillsIn = (text: string): SkillName[] => SKILL_LIST.filter((s) => text.includes(s));
+
+// Reads a "Skills: ..." line from the nature/variant or the class into either a fixed skill or a pick-N slot.
+function parseSkillLine(
+  line: string,
+  source: SkillChoiceSlot["source"],
+  label: string
+): { fixed: SkillName[]; slot: SkillChoiceSlot | null } {
+  const text = line.replace(/^•\s*/, "").replace(/^Skills:\s*/i, "");
+  const named = skillsIn(text);
+  const choose = text.match(/^(?:Choose\s+)?(?:any\s+)?(one|two|three|four)\b/i);
+  const count = choose ? NUMBER_WORDS[choose[1].toLowerCase()] : 0;
+  const isChoice = /choose|of your choice/i.test(text);
+  if (!isChoice) return { fixed: named, slot: null };
+  let options: SkillName[] = named;
+  const abilitiesNamed = Object.entries(ABILITY_NAMES)
+    .filter(([name]) => text.toLowerCase().includes(name))
+    .map(([, key]) => key);
+  if (/of your choice/i.test(text) && named.length === 0) {
+    options = abilitiesNamed.length ? SKILL_LIST.filter((sk) => abilitiesNamed.includes(SKILL_ABILITY[sk])) : [...SKILL_LIST];
+  } else if (/any/i.test(text) && named.length === 0) {
+    options = [...SKILL_LIST];
+  }
+  return { fixed: [], slot: count > 0 ? { source, label, count, options } : null };
+}
+
+function natureSkillLine(companion: Companion): string | undefined {
+  const def = COMPANION_NATURE_BY_NAME.get(companion.nature);
+  const variant = companionVariantDef(companion);
+  return [...(variant?.lines ?? []), ...(def?.commonLines ?? [])].find((l) => /^Skills:/i.test(l));
+}
+
+// The skill picks this companion still has to (or may) make: its nature/variant's, and its class's from 3rd level.
+export function companionSkillSlots(companion: Companion, level: number): SkillChoiceSlot[] {
+  const slots: SkillChoiceSlot[] = [];
+  const natureLine = natureSkillLine(companion);
+  if (natureLine) {
+    const parsed = parseSkillLine(natureLine, "nature", `${companion.variant || companion.nature} skills`);
+    if (parsed.slot) slots.push(parsed.slot);
+  }
+  const cls = COMPANION_CLASS_BY_NAME.get(companion.className);
+  if (cls && level >= 3) {
+    const line = cls.proficiencies.find((p) => /Skills:/i.test(p));
+    if (line) {
+      const parsed = parseSkillLine(line.replace(/^•\s*/, "").replace(/^Skills:\s*/i, "").replace(/^Choose (\w+) skills /i, "Choose $1 "), "class", `${cls.name} skills`);
+      if (parsed.slot) slots.push(parsed.slot);
+    }
+  }
+  return slots;
+}
+
+// Every skill's proficiency, expertise and bonus. Sources: a fixed nature skill, picks for the nature and
+// class, and the feat (which upgrades to expertise if the companion already had the skill).
+export function companionSkills(companion: Companion, level: number): CompanionSkill[] {
+  const scores = companionAbilities(companion, level);
+  const pb = companionProficiencyBonus(level);
+  const sources = new Map<SkillName, string[]>();
+  const add = (skill: string, why: string) => {
+    if (!isSkillName(skill)) return false;
+    const list = sources.get(skill) ?? [];
+    list.push(why);
+    sources.set(skill, list);
+    return true;
+  };
+  const natureLine = natureSkillLine(companion);
+  if (natureLine) {
+    const parsed = parseSkillLine(natureLine, "nature", "");
+    parsed.fixed.forEach((s) => add(s, companion.variant || companion.nature));
+  }
+  const slots = companionSkillSlots(companion, level);
+  for (const slot of slots) {
+    (companion.skillPicks?.[slot.source] ?? []).slice(0, slot.count).forEach((s) => {
+      if (slot.options.includes(s as SkillName)) add(s, slot.label.replace(/ skills$/, ""));
+    });
+  }
+  const fx = companionFeatEffects(companion);
+  const expertise = new Set<SkillName>();
+  const featSkills = [fx.skill, ...fx.skillPicks].filter((s): s is SkillName => Boolean(s) && isSkillName(s as string));
+  for (const s of featSkills) {
+    if (sources.has(s)) expertise.add(s);
+    add(s, companion.feat);
+  }
+  (companion.expertise ?? []).forEach((text, i) => {
+    const needed = EXPERTISE_LEVELS[i];
+    const name = SKILL_LIST.find((s) => s.toLowerCase() === text.trim().toLowerCase());
+    if (name && needed !== undefined && level >= needed && sources.has(name)) expertise.add(name);
+  });
+  return SKILL_LIST.map((name) => {
+    const proficient = sources.has(name);
+    const isExpert = expertise.has(name);
+    const bonus = abilityModifier(scores[SKILL_ABILITY[name]]) + (proficient ? pb : 0) + (isExpert ? pb : 0);
+    return { name, ability: SKILL_ABILITY[name], proficient, expertise: isExpert, bonus, sources: sources.get(name) ?? [] };
+  });
 }

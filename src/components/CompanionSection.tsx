@@ -18,6 +18,8 @@ import {
   companionMaxHp,
   companionProficiencyBonus,
   companionSaveProficiencies,
+  companionSkillSlots,
+  companionSkills,
   companionTraitSlots,
   companionVariantDef,
   earnedAsiLevels,
@@ -184,6 +186,10 @@ export default function CompanionSection({
     const fx = companionFeatEffects(companion);
     const resources = activeCompanionResources(companion, level, scores);
     const saveProf = companionSaveProficiencies(companion);
+    const skills = companionSkills(companion, level);
+    const skillSlots = companionSkillSlots(companion, level);
+    const proficientSkills = skills.filter((sk) => sk.proficient).map((sk) => sk.name);
+    const perception = skills.find((sk) => sk.name === "Perception");
     const speedBase = lineValue(featureLines, "Speed").split(".")[0];
     const speedFeet = speedBase.match(/(\d+)/);
 
@@ -440,6 +446,76 @@ export default function CompanionSection({
           })}
         </div>
 
+        <h3>Skills</h3>
+        {skillSlots.length > 0 && (
+          <div className="companion-skill-picks">
+            {skillSlots.map((slot) => {
+              const picks = companion.skillPicks[slot.source];
+              // A skill already held from another source can't be picked again here.
+              const heldElsewhere = new Set(
+                skills.filter((sk) => sk.proficient && !picks.includes(sk.name)).map((sk) => sk.name)
+              );
+              return (
+                <div className="choice-group" key={slot.source}>
+                  <div className="choice-group-label">
+                    {slot.label} ({slot.count})
+                  </div>
+                  <div className="choice-selects">
+                    {Array.from({ length: slot.count }, (_, i) => (
+                      <select
+                        key={i}
+                        aria-label={`${slot.label} ${i + 1}`}
+                        value={picks[i] ?? ""}
+                        onChange={(e) => {
+                          const next = [...picks];
+                          next[i] = e.target.value;
+                          patch({
+                            skillPicks: { ...companion.skillPicks, [slot.source]: next.filter((v, idx) => v || idx < i) },
+                          });
+                        }}
+                      >
+                        <option value="">Choose…</option>
+                        {slot.options
+                          .filter((o) => o === picks[i] || (!heldElsewhere.has(o) && !picks.includes(o)))
+                          .map((o) => (
+                            <option key={o} value={o}>
+                              {o}
+                            </option>
+                          ))}
+                      </select>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <div className="companion-skill-grid">
+          {skills.map((sk) => (
+            <HoverInfo
+              key={sk.name}
+              title={sk.name}
+              lines={[
+                `${ABILITY_SHORT[sk.ability]} ${formatModifier(abilityModifier(scores[sk.ability]))}${
+                  sk.proficient ? ` + proficiency ${formatModifier(pb)}` : ""
+                }${sk.expertise ? ` + expertise ${formatModifier(pb)}` : ""}`,
+                ...(sk.sources.length ? [`From: ${sk.sources.join(", ")}`] : ["Not proficient"]),
+              ]}
+              className="companion-skill-wrap"
+            >
+              <div className={`companion-skill${sk.proficient ? " is-proficient" : ""}${sk.expertise ? " is-expert" : ""}`}>
+                <span className="companion-skill-dot" aria-hidden="true" />
+                <span className="companion-skill-name">{sk.name}</span>
+                <span className="companion-skill-ability">{ABILITY_SHORT[sk.ability]}</span>
+                <span className="companion-skill-bonus">{formatModifier(sk.bonus)}</span>
+              </div>
+            </HoverInfo>
+          ))}
+        </div>
+        <p className="section-hint">
+          Passive Perception {10 + (perception?.bonus ?? 0)} · a filled dot is proficient, a ringed dot has expertise.
+        </p>
+
         {asiLevels.length > 0 && (
           <div className="companion-asi">
             <h3>Ability Score Improvements</h3>
@@ -544,6 +620,7 @@ export default function CompanionSection({
                   id={`companion-expertise-${i}`}
                   type="text"
                   placeholder="Skill or tool"
+                  list="companion-expertise-options"
                   value={companion.expertise[i] ?? ""}
                   onChange={(e) => {
                     const next = [...companion.expertise];
@@ -553,6 +630,11 @@ export default function CompanionSection({
                 />
               </div>
             ))}
+            <datalist id="companion-expertise-options">
+              {proficientSkills.map((n) => (
+                <option key={n} value={n} />
+              ))}
+            </datalist>
             {level >= 10 && (
               <div className="field">
                 <label htmlFor="companion-feat">Feat (10th level)</label>
