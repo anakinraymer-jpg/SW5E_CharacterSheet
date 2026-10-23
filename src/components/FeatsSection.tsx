@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Character } from "../types";
 import { FEATS_CATALOG } from "../data/feats";
+import { BACKGROUND_FEAT_OPTIONS } from "../data/backgroundFeats";
 import { buildFeatText } from "../featLogic";
 import { FEAT_OPTIONS, featDetails } from "../pickerCatalogs";
 import HoverInfo from "./HoverInfo";
@@ -27,6 +28,20 @@ export default function FeatsSection({
   const collapsed = !!collapsedSections["feats"];
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  // The background's own feat table, minus anything the character already has.
+  const ownedFeats = new Set(character.feats.map((f) => f.name));
+  const suggested = (BACKGROUND_FEAT_OPTIONS[character.backgroundAppliedName] ?? []).filter(
+    (name) => FEATS_BY_NAME.has(name) && !ownedFeats.has(name)
+  );
+  const suggestedLabel = `Suggested by ${character.backgroundAppliedName}`;
+  const pickerOptions =
+    suggested.length > 0
+      ? [
+          ...FEAT_OPTIONS.filter((o) => suggested.includes(o.name)).map((o) => ({ ...o, group: suggestedLabel })),
+          ...FEAT_OPTIONS.map((o) => ({ ...o, group: "All feats" })),
+        ]
+      : FEAT_OPTIONS;
+
   return (
     <section className="sheet-section feats-section">
       <SectionHeader title="Feats" collapsed={collapsed} onToggle={() => onToggleSection("feats")} />
@@ -45,7 +60,7 @@ export default function FeatsSection({
       {pickerOpen && (
         <PickerDialog
           title="Add a feat"
-          options={FEAT_OPTIONS}
+          options={pickerOptions}
           getDetails={featDetails}
           onClose={() => setPickerOpen(false)}
           onPick={(name) => {
@@ -53,6 +68,25 @@ export default function FeatsSection({
             onAddFeat(name);
           }}
         />
+      )}
+
+      {suggested.length > 0 && (
+        <div className="suggested-feats">
+          <div className="suggested-feats-label">{suggestedLabel} (pick one at character creation)</div>
+          <div className="chip-row">
+            {suggested.map((name) => {
+              const feat = FEATS_BY_NAME.get(name);
+              if (!feat) return null;
+              return (
+                <HoverInfo key={name} title={name} lines={featDetails(name)}>
+                  <button type="button" className="info-chip suggested-feat-chip" onClick={() => onAddFeat(name)}>
+                    + {name}
+                  </button>
+                </HoverInfo>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {character.feats.length === 0 && <p className="section-hint">No feats added yet.</p>}

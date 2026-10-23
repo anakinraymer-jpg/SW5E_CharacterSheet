@@ -2411,3 +2411,21 @@
     min-height: 34px;
   }
 }
+
+/* Feats suggested by the character's background */
+.suggested-feats {
+  margin: 8px 0 10px;
+}
+
+.suggested-feats-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.suggested-feat-chip {
+  cursor: pointer;
+  color: var(--text);
+}
