@@ -58,7 +58,8 @@ import PowersSection from "./PowersSection";
 import EquipmentSection from "./EquipmentSection";
 import BackstorySection from "./BackstorySection";
 import TraitsFeaturesSection from "./TraitsFeaturesSection";
-import CompanionSection from "./CompanionSection";
+import CompanionSection, { NATURE_OPTIONS, natureDetails } from "./CompanionSection";
+import { createCompanion } from "../companionLogic";
 import LegendSection from "./LegendSection";
 import { SimpleCard, SimpleModal } from "./SimpleCard";
 import { SimpleIdentity, SimpleWeapons } from "./SimpleViews";
@@ -106,7 +107,8 @@ import { getStoredCollapsedSections, saveCollapsedSections } from "../collapsibl
 import { FEATS_CATALOG } from "../data/feats";
 import { GEAR_CATALOG } from "../data/gear";
 import { addFeat, featNeedsChoices, removeFeat, type FeatSelections } from "../featLogic";
-import type { ClassFeature, ClassSubChoiceDef, ClassSubChoicePickDetail, FeatEntry } from "../types";
+import type { ClassFeature, ClassSubChoiceDef, ClassSubChoicePickDetail, CompanionNature, FeatEntry } from "../types";
+import PickerDialog from "./PickerDialog";
 import { CLASS_ACCENTS } from "../data/classFeatureChoices";
 import {
   applyRest,
@@ -150,6 +152,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   });
   // Which Simple-mode card is currently popped open for editing.
   const [openSimple, setOpenSimple] = useState<SimpleKey | null>(null);
+  const [companionPickerOpen, setCompanionPickerOpen] = useState(false);
 
   function toggleSimpleMode() {
     setSimpleMode((prev) => {
@@ -483,12 +486,19 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       setPendingFeat(match);
     } else {
       setCharacter((prev) => addFeat(prev, match, { abilityChoice: "", choiceSelections: [] }));
+      offerCompanionFor(match.name);
     }
+  }
+
+  // The Companion Keeper feat grants a companion, so open the nature picker straight away.
+  function offerCompanionFor(featName: string) {
+    if (featName === "Companion Keeper" && !character.companion) setCompanionPickerOpen(true);
   }
 
   function handleFeatConfirm(selections: FeatSelections) {
     if (!pendingFeat) return;
     setCharacter((prev) => addFeat(prev, pendingFeat, selections));
+    offerCompanionFor(pendingFeat.name);
     setPendingFeat(null);
   }
 
@@ -922,6 +932,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           <CompanionSection
             character={character}
             onChange={(companion) => update("companion", companion)}
+            onRequestAdd={() => setCompanionPickerOpen(true)}
             collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
           />
@@ -1166,6 +1177,23 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         <SimpleModal title={SIMPLE_TITLES[openSimple] ?? "Edit"} onClose={() => setOpenSimple(null)}>
           {renderSimpleModalContent(openSimple)}
         </SimpleModal>
+      )}
+
+      {companionPickerOpen && (
+        <PickerDialog
+          title="Choose a companion nature"
+          options={NATURE_OPTIONS}
+          getDetails={natureDetails}
+          onClose={() => setCompanionPickerOpen(false)}
+          onPick={(name) => {
+            setCompanionPickerOpen(false);
+            setCharacter((prev) =>
+              prev.companion
+                ? prev
+                : { ...prev, companion: createCompanion(name as CompanionNature, Math.max(1, Math.min(20, prev.level || 1))) }
+            );
+          }}
+        />
       )}
 
       {pendingSpecies && (

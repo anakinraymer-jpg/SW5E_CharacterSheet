@@ -404,6 +404,19 @@ export interface CompanionNatureDef {
   traits: CompanionTraitDef[];
 }
 
+export interface CompanionClassFeatureDef {
+  name: string;
+  level: number;
+  text: string;
+}
+
+export interface CompanionClassDef {
+  name: string;
+  prerequisite: string; // "In order to become a ..., your companion must have ..."
+  proficiencies: string[];
+  features: CompanionClassFeatureDef[];
+}
+
 export interface Companion {
   name: string;
   nature: CompanionNature;
@@ -411,7 +424,10 @@ export interface Companion {
   appearance: string;
   abilities: Record<AbilityKey, number>;
   traits: string[]; // chosen trait names
-  className: string; // companion class (its features are not tracked yet)
+  className: string; // companion class, chosen at 3rd level
+  asi: Record<string, AbilityKey[]>; // by level ("4", "8", ... "20"): one ability = +2, two = +1 each (the 20th-level capstone is +2 each)
+  expertise: string[]; // skill/tool expertise picked at 6th and 14th level
+  feat: string; // the feat gained at 10th level
   currentHp: number;
   tempHp: number;
   notes: string;

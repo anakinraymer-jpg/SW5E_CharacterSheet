@@ -1,25 +1,35 @@
 import { useState } from "react";
 import type { AbilityKey, Character, Companion, CompanionNature, CompanionTraitDef } from "../types";
 import { COMPANION_NATURES } from "../data/companions";
+import { COMPANION_CLASSES } from "../data/companionClasses";
 import {
+  ASI_LEVELS,
+  CAPSTONE_LEVEL,
+  COMPANION_CLASS_BY_NAME,
   COMPANION_NATURE_BY_NAME,
+  EXPERTISE_LEVELS,
   FOLLOWER_FEATURES,
-  companionAsiCount,
+  classRequirement,
+  classRequirementMet,
+  companionAbilities,
   companionLevel,
   companionMaxHp,
   companionProficiencyBonus,
   companionTraitSlots,
   companionVariantDef,
-  createCompanion,
+  earnedAsiLevels,
+  normalizeCompanion,
   traitAllowsRepeats,
   traitEligibility,
   traitPrerequisite,
   withCompanionVariant,
 } from "../companionLogic";
+import { FEAT_OPTIONS, featDetails } from "../pickerCatalogs";
 import { abilityModifier, formatModifier } from "../utils";
 import HoverInfo from "./HoverInfo";
 import NumberInput from "./NumberInput";
 import PickerDialog, { type PickerOption } from "./PickerDialog";
+import PickerField from "./PickerField";
 import SectionHeader from "./SectionHeader";
 
 const ABILITIES: { key: AbilityKey; label: string }[] = [
@@ -31,28 +41,30 @@ const ABILITIES: { key: AbilityKey; label: string }[] = [
   { key: "cha", label: "Charisma" },
 ];
 
-const COMPANION_CLASSES = [
-  "Berserker",
-  "Consular",
-  "Engineer",
-  "Fighter",
-  "Guardian",
-  "Monk",
-  "Operative",
-  "Scholar",
-  "Scout",
-  "Sentinel",
-];
+const ABILITY_SHORT: Record<AbilityKey, string> = {
+  str: "STR",
+  dex: "DEX",
+  con: "CON",
+  int: "INT",
+  wis: "WIS",
+  cha: "CHA",
+};
 
-const NATURE_OPTIONS: PickerOption[] = COMPANION_NATURES.map((n) => ({
+export const NATURE_OPTIONS: PickerOption[] = COMPANION_NATURES.map((n) => ({
   name: n.nature,
   subtitle: `Requires: ${n.prerequisite}`,
 }));
 
-function natureDetails(name: string): string[] {
+export function natureDetails(name: string): string[] {
   const def = COMPANION_NATURE_BY_NAME.get(name as CompanionNature);
   if (!def) return [];
   return [def.summary, `Prerequisite: ${def.prerequisite}`, `${def.traits.length} traits to choose from.`].filter(Boolean);
+}
+
+function ordinal(n: number): string {
+  const rem = n % 100;
+  if (rem >= 11 && rem <= 13) return `${n}th`;
+  return `${n}${["th", "st", "nd", "rd"][n % 10 > 3 ? 0 : n % 10]}`;
 }
 
 // Pulls "Label: value" out of the feature lines (e.g. "Speed: 20 ft.").
@@ -62,22 +74,58 @@ function lineValue(lines: string[], label: string): string {
   return hit ? hit.slice(prefix.length) : "";
 }
 
+function AbilitySelect({
+  value,
+  onChange,
+  label,
+}: {
+  value: AbilityKey | "";
+  onChange: (v: AbilityKey | "") => void;
+  label: string;
+}) {
+  return (
+    <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value as AbilityKey | "")}>
+      <option value="">—</option>
+      {ABILITIES.map((a) => (
+        <option key={a.key} value={a.key}>
+          {a.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 interface Props {
   character: Character;
   onChange: (companion: Companion | null) => void;
+  onRequestAdd: () => void;
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
 }
 
-export default function CompanionSection({ character, onChange, collapsedSections, onToggleSection }: Props) {
+export default function CompanionSection({
+  character,
+  onChange,
+  onRequestAdd,
+  collapsedSections,
+  onToggleSection,
+}: Props) {
   const collapsed = !!collapsedSections["companion"];
-  const [naturePickerOpen, setNaturePickerOpen] = useState(false);
   const [traitPickerOpen, setTraitPickerOpen] = useState(false);
-  const companion = character.companion;
+  const companion = character.companion ? normalizeCompanion(character.companion) : null;
   const level = companionLevel(character);
 
   function patch(changes: Partial<Companion>) {
     if (companion) onChange({ ...companion, ...changes });
+  }
+
+  function setAsi(asiLevel: number, slot: number, value: AbilityKey | "") {
+    if (!companion) return;
+    const key = String(asiLevel);
+    const picks = [...(companion.asi[key] ?? [])];
+    picks[slot] = value as AbilityKey;
+    const cleaned = picks.filter(Boolean);
+    patch({ asi: { ...companion.asi, [key]: cleaned } });
   }
 
   function body() {
@@ -88,7 +136,7 @@ export default function CompanionSection({ character, onChange, collapsedSection
             Some archetypes (Beastmaster, Astrotech Engineer, Zoologist and others) and the Companion Keeper feat
             give you a companion. It levels with you, and you can only have one at a time.
           </p>
-          <button type="button" className="btn btn-secondary" onClick={() => setNaturePickerOpen(true)}>
+          <button type="button" className="btn btn-secondary" onClick={onRequestAdd}>
             + Add Companion
           </button>
         </>
@@ -98,14 +146,19 @@ export default function CompanionSection({ character, onChange, collapsedSection
     const def = COMPANION_NATURE_BY_NAME.get(companion.nature);
     const variant = companionVariantDef(companion);
     const featureLines = [...(def?.commonLines ?? []), ...(variant?.lines ?? [])];
+    const scores = companionAbilities(companion, level);
     const maxHp = companionMaxHp(companion, level);
-    const conMod = abilityModifier(companion.abilities.con);
-    const dexMod = abilityModifier(companion.abilities.dex);
+    const conMod = abilityModifier(scores.con);
+    const dexMod = abilityModifier(scores.dex);
     const pb = companionProficiencyBonus(level);
     const slots = companionTraitSlots(level);
     const traitDefs = new Map((def?.traits ?? []).map((t) => [t.name, t]));
     const overLimit = companion.traits.length > slots;
-    const asiCount = companionAsiCount(level);
+    const asiLevels = earnedAsiLevels(level);
+    const cls = COMPANION_CLASS_BY_NAME.get(companion.className);
+    const req = cls ? classRequirement(cls) : null;
+    const classUnmet = cls ? !classRequirementMet(cls, scores) : false;
+    const expertiseSlots = EXPERTISE_LEVELS.filter((l) => level >= l).length;
 
     const traitOptions: PickerOption[] = (def?.traits ?? [])
       .filter((t) => {
@@ -160,8 +213,8 @@ export default function CompanionSection({ character, onChange, collapsedSection
             >
               <option value="">None</option>
               {COMPANION_CLASSES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
+                <option key={c.name} value={c.name}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -177,6 +230,12 @@ export default function CompanionSection({ character, onChange, collapsedSection
           </div>
         </div>
         {variant?.summary && <p className="section-hint">{variant.summary}</p>}
+        {classUnmet && req && (
+          <p className="section-hint companion-warning">
+            {companion.className} needs {req.abilities.map((a) => ABILITY_SHORT[a]).join(" or ")} {req.min}+ and this
+            companion doesn't have it yet.
+          </p>
+        )}
 
         <div className="hp-grid">
           <div className="field">
@@ -254,8 +313,8 @@ export default function CompanionSection({ character, onChange, collapsedSection
         <p className="section-hint">
           {companion.nature === "Beast"
             ? "A beast's Intelligence is 6; assign the standard array (16, 14, 12, 10, 8) to its other scores. "
-            : "Assign the scores as your GM allows. "}
-          Ability score improvements ({asiCount} earned so far, at 4th, 8th, 12th, 16th and 19th level) are applied here by hand.
+            : "Assign the base scores as your GM allows. "}
+          Improvements below are added on top.
         </p>
         <div className="ability-grid">
           {ABILITIES.map(({ key, label }) => (
@@ -269,10 +328,67 @@ export default function CompanionSection({ character, onChange, collapsedSection
                 value={companion.abilities[key]}
                 onValue={(n) => patch({ abilities: { ...companion.abilities, [key]: n } })}
               />
-              <div className="ability-mod">{formatModifier(abilityModifier(companion.abilities[key]))}</div>
+              <HoverInfo
+                title={label}
+                lines={[
+                  `Base ${companion.abilities[key]}`,
+                  scores[key] !== companion.abilities[key]
+                    ? `With improvements ${scores[key]}`
+                    : "No improvements yet",
+                ]}
+              >
+                <div className="ability-mod">
+                  {formatModifier(abilityModifier(scores[key]))}
+                  {scores[key] !== companion.abilities[key] && (
+                    <span className="companion-effective"> ({scores[key]})</span>
+                  )}
+                </div>
+              </HoverInfo>
             </div>
           ))}
         </div>
+
+        {asiLevels.length > 0 && (
+          <div className="companion-asi">
+            <h3>Ability Score Improvements</h3>
+            <p className="section-hint">
+              One ability gains +2, or pick two for +1 each (scores cap at 20). The 20th-level capstone gives two
+              abilities +2 each and raises their cap by 2.
+            </p>
+            {asiLevels.map((l) => {
+              const picks = companion.asi[String(l)] ?? [];
+              const capstone = l === CAPSTONE_LEVEL;
+              return (
+                <div className="companion-asi-row" key={l}>
+                  <span className="companion-asi-level">Level {l}</span>
+                  <AbilitySelect
+                    label={`Level ${l} first ability`}
+                    value={picks[0] ?? ""}
+                    onChange={(v) => setAsi(l, 0, v)}
+                  />
+                  {(capstone || picks.length >= 1) && (
+                    <AbilitySelect
+                      label={`Level ${l} second ability`}
+                      value={picks[1] ?? ""}
+                      onChange={(v) => setAsi(l, 1, v)}
+                    />
+                  )}
+                  <span className="companion-asi-note">
+                    {capstone
+                      ? "+2 each"
+                      : picks.length === 1
+                        ? "+2"
+                        : picks.length === 2
+                          ? "+1 each"
+                          : ASI_LEVELS.includes(l)
+                            ? "unspent"
+                            : ""}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         <h3>
           Traits ({companion.traits.length}/{slots})
@@ -323,6 +439,64 @@ export default function CompanionSection({ character, onChange, collapsedSection
               patch({ traits: [...companion.traits, name] });
             }}
           />
+        )}
+
+        {(expertiseSlots > 0 || level >= 10) && (
+          <div className="field-grid companion-extras">
+            {Array.from({ length: expertiseSlots }, (_, i) => (
+              <div className="field" key={i}>
+                <label htmlFor={`companion-expertise-${i}`}>
+                  Expertise ({ordinal(EXPERTISE_LEVELS[i])} level)
+                </label>
+                <input
+                  id={`companion-expertise-${i}`}
+                  type="text"
+                  placeholder="Skill or tool"
+                  value={companion.expertise[i] ?? ""}
+                  onChange={(e) => {
+                    const next = [...companion.expertise];
+                    next[i] = e.target.value;
+                    patch({ expertise: next });
+                  }}
+                />
+              </div>
+            ))}
+            {level >= 10 && (
+              <div className="field">
+                <label htmlFor="companion-feat">Feat (10th level)</label>
+                <PickerField
+                  id="companion-feat"
+                  title="Choose the companion's feat"
+                  value={companion.feat}
+                  options={FEAT_OPTIONS.filter((o) => o.name !== "Companion Keeper")}
+                  getDetails={featDetails}
+                  onPick={(name) => patch({ feat: name })}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {cls && (
+          <div className="species-traits-box">
+            <div className="species-traits-header">{cls.name} class features (level {level})</div>
+            {cls.proficiencies.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Proficiencies.</strong> {cls.proficiencies.map((p) => p.replace(/^• /, "")).join(" · ")}
+              </p>
+            )}
+            {cls.features
+              .filter((f) => f.level <= level)
+              .map((f) => (
+                <p className="species-trait-line companion-feature" key={f.name}>
+                  <strong>
+                    {f.name} ({ordinal(f.level)} level).
+                  </strong>{" "}
+                  {f.text}
+                </p>
+              ))}
+            {level < 3 && <p className="section-hint">Class features begin at 3rd level.</p>}
+          </div>
         )}
 
         <div className="species-traits-box">
@@ -384,18 +558,6 @@ export default function CompanionSection({ character, onChange, collapsedSection
     <section className="sheet-section companion-section">
       <SectionHeader title="Companion" collapsed={collapsed} onToggle={() => onToggleSection("companion")} />
       {!collapsed && body()}
-      {naturePickerOpen && (
-        <PickerDialog
-          title="Choose a companion nature"
-          options={NATURE_OPTIONS}
-          getDetails={natureDetails}
-          onClose={() => setNaturePickerOpen(false)}
-          onPick={(name) => {
-            setNaturePickerOpen(false);
-            onChange(createCompanion(name as CompanionNature, level));
-          }}
-        />
-      )}
     </section>
   );
 }

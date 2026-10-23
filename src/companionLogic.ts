@@ -1,5 +1,14 @@
-import type { AbilityKey, Character, Companion, CompanionNature, CompanionNatureDef, CompanionTraitDef } from "./types";
+import type {
+  AbilityKey,
+  Character,
+  Companion,
+  CompanionClassDef,
+  CompanionNature,
+  CompanionNatureDef,
+  CompanionTraitDef,
+} from "./types";
 import { COMPANION_NATURES } from "./data/companions";
+import { COMPANION_CLASSES } from "./data/companionClasses";
 import { abilityModifier } from "./utils";
 
 export const COMPANION_NATURE_BY_NAME = new Map<CompanionNature, CompanionNatureDef>(
@@ -18,7 +27,72 @@ export const FOLLOWER_FEATURES: { level: number; name: string; text: string }[] 
   { level: 20, name: "Companion Capstone", text: "Two ability scores of its choice increase by 2, and their maximum increases by 2." },
 ];
 
-const ASI_LEVELS = [4, 8, 12, 16, 19];
+export const COMPANION_CLASS_BY_NAME = new Map<string, CompanionClassDef>(COMPANION_CLASSES.map((c) => [c.name, c]));
+
+export const ASI_LEVELS = [4, 8, 12, 16, 19];
+export const CAPSTONE_LEVEL = 20;
+export const EXPERTISE_LEVELS = [6, 14];
+
+const ABILITY_KEYS: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
+const ABILITY_NAMES: Record<string, AbilityKey> = {
+  strength: "str",
+  dexterity: "dex",
+  constitution: "con",
+  intelligence: "int",
+  wisdom: "wis",
+  charisma: "cha",
+};
+
+// Companions saved before phase 2 lack these fields.
+export function normalizeCompanion(c: Companion): Companion {
+  return { ...c, asi: c.asi ?? {}, expertise: c.expertise ?? [], feat: c.feat ?? "" };
+}
+
+// Ability score improvements the companion has actually earned by `level`, as [level, picks] rows.
+export function earnedAsiLevels(level: number): number[] {
+  return [...ASI_LEVELS, CAPSTONE_LEVEL].filter((l) => level >= l);
+}
+
+// Final ability scores: the base scores plus every chosen improvement. Scores cap at 20, and the
+// 20th-level capstone raises that cap by 2 for the abilities it improves.
+export function companionAbilities(companion: Companion, level: number): Record<AbilityKey, number> {
+  const asi = companion.asi ?? {};
+  const bonus: Record<AbilityKey, number> = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+  const capBonus: Record<AbilityKey, number> = { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 };
+  for (const l of ASI_LEVELS) {
+    if (level < l) continue;
+    const picks = (asi[String(l)] ?? []).filter(Boolean);
+    const amount = picks.length === 1 ? 2 : 1;
+    picks.forEach((a) => (bonus[a] += amount));
+  }
+  if (level >= CAPSTONE_LEVEL) {
+    (asi[String(CAPSTONE_LEVEL)] ?? []).filter(Boolean).forEach((a) => {
+      bonus[a] += 2;
+      capBonus[a] += 2;
+    });
+  }
+  const out = { ...companion.abilities };
+  ABILITY_KEYS.forEach((k) => {
+    const base = companion.abilities[k];
+    out[k] = Math.max(base, Math.min(base + bonus[k], 20 + capBonus[k]));
+  });
+  return out;
+}
+
+// Reads a class's "must have a Strength, Dexterity or ... score of 13 or higher" requirement.
+export function classRequirement(cls: CompanionClassDef): { abilities: AbilityKey[]; min: number } | null {
+  const m = cls.prerequisite.match(/must have (?:an? )?(.+?) score of (\d+)/i);
+  if (!m) return null;
+  const abilities = Object.entries(ABILITY_NAMES)
+    .filter(([name]) => m[1].toLowerCase().includes(name))
+    .map(([, key]) => key);
+  return abilities.length ? { abilities, min: Number(m[2]) } : null;
+}
+
+export function classRequirementMet(cls: CompanionClassDef, scores: Record<AbilityKey, number>): boolean {
+  const req = classRequirement(cls);
+  return !req || req.abilities.some((a) => scores[a] >= req.min);
+}
 const TRAIT_LEVELS = [5, 9, 13, 17];
 
 export function companionLevel(character: Character): number {
@@ -34,9 +108,6 @@ export function companionTraitSlots(level: number): number {
   return 2 + TRAIT_LEVELS.filter((l) => level >= l).length;
 }
 
-export function companionAsiCount(level: number): number {
-  return ASI_LEVELS.filter((l) => level >= l).length;
-}
 
 export function companionVariantDef(companion: Companion) {
   const def = COMPANION_NATURE_BY_NAME.get(companion.nature);
@@ -47,7 +118,7 @@ export function companionVariantDef(companion: Companion) {
 export function companionMaxHp(companion: Companion, level: number): number {
   const variant = companionVariantDef(companion);
   if (!variant) return 0;
-  const conMod = abilityModifier(companion.abilities.con);
+  const conMod = abilityModifier(companionAbilities(companion, level).con);
   const first = Math.max(1, variant.hitDie + conMod);
   const perLevel = Math.max(1, Math.floor(variant.hitDie / 2) + 1 + conMod);
   return first + perLevel * Math.max(0, level - 1);
@@ -65,6 +136,9 @@ export function createCompanion(nature: CompanionNature, level: number): Compani
     abilities,
     traits: [],
     className: "",
+    asi: {},
+    expertise: [],
+    feat: "",
     currentHp: 0,
     tempHp: 0,
     notes: "",
