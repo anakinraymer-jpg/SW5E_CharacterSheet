@@ -18,6 +18,7 @@ import {
   MONK_UNARMORED_MOVEMENT_BY_LEVEL,
 } from "./data/classFeatureChoices";
 import { FEATS_CATALOG } from "./data/feats";
+import { healCompanionFully } from "./companionLogic";
 import { abilityModifier, armorCatalogMatch } from "./utils";
 import { revokeSkill } from "./grantOwnership";
 
@@ -218,7 +219,7 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
     return { ...character, classResources, combatFeatures, isRaging: false };
   }
 
-  return {
+  return healCompanionFully({
     ...character,
     classResources,
     combatFeatures,
@@ -228,7 +229,7 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
     deathSaves: { successes: 0, failures: 0 },
     forcePoints: { ...character.forcePoints, current: character.forcePoints.max },
     techPoints: { ...character.techPoints, current: character.techPoints.max },
-  };
+  });
 }
 
 export function activeSpeedBonus(character: Character): number {

@@ -379,6 +379,44 @@ export interface DeathSaves {
   failures: number; // 0-3
 }
 
+// ---- Companions (Expanded Content: Customization Options) ----
+export type CompanionNature = "Beast" | "Droid" | "Humanoid" | "Tracker Droid" | "Turret";
+
+export interface CompanionTraitDef {
+  name: string;
+  text: string; // may start with a "Prerequisite: ..." line
+}
+
+export interface CompanionVariantDef {
+  name: string; // droid class / humanoid size; the nature's own name when it has no variants
+  summary: string;
+  hitDie: number;
+  lines: string[]; // variant-specific "Label: text" feature lines
+}
+
+export interface CompanionNatureDef {
+  nature: CompanionNature;
+  prerequisite: string;
+  summary: string;
+  commonLines: string[]; // "Label: text" feature lines shared by every variant
+  variantLabel: string; // "" when the nature has a single variant
+  variants: CompanionVariantDef[];
+  traits: CompanionTraitDef[];
+}
+
+export interface Companion {
+  name: string;
+  nature: CompanionNature;
+  variant: string;
+  appearance: string;
+  abilities: Record<AbilityKey, number>;
+  traits: string[]; // chosen trait names
+  className: string; // companion class (its features are not tracked yet)
+  currentHp: number;
+  tempHp: number;
+  notes: string;
+}
+
 export interface Character {
   id: string;
   createdAt: string;
@@ -424,6 +462,7 @@ export interface Character {
   speciesSpeeds: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" } | null;
   speciesGrantedSpecialMovement: string; // exact text last auto-filled into Combat's Special Movement field, mirrors speciesGrantedVision's non-destructive pattern
   speciesGrantedResistances: string; // exact text last auto-filled into Combat's Advantages/Resistances/Immunities field; removed by substring on revert since feats/the player share that field
+  companion: Companion | null;
   speciesBaseline: { size: string; speed: number; prevSize: string; prevSpeed: number } | null; // what the species set vs what was there before, so revert can restore it
   speciesTraitsText: string;
   speciesCreditsApplied: number; // bonus credits from traits like Wealthy, so revert/relevel can cleanly adjust
@@ -645,6 +684,7 @@ export function createBlankCharacter(): Character {
     speciesSpeeds: null,
     speciesGrantedSpecialMovement: "",
     speciesGrantedResistances: "",
+    companion: null,
     speciesBaseline: null,
     speciesTraitsText: "",
     speciesCreditsApplied: 0,

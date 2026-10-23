@@ -7,6 +7,7 @@ import { hasFeat } from "./featLogic";
 import { WEAPON_LOOKUP, toHitAbilityInfo } from "./weaponLogic";
 import { castingStats } from "./castingStats";
 import { grantedLanguages, grantedProficiencies } from "./grantsSummary";
+import { companionMaxHp } from "./companionLogic";
 
 // Hover-tooltip contents for Simple mode's collapsed cards. Kept short: tooltips are for a quick
 // glance, and clicking a card opens the full section for editing.
@@ -143,4 +144,15 @@ export function traitsSummary(c: Character): string[] {
     ],
     22
   );
+}
+
+export function companionSummary(c: Character): string[] {
+  const comp = c.companion;
+  if (!comp) return ["No companion."];
+  const level = Math.max(1, Math.min(20, c.level || 1));
+  return [
+    `${comp.name || "Unnamed"} — ${comp.nature}${comp.variant && comp.variant !== comp.nature ? ` (${comp.variant})` : ""}, level ${level}`,
+    `HP ${comp.currentHp}/${companionMaxHp(comp, level)}`,
+    comp.traits.length ? `Traits: ${comp.traits.join(", ")}` : "No traits chosen yet.",
+  ];
 }

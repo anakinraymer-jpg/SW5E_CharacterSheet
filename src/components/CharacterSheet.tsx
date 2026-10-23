@@ -58,6 +58,7 @@ import PowersSection from "./PowersSection";
 import EquipmentSection from "./EquipmentSection";
 import BackstorySection from "./BackstorySection";
 import TraitsFeaturesSection from "./TraitsFeaturesSection";
+import CompanionSection from "./CompanionSection";
 import LegendSection from "./LegendSection";
 import { SimpleCard, SimpleModal } from "./SimpleCard";
 import { SimpleIdentity, SimpleWeapons } from "./SimpleViews";
@@ -72,6 +73,7 @@ import {
   powersSummary,
   skillsSummary,
   traitsSummary,
+  companionSummary,
 } from "../simpleSummaries";
 
 type SimpleKey = SectionId | "identity" | "characterData" | "notes";
@@ -915,6 +917,15 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             onToggleSection={toggleSection}
           />
         );
+      case "companion":
+        return (
+          <CompanionSection
+            character={character}
+            onChange={(companion) => update("companion", companion)}
+            collapsedSections={sectionCollapsed}
+            onToggleSection={toggleSection}
+          />
+        );
       case "legend":
         return <LegendSection collapsedSections={sectionCollapsed} onToggleSection={toggleSection} />;
     }
@@ -942,6 +953,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     characterData: "Character Data",
     notes: "Features, Backstory & Notes",
     traitsFeatures: "Traits & Features",
+    companion: "Companion",
     legend: "Legend",
   };
 
@@ -995,6 +1007,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         );
       case "traitsFeatures":
         return <SimpleCard title="Traits & Features" summary={traitsSummary(character)} onOpen={open("traitsFeatures")} />;
+      case "companion":
+        return <SimpleCard title="Companion" summary={companionSummary(character)} onOpen={open("companion")} />;
       case "legend":
         return (
           <SimpleCard
@@ -1021,6 +1035,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     equipment: "Gear",
     backstory: "Backstory",
     traitsFeatures: "Traits",
+    companion: "Companion",
     legend: "Legend",
   };
   const navIds: SectionId[] = [

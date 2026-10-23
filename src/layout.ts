@@ -13,6 +13,7 @@ export type SectionId =
   | "equipment"
   | "backstory"
   | "traitsFeatures"
+  | "companion"
   | "legend";
 
 // Stat sections form their own fixed row of small boxes beneath the health bar and only
@@ -21,7 +22,7 @@ export type SectionId =
 // among themselves.
 export const STAT_SECTIONS: SectionId[] = ["proficiencyBonus", "defense", "speedBase", "initiative"];
 export const NARROW_SECTIONS: SectionId[] = ["abilities", "combat", "skills", "powers", "feats"];
-export const WIDE_SECTIONS: SectionId[] = ["classFeatures", "weapons", "equipment", "backstory", "traitsFeatures", "legend"];
+export const WIDE_SECTIONS: SectionId[] = ["classFeatures", "weapons", "equipment", "backstory", "traitsFeatures", "companion", "legend"];
 
 const ALL_SECTIONS = new Set<SectionId>([...STAT_SECTIONS, ...NARROW_SECTIONS, ...WIDE_SECTIONS]);
 
@@ -34,7 +35,7 @@ export interface SheetLayout {
 export const DEFAULT_LAYOUT: SheetLayout = {
   statRow: ["proficiencyBonus", "defense", "speedBase", "initiative"],
   columns: [["abilities", "combat"], ["skills"], ["powers", "feats"]],
-  wide: ["classFeatures", "weapons", "equipment", "backstory", "traitsFeatures", "legend"],
+  wide: ["classFeatures", "weapons", "equipment", "backstory", "traitsFeatures", "companion", "legend"],
 };
 
 function cloneLayout(layout: SheetLayout): SheetLayout {
