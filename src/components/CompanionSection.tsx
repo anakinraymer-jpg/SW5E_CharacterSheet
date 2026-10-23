@@ -1,5 +1,6 @@
 import { useState } from "react";
-import type { AbilityKey, Character, Companion, CompanionNature, CompanionTraitDef } from "../types";
+import type { AbilityKey, Character, Companion, CompanionNature, CompanionTraitDef, SkillName, SkillState } from "../types";
+import { SKILL_LIST } from "../types";
 import { COMPANION_NATURES } from "../data/companions";
 import { COMPANION_CLASSES } from "../data/companionClasses";
 import {
@@ -12,9 +13,11 @@ import {
   classRequirement,
   classRequirementMet,
   companionAbilities,
+  companionFeatEffects,
   companionLevel,
   companionMaxHp,
   companionProficiencyBonus,
+  companionSaveProficiencies,
   companionTraitSlots,
   companionVariantDef,
   earnedAsiLevels,
@@ -24,8 +27,12 @@ import {
   traitPrerequisite,
   withCompanionVariant,
 } from "../companionLogic";
+import { activeCompanionResources } from "../companionResources";
+import { buildFeatText, featNeedsChoices, type FeatSelections } from "../featLogic";
+import { FEATS_CATALOG } from "../data/feats";
 import { FEAT_OPTIONS, featDetails } from "../pickerCatalogs";
 import { abilityModifier, formatModifier } from "../utils";
+import FeatChoiceDialog from "./FeatChoiceDialog";
 import HoverInfo from "./HoverInfo";
 import NumberInput from "./NumberInput";
 import PickerDialog, { type PickerOption } from "./PickerDialog";
@@ -49,6 +56,13 @@ const ABILITY_SHORT: Record<AbilityKey, string> = {
   wis: "WIS",
   cha: "CHA",
 };
+
+const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
+
+// A companion has no skill list of its own, so the feat dialog is shown an empty one.
+const NO_SKILLS = Object.fromEntries(
+  SKILL_LIST.map((name) => [name, { proficient: false, expertise: false }])
+) as Record<SkillName, SkillState>;
 
 export const NATURE_OPTIONS: PickerOption[] = COMPANION_NATURES.map((n) => ({
   name: n.nature,
@@ -112,11 +126,19 @@ export default function CompanionSection({
 }: Props) {
   const collapsed = !!collapsedSections["companion"];
   const [traitPickerOpen, setTraitPickerOpen] = useState(false);
+  const [pendingFeat, setPendingFeat] = useState<string | null>(null);
   const companion = character.companion ? normalizeCompanion(character.companion) : null;
   const level = companionLevel(character);
 
   function patch(changes: Partial<Companion>) {
     if (companion) onChange({ ...companion, ...changes });
+  }
+
+  function chooseFeat(name: string) {
+    const feat = FEATS_BY_NAME.get(name);
+    if (!feat) return;
+    if (featNeedsChoices(feat)) setPendingFeat(name);
+    else patch({ feat: name, featAbilityChoice: "", featChoices: [] });
   }
 
   function setAsi(asiLevel: number, slot: number, value: AbilityKey | "") {
@@ -159,6 +181,11 @@ export default function CompanionSection({
     const req = cls ? classRequirement(cls) : null;
     const classUnmet = cls ? !classRequirementMet(cls, scores) : false;
     const expertiseSlots = EXPERTISE_LEVELS.filter((l) => level >= l).length;
+    const fx = companionFeatEffects(companion);
+    const resources = activeCompanionResources(companion, level, scores);
+    const saveProf = companionSaveProficiencies(companion);
+    const speedBase = lineValue(featureLines, "Speed").split(".")[0];
+    const speedFeet = speedBase.match(/(\d+)/);
 
     const traitOptions: PickerOption[] = (def?.traits ?? [])
       .filter((t) => {
@@ -256,6 +283,7 @@ export default function CompanionSection({
                 `Hit die: d${variant?.hitDie ?? 0}`,
                 `1st level: ${variant?.hitDie ?? 0} + Con (${formatModifier(conMod)})`,
                 `Each level after: ${Math.floor((variant?.hitDie ?? 0) / 2) + 1} + Con (${formatModifier(conMod)}), minimum 1`,
+                ...(fx.hpPerLevel ? [`${companion.feat}: +${fx.hpPerLevel * level} (${fx.hpPerLevel} per level)`] : []),
               ]}
             >
               <div className="readonly-box">{maxHp}</div>
@@ -299,7 +327,16 @@ export default function CompanionSection({
           </div>
           <div className="field">
             <label>Speed</label>
-            <div className="readonly-box">{lineValue(featureLines, "Speed").split(".")[0] || "—"}</div>
+            {fx.speedBonus > 0 && speedFeet ? (
+              <HoverInfo
+                title="Speed"
+                lines={[`${speedFeet[1]} ft + ${fx.speedBonus} from ${companion.feat}`]}
+              >
+                <div className="readonly-box">{Number(speedFeet[1]) + fx.speedBonus} ft</div>
+              </HoverInfo>
+            ) : (
+              <div className="readonly-box">{speedBase || "—"}</div>
+            )}
           </div>
           <div className="field">
             <label>Size / Type</label>
@@ -308,6 +345,48 @@ export default function CompanionSection({
             </div>
           </div>
         </div>
+
+        {resources.length > 0 && (
+          <>
+            <h3>{companion.className} Resources</h3>
+            <div className="class-resources-grid">
+              {resources.map(({ def, max, remaining }) => (
+                <div className="class-resource-card" key={def.key}>
+                  <div className="class-resource-label">
+                    {def.label}
+                    {def.note ? ` (${def.note(level)})` : ""}
+                  </div>
+                  <div className="class-resource-controls">
+                    <NumberInput
+                      min={0}
+                      max={max}
+                      value={remaining}
+                      onValue={(n) =>
+                        patch({
+                          resourceUsed: { ...companion.resourceUsed, [def.key]: Math.max(0, max - Math.min(max, n)) },
+                        })
+                      }
+                    />
+                    <span>/ {max}</span>
+                    <button
+                      className="btn btn-secondary btn-small"
+                      onClick={() => {
+                        const next = { ...companion.resourceUsed };
+                        delete next[def.key];
+                        patch({ resourceUsed: next });
+                      }}
+                    >
+                      Reset
+                    </button>
+                  </div>
+                  <div className="class-resource-refresh">
+                    {def.source} · refreshes on {def.refresh}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
 
         <h3>Ability Scores</h3>
         <p className="section-hint">
@@ -346,6 +425,19 @@ export default function CompanionSection({
               </HoverInfo>
             </div>
           ))}
+        </div>
+
+        <div className="companion-saves">
+          <span className="companion-saves-label">Saving throws</span>
+          {ABILITIES.map(({ key }) => {
+            const proficient = saveProf.includes(key);
+            const mod = abilityModifier(scores[key]) + (proficient ? pb : 0);
+            return (
+              <span className={`companion-save${proficient ? " is-proficient" : ""}`} key={key}>
+                {ABILITY_SHORT[key]} {formatModifier(mod)}
+              </span>
+            );
+          })}
         </div>
 
         {asiLevels.length > 0 && (
@@ -470,10 +562,68 @@ export default function CompanionSection({
                   value={companion.feat}
                   options={FEAT_OPTIONS.filter((o) => o.name !== "Companion Keeper")}
                   getDetails={featDetails}
-                  onPick={(name) => patch({ feat: name })}
+                  onPick={chooseFeat}
                 />
               </div>
             )}
+          </div>
+        )}
+
+        {fx.feat && (
+          <div className="species-traits-box">
+            <div className="species-traits-header">{fx.feat.name} (companion feat)</div>
+            <p className="section-hint">Its effects apply to the companion only.</p>
+            {Object.keys(fx.abilityBonus).length > 0 && (
+              <p className="species-trait-line">
+                <strong>Ability score.</strong>{" "}
+                {Object.keys(fx.abilityBonus)
+                  .map((k) => `${ABILITY_SHORT[k as AbilityKey]} +1`)
+                  .join(", ")}
+              </p>
+            )}
+            {fx.speedBonus > 0 && (
+              <p className="species-trait-line">
+                <strong>Speed.</strong> +{fx.speedBonus} ft
+              </p>
+            )}
+            {fx.hpPerLevel > 0 && (
+              <p className="species-trait-line">
+                <strong>Hit points.</strong> +{fx.hpPerLevel * level} max HP ({fx.hpPerLevel} per level)
+              </p>
+            )}
+            {fx.savingThrows.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Saving throws.</strong> {fx.savingThrows.map((a) => ABILITY_SHORT[a]).join(", ")} proficiency
+              </p>
+            )}
+            {(fx.skill || fx.skillPicks.length > 0) && (
+              <p className="species-trait-line">
+                <strong>Skills.</strong> {[fx.skill, ...fx.skillPicks].filter(Boolean).join(", ")} proficiency
+              </p>
+            )}
+            {fx.proficiencies.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Proficiencies.</strong> {fx.proficiencies.join(", ")}
+              </p>
+            )}
+            {fx.languages.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Languages.</strong> {fx.languages.join(", ")}
+              </p>
+            )}
+            {fx.resistance && (
+              <p className="species-trait-line">
+                <strong>Resistances and advantages.</strong> {fx.resistance}
+              </p>
+            )}
+            <p className="species-trait-line companion-feature">
+              {buildFeatText(fx.feat, {
+                id: "",
+                name: fx.feat.name,
+                abilityChosen: Object.keys(fx.abilityBonus) as AbilityKey[],
+                choiceSelections: companion.featChoices,
+              })}
+            </p>
           </div>
         )}
 
@@ -550,6 +700,21 @@ export default function CompanionSection({
         >
           Remove Companion
         </button>
+        {pendingFeat && FEATS_BY_NAME.get(pendingFeat) && (
+          <FeatChoiceDialog
+            feat={FEATS_BY_NAME.get(pendingFeat)!}
+            skills={NO_SKILLS}
+            onCancel={() => setPendingFeat(null)}
+            onConfirm={(selections: FeatSelections) => {
+              patch({
+                feat: pendingFeat,
+                featAbilityChoice: selections.abilityChoice,
+                featChoices: selections.choiceSelections,
+              });
+              setPendingFeat(null);
+            }}
+          />
+        )}
       </>
     );
   }

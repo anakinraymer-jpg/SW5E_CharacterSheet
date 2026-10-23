@@ -2474,3 +2474,32 @@
 .companion-extras {
   margin-top: 12px;
 }
+
+/* Companion saving throws */
+.companion-saves {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 10px 0 4px;
+  font-size: 0.85rem;
+}
+
+.companion-saves-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.companion-save {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--bg-input);
+}
+
+.companion-save.is-proficient {
+  border-color: var(--accent);
+  color: var(--text-h);
+}

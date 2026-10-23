@@ -6,9 +6,14 @@ import type {
   CompanionNature,
   CompanionNatureDef,
   CompanionTraitDef,
+  FeatEntry,
+  SkillName,
 } from "./types";
+import { isSkillName } from "./types";
 import { COMPANION_NATURES } from "./data/companions";
 import { COMPANION_CLASSES } from "./data/companionClasses";
+import { FEATS_CATALOG } from "./data/feats";
+import { restoreCompanionResources } from "./companionResources";
 import { abilityModifier } from "./utils";
 
 export const COMPANION_NATURE_BY_NAME = new Map<CompanionNature, CompanionNatureDef>(
@@ -45,7 +50,79 @@ const ABILITY_NAMES: Record<string, AbilityKey> = {
 
 // Companions saved before phase 2 lack these fields.
 export function normalizeCompanion(c: Companion): Companion {
-  return { ...c, asi: c.asi ?? {}, expertise: c.expertise ?? [], feat: c.feat ?? "" };
+  return {
+    ...c,
+    asi: c.asi ?? {},
+    expertise: c.expertise ?? [],
+    feat: c.feat ?? "",
+    featAbilityChoice: c.featAbilityChoice ?? "",
+    featChoices: c.featChoices ?? [],
+    resourceUsed: c.resourceUsed ?? {},
+  };
+}
+
+const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
+
+export interface CompanionFeatEffects {
+  feat: FeatEntry | undefined;
+  abilityBonus: Partial<Record<AbilityKey, number>>; // +1 from the feat's ability increase
+  speedBonus: number;
+  hpPerLevel: number;
+  resistance: string;
+  savingThrows: AbilityKey[]; // saving throw proficiencies the feat grants
+  skill: SkillName | null; // a skill proficiency the feat grants
+  skillPicks: string[]; // skills picked through the feat's choices
+  proficiencies: string[]; // other proficiencies (armor/weapon/tool picks)
+  languages: string[];
+}
+
+// What the companion's 10th-level feat does, applied to the companion only (never to its owner).
+export function companionFeatEffects(companion: Companion): CompanionFeatEffects {
+  const feat = companion.feat ? FEATS_BY_NAME.get(companion.feat) : undefined;
+  const out: CompanionFeatEffects = {
+    feat,
+    abilityBonus: {},
+    speedBonus: 0,
+    hpPerLevel: 0,
+    resistance: "",
+    savingThrows: [],
+    skill: null,
+    skillPicks: [],
+    proficiencies: [],
+    languages: [],
+  };
+  if (!feat) return out;
+  const chosen: AbilityKey | "" =
+    feat.abilityOptions.length === 1 ? feat.abilityOptions[0] : (companion.featAbilityChoice ?? "");
+  if (chosen && feat.abilityOptions.includes(chosen)) out.abilityBonus[chosen] = 1;
+  out.speedBonus = feat.speedBonus ?? 0;
+  out.hpPerLevel = feat.hpBonusPerLevel ?? 0;
+  out.resistance = feat.grantsResistance ?? "";
+  if (feat.grantsSavingThrowForAbilityChoice && chosen) out.savingThrows.push(chosen);
+  else if (feat.grantsSavingThrow) out.savingThrows.push(feat.grantsSavingThrow);
+  out.skill = feat.grantsSkill ?? null;
+  if (feat.grantsProficiency) out.proficiencies.push(feat.grantsProficiency);
+  feat.choices?.forEach((choiceDef, i) => {
+    const picks = (companion.featChoices?.[i] ?? []).filter(Boolean);
+    if (choiceDef.kind === "language") out.languages.push(...picks);
+    else if (choiceDef.kind === "skill") out.skillPicks.push(...picks);
+    else
+      picks.forEach((p) => {
+        if (choiceDef.kind === "skillOrTool" && isSkillName(p)) out.skillPicks.push(p);
+        else out.proficiencies.push(`${p} (${choiceDef.label})`);
+      });
+  });
+  return out;
+}
+
+// A companion's saving throw proficiencies: its class's, plus any its feat grants.
+export function companionSaveProficiencies(companion: Companion): AbilityKey[] {
+  const cls = COMPANION_CLASS_BY_NAME.get(companion.className);
+  const line = cls?.proficiencies.find((p) => /Saving Throws/i.test(p)) ?? "";
+  const fromClass = Object.entries(ABILITY_NAMES)
+    .filter(([name]) => line.toLowerCase().includes(name))
+    .map(([, key]) => key);
+  return [...new Set([...fromClass, ...companionFeatEffects(companion).savingThrows])];
 }
 
 // Ability score improvements the companion has actually earned by `level`, as [level, picks] rows.
@@ -71,10 +148,11 @@ export function companionAbilities(companion: Companion, level: number): Record<
       capBonus[a] += 2;
     });
   }
+  const featBonus = companionFeatEffects(companion).abilityBonus;
   const out = { ...companion.abilities };
   ABILITY_KEYS.forEach((k) => {
     const base = companion.abilities[k];
-    out[k] = Math.max(base, Math.min(base + bonus[k], 20 + capBonus[k]));
+    out[k] = Math.max(base, Math.min(base + bonus[k] + (featBonus[k] ?? 0), 20 + capBonus[k]));
   });
   return out;
 }
@@ -121,7 +199,7 @@ export function companionMaxHp(companion: Companion, level: number): number {
   const conMod = abilityModifier(companionAbilities(companion, level).con);
   const first = Math.max(1, variant.hitDie + conMod);
   const perLevel = Math.max(1, Math.floor(variant.hitDie / 2) + 1 + conMod);
-  return first + perLevel * Math.max(0, level - 1);
+  return first + perLevel * Math.max(0, level - 1) + companionFeatEffects(companion).hpPerLevel * level;
 }
 
 export function createCompanion(nature: CompanionNature, level: number): Companion {
@@ -139,6 +217,9 @@ export function createCompanion(nature: CompanionNature, level: number): Compani
     asi: {},
     expertise: [],
     feat: "",
+    featAbilityChoice: "",
+    featChoices: [],
+    resourceUsed: {},
     currentHp: 0,
     tempHp: 0,
     notes: "",
@@ -182,11 +263,20 @@ export function traitAllowsRepeats(trait: CompanionTraitDef): boolean {
   return /multiple times/i.test(trait.text);
 }
 
-export function healCompanionFully(character: Character): Character {
-  const companion = character.companion;
-  if (!companion) return character;
+// A short rest restores the companion's Short Rest resources; a long rest also heals it fully,
+// clears its temp HP and restores everything.
+export function restCompanion(character: Character, kind: "short" | "long"): Character {
+  if (!character.companion) return character;
+  const companion = normalizeCompanion(character.companion);
+  const resourceUsed = restoreCompanionResources(companion, kind);
+  if (kind === "short") return { ...character, companion: { ...companion, resourceUsed } };
   return {
     ...character,
-    companion: { ...companion, currentHp: companionMaxHp(companion, companionLevel(character)), tempHp: 0 },
+    companion: {
+      ...companion,
+      resourceUsed,
+      currentHp: companionMaxHp(companion, companionLevel(character)),
+      tempHp: 0,
+    },
   };
 }

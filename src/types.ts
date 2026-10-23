@@ -427,7 +427,10 @@ export interface Companion {
   className: string; // companion class, chosen at 3rd level
   asi: Record<string, AbilityKey[]>; // by level ("4", "8", ... "20"): one ability = +2, two = +1 each (the 20th-level capstone is +2 each)
   expertise: string[]; // skill/tool expertise picked at 6th and 14th level
-  feat: string; // the feat gained at 10th level
+  feat: string; // the feat gained at 10th level; its effects apply to the companion only
+  featAbilityChoice: AbilityKey | ""; // the ability a choice-of-ability feat raised
+  featChoices: string[][]; // the feat's other picks (skills, tools, languages...), by choice index
+  resourceUsed: Record<string, number>; // class resource uses spent so far, by resource key
   currentHp: number;
   tempHp: number;
   notes: string;

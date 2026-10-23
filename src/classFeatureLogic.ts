@@ -18,7 +18,7 @@ import {
   MONK_UNARMORED_MOVEMENT_BY_LEVEL,
 } from "./data/classFeatureChoices";
 import { FEATS_CATALOG } from "./data/feats";
-import { healCompanionFully } from "./companionLogic";
+import { restCompanion } from "./companionLogic";
 import { abilityModifier, armorCatalogMatch } from "./utils";
 import { revokeSkill } from "./grantOwnership";
 
@@ -216,20 +216,23 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
   );
 
   if (kind === "short") {
-    return { ...character, classResources, combatFeatures, isRaging: false };
+    return restCompanion({ ...character, classResources, combatFeatures, isRaging: false }, "short");
   }
 
-  return healCompanionFully({
-    ...character,
-    classResources,
-    combatFeatures,
-    isRaging: false,
-    currentHp: effectiveMaxHp(character),
-    tempHp: 0,
-    deathSaves: { successes: 0, failures: 0 },
-    forcePoints: { ...character.forcePoints, current: character.forcePoints.max },
-    techPoints: { ...character.techPoints, current: character.techPoints.max },
-  });
+  return restCompanion(
+    {
+      ...character,
+      classResources,
+      combatFeatures,
+      isRaging: false,
+      currentHp: effectiveMaxHp(character),
+      tempHp: 0,
+      deathSaves: { successes: 0, failures: 0 },
+      forcePoints: { ...character.forcePoints, current: character.forcePoints.max },
+      techPoints: { ...character.techPoints, current: character.techPoints.max },
+    },
+    "long"
+  );
 }
 
 export function activeSpeedBonus(character: Character): number {
