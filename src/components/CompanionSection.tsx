@@ -12,7 +12,7 @@ import {
   FOLLOWER_FEATURES,
   classRequirement,
   classRequirementMet,
-  companionAbilities,
+  companionDerived,
   companionFeatEffects,
   companionLevel,
   companionMaxHp,
@@ -30,6 +30,7 @@ import {
   withCompanionVariant,
 } from "../companionLogic";
 import { activeCompanionResources } from "../companionResources";
+import { pickKeyFor } from "../companionTraits";
 import { buildFeatText, featNeedsChoices, type FeatSelections } from "../featLogic";
 import { FEATS_CATALOG } from "../data/feats";
 import { FEAT_OPTIONS, featDetails } from "../pickerCatalogs";
@@ -143,6 +144,19 @@ export default function CompanionSection({
     else patch({ feat: name, featAbilityChoice: "", featChoices: [] });
   }
 
+  // Dropping a trait forgets its skill/tool pick and renumbers the picks of later copies.
+  function removeTrait(index: number) {
+    if (!companion) return;
+    const traits = companion.traits.filter((_, idx) => idx !== index);
+    const picks: Record<string, string> = {};
+    const kept = companion.traits.map((_, idx) => idx).filter((idx) => idx !== index);
+    kept.forEach((oldIdx, newIdx) => {
+      const value = companion.traitPicks[pickKeyFor(companion.traits, oldIdx)];
+      if (value !== undefined) picks[pickKeyFor(traits, newIdx)] = value;
+    });
+    patch({ traits, traitPicks: picks });
+  }
+
   function setAsi(asiLevel: number, slot: number, value: AbilityKey | "") {
     if (!companion) return;
     const key = String(asiLevel);
@@ -169,8 +183,9 @@ export default function CompanionSection({
 
     const def = COMPANION_NATURE_BY_NAME.get(companion.nature);
     const variant = companionVariantDef(companion);
-    const featureLines = [...(def?.commonLines ?? []), ...(variant?.lines ?? [])];
-    const scores = companionAbilities(companion, level);
+    const derived = companionDerived(companion, level);
+    const featureLines = derived.featureLines;
+    const scores = derived.scores;
     const maxHp = companionMaxHp(companion, level);
     const conMod = abilityModifier(scores.con);
     const dexMod = abilityModifier(scores.dex);
@@ -191,7 +206,7 @@ export default function CompanionSection({
     const proficientSkills = skills.filter((sk) => sk.proficient).map((sk) => sk.name);
     const perception = skills.find((sk) => sk.name === "Perception");
     const speedBase = lineValue(featureLines, "Speed").split(".")[0];
-    const speedFeet = speedBase.match(/(\d+)/);
+    const traitFx = derived.traits;
 
     const traitOptions: PickerOption[] = (def?.traits ?? [])
       .filter((t) => {
@@ -286,9 +301,10 @@ export default function CompanionSection({
             <HoverInfo
               title="Max HP"
               lines={[
-                `Hit die: d${variant?.hitDie ?? 0}`,
-                `1st level: ${variant?.hitDie ?? 0} + Con (${formatModifier(conMod)})`,
-                `Each level after: ${Math.floor((variant?.hitDie ?? 0) / 2) + 1} + Con (${formatModifier(conMod)}), minimum 1`,
+                `Hit die: d${traitFx.hitDie}${traitFx.hitDie !== (variant?.hitDie ?? 0) ? ` (d${variant?.hitDie ?? 0} before traits)` : ""}`,
+                `1st level: ${traitFx.hitDie} + Con (${formatModifier(conMod)})`,
+                `Each level after: ${Math.floor(traitFx.hitDie / 2) + 1} + Con (${formatModifier(conMod)}), minimum 1`,
+                ...(traitFx.hpFlat ? [`Traits: +${traitFx.hpFlat}`] : []),
                 ...(fx.hpPerLevel ? [`${companion.feat}: +${fx.hpPerLevel * level} (${fx.hpPerLevel} per level)`] : []),
               ]}
             >
@@ -317,28 +333,31 @@ export default function CompanionSection({
             <label>Armor Class</label>
             <HoverInfo
               title="Armor Class"
-              lines={[`10 + Dexterity (${formatModifier(dexMod)}). Armor or barding the companion is proficient with adds to this.`]}
+              lines={[
+                `${derived.acSource}${derived.ac === 10 + dexMod ? "" : ` (best of 10 + Dex ${formatModifier(dexMod)} and its traits)`}`,
+                "Armor or barding the companion is proficient with adds to this.",
+              ]}
             >
-              <div className="readonly-box">{10 + dexMod}</div>
+              <div className="readonly-box">{derived.ac}</div>
             </HoverInfo>
           </div>
           <div className="field">
             <label>Initiative</label>
             <HoverInfo
               title="Initiative"
-              lines={["You and your companion both roll; you act together on the lower of the two results."]}
+              lines={[
+                `Dex ${formatModifier(dexMod)}${traitFx.initiative ? ` + traits ${formatModifier(traitFx.initiative)}` : ""}`,
+                "You and your companion both roll; you act together on the lower of the two results.",
+              ]}
             >
-              <div className="readonly-box">{formatModifier(dexMod)}</div>
+              <div className="readonly-box">{formatModifier(derived.initiative)}</div>
             </HoverInfo>
           </div>
           <div className="field">
             <label>Speed</label>
-            {fx.speedBonus > 0 && speedFeet ? (
-              <HoverInfo
-                title="Speed"
-                lines={[`${speedFeet[1]} ft + ${fx.speedBonus} from ${companion.feat}`]}
-              >
-                <div className="readonly-box">{Number(speedFeet[1]) + fx.speedBonus} ft</div>
+            {derived.speed !== null ? (
+              <HoverInfo title="Speed" lines={derived.speedLines}>
+                <div className="readonly-box">{derived.speed} ft</div>
               </HoverInfo>
             ) : (
               <div className="readonly-box">{speedBase || "—"}</div>
@@ -347,14 +366,14 @@ export default function CompanionSection({
           <div className="field">
             <label>Size / Type</label>
             <div className="readonly-box">
-              {[lineValue(featureLines, "Size"), lineValue(featureLines, "Type")].filter(Boolean).join(" / ") || "—"}
+              {[derived.size, derived.type].filter(Boolean).join(" / ") || "—"}
             </div>
           </div>
         </div>
 
         {resources.length > 0 && (
           <>
-            <h3>{companion.className} Resources</h3>
+            <h3>{companion.className ? `${companion.className} & trait resources` : "Trait resources"}</h3>
             <div className="class-resources-grid">
               {resources.map(({ def, max, remaining }) => (
                 <div className="class-resource-card" key={def.key}>
@@ -575,7 +594,7 @@ export default function CompanionSection({
                   {name}
                   <button
                     className="btn btn-danger btn-small"
-                    onClick={() => patch({ traits: companion.traits.filter((_, idx) => idx !== i) })}
+                    onClick={() => removeTrait(i)}
                   >
                     ×
                   </button>
@@ -609,6 +628,77 @@ export default function CompanionSection({
           />
         )}
 
+        <datalist id="companion-expertise-options">
+          {proficientSkills.map((n) => (
+            <option key={n} value={n} />
+          ))}
+        </datalist>
+        {traitFx.picks.length > 0 && (
+          <div className="field-grid companion-extras">
+            {traitFx.picks.map((pick) => (
+              <div className="field" key={pick.key}>
+                <label htmlFor={`companion-pick-${pick.key}`}>{pick.trait} ({pick.key.split("#")[1]})</label>
+                <input
+                  id={`companion-pick-${pick.key}`}
+                  type="text"
+                  placeholder="Skill or tool"
+                  list="companion-expertise-options"
+                  value={companion.traitPicks[pick.key] ?? ""}
+                  onChange={(e) => patch({ traitPicks: { ...companion.traitPicks, [pick.key]: e.target.value } })}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {(traitFx.movement.length > 0 ||
+          traitFx.senses.length > 0 ||
+          traitFx.advantages.length > 0 ||
+          traitFx.resistances.length > 0 ||
+          traitFx.proficiencies.length > 0 ||
+          traitFx.notes.length > 0 ||
+          derived.attack) && (
+          <div className="species-traits-box companion-trait-effects">
+            <div className="species-traits-header">Trait effects (applied)</div>
+            {derived.attack && (
+              <p className="species-trait-line">
+                <strong>Natural weapon.</strong> {formatModifier(derived.attack.toHit)} to hit, {derived.attack.damage}.{" "}
+                {derived.attack.note}.
+              </p>
+            )}
+            {traitFx.movement.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Movement.</strong> {traitFx.movement.join("; ")}
+              </p>
+            )}
+            {traitFx.senses.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Senses.</strong> {traitFx.senses.join("; ")}
+              </p>
+            )}
+            {traitFx.proficiencies.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Proficiencies.</strong> {traitFx.proficiencies.join("; ")}
+              </p>
+            )}
+            {traitFx.advantages.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Advantage on.</strong> {traitFx.advantages.join("; ")}
+              </p>
+            )}
+            {traitFx.resistances.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Resistance to.</strong> {traitFx.resistances.join("; ")}
+              </p>
+            )}
+            {traitFx.notes.length > 0 && (
+              <p className="species-trait-line">
+                <strong>Also.</strong> {traitFx.notes.join("; ")}
+              </p>
+            )}
+          </div>
+        )}
+
         {(expertiseSlots > 0 || level >= 10) && (
           <div className="field-grid companion-extras">
             {Array.from({ length: expertiseSlots }, (_, i) => (
@@ -630,11 +720,6 @@ export default function CompanionSection({
                 />
               </div>
             ))}
-            <datalist id="companion-expertise-options">
-              {proficientSkills.map((n) => (
-                <option key={n} value={n} />
-              ))}
-            </datalist>
             {level >= 10 && (
               <div className="field">
                 <label htmlFor="companion-feat">Feat (10th level)</label>

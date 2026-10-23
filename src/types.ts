@@ -431,6 +431,7 @@ export interface Companion {
   featAbilityChoice: AbilityKey | ""; // the ability a choice-of-ability feat raised
   featChoices: string[][]; // the feat's other picks (skills, tools, languages...), by choice index
   skillPicks: { nature: string[]; class: string[] }; // skills chosen for the nature/variant and the class
+  traitPicks: Record<string, string>; // skill/tool named for a trait that grants one, keyed "Trait name#copy"
   resourceUsed: Record<string, number>; // class resource uses spent so far, by resource key
   currentHp: number;
   tempHp: number;

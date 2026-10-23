@@ -1,5 +1,6 @@
 import type { AbilityKey, Companion } from "./types";
 import { abilityModifier } from "./utils";
+import { summarizeTraits } from "./companionTraits";
 
 // Limited-use resources a companion's class gives it, hand-built from the "Companion Classes" part of the
 // Expanded Content "Customization Options" chapter (sw5e.com). Each entry names the feature it comes
@@ -140,7 +141,10 @@ export function activeCompanionResources(
   level: number,
   scores: Record<AbilityKey, number>
 ): ActiveCompanionResource[] {
-  const defs = COMPANION_RESOURCES[companion.className] ?? [];
+  const defs = [
+    ...(COMPANION_RESOURCES[companion.className] ?? []),
+    ...summarizeTraits(companion, level, scores, 8, 0).resources,
+  ];
   const used = companion.resourceUsed ?? {};
   return defs
     .filter((d) => level >= d.minLevel)
@@ -152,7 +156,10 @@ export function activeCompanionResources(
 
 // Puts uses back after a rest: a short rest restores Short Rest resources, a long rest all of them.
 export function restoreCompanionResources(companion: Companion, kind: "short" | "long"): Record<string, number> {
-  const defs = COMPANION_RESOURCES[companion.className] ?? [];
+  const defs = [
+    ...(COMPANION_RESOURCES[companion.className] ?? []),
+    ...summarizeTraits(companion, 1, companion.abilities, 8, 0).resources,
+  ];
   const used = { ...(companion.resourceUsed ?? {}) };
   for (const d of defs) {
     if (kind === "long" || d.refresh === "Short Rest") delete used[d.key];

@@ -14,6 +14,7 @@ import { COMPANION_NATURES } from "./data/companions";
 import { COMPANION_CLASSES } from "./data/companionClasses";
 import { FEATS_CATALOG } from "./data/feats";
 import { restoreCompanionResources } from "./companionResources";
+import { summarizeTraits, type TraitSummary } from "./companionTraits";
 import { abilityModifier } from "./utils";
 
 export const COMPANION_NATURE_BY_NAME = new Map<CompanionNature, CompanionNatureDef>(
@@ -58,6 +59,7 @@ export function normalizeCompanion(c: Companion): Companion {
     featAbilityChoice: c.featAbilityChoice ?? "",
     featChoices: c.featChoices ?? [],
     skillPicks: { nature: c.skillPicks?.nature ?? [], class: c.skillPicks?.class ?? [] },
+    traitPicks: c.traitPicks ?? {},
     resourceUsed: c.resourceUsed ?? {},
   };
 }
@@ -197,10 +199,12 @@ export function companionVariantDef(companion: Companion) {
 export function companionMaxHp(companion: Companion, level: number): number {
   const variant = companionVariantDef(companion);
   if (!variant) return 0;
-  const conMod = abilityModifier(companionAbilities(companion, level).con);
-  const first = Math.max(1, variant.hitDie + conMod);
-  const perLevel = Math.max(1, Math.floor(variant.hitDie / 2) + 1 + conMod);
-  return first + perLevel * Math.max(0, level - 1) + companionFeatEffects(companion).hpPerLevel * level;
+  const scores = companionAbilities(companion, level);
+  const conMod = abilityModifier(scores.con);
+  const traits = summarizeTraits(companion, level, scores, variant.hitDie, abilityModifier(scores.dex));
+  const first = Math.max(1, traits.hitDie + conMod);
+  const perLevel = Math.max(1, Math.floor(traits.hitDie / 2) + 1 + conMod);
+  return first + perLevel * Math.max(0, level - 1) + traits.hpFlat + companionFeatEffects(companion).hpPerLevel * level;
 }
 
 export function createCompanion(nature: CompanionNature, level: number): Companion {
@@ -221,6 +225,7 @@ export function createCompanion(nature: CompanionNature, level: number): Compani
     featAbilityChoice: "",
     featChoices: [],
     skillPicks: { nature: [], class: [] },
+    traitPicks: {},
     resourceUsed: {},
     currentHp: 0,
     tempHp: 0,
@@ -240,18 +245,46 @@ export interface TraitEligibility {
   reason: string; // why not, or "" when eligible
 }
 
-// Checks the parts of a trait's "Prerequisite:" line the sheet can verify (level and the
-// droid class / humanoid size); anything else (ability scores, other traits) is left to the player.
+const normTrait = (name: string) => name.toLowerCase().replace(/[-:]/g, " ").replace(/\s+/g, " ").trim();
+
+// Checks a trait's "Prerequisite:" lines: level, droid class / humanoid size, current size, ability
+// scores, and other traits the companion must already have. Requirements the sheet can't verify (like
+// armor proficiency) are treated as met, so the player can still take the trait.
 export function traitEligibility(trait: CompanionTraitDef, companion: Companion, level: number): TraitEligibility {
-  const first = trait.text.split("\n")[0] ?? "";
-  if (!/^Prerequisite:/i.test(first)) return { eligible: true, reason: "" };
-  const levelMatch = first.match(/(\d+)(?:st|nd|rd|th) level/i);
-  if (levelMatch && level < Number(levelMatch[1])) {
-    return { eligible: false, reason: `Requires level ${levelMatch[1]}` };
+  const prereqLines: string[] = [];
+  for (const line of trait.text.split("\n")) {
+    if (/^Prerequisite/i.test(line)) prereqLines.push(line.replace(/^Prerequisite:?\s*/i, ""));
+    else break;
   }
-  const kinds = first.match(/Class [IV]+ Droid|(?:Tiny|Small|Medium) Humanoid/gi);
-  if (kinds && !kinds.some((k) => k.toLowerCase() === companion.variant.toLowerCase())) {
-    return { eligible: false, reason: `Requires ${kinds.join(" or ")}` };
+  if (prereqLines.length === 0) return { eligible: true, reason: "" };
+
+  const derived = companionDerived(companion, level);
+  const chosen = new Set(companion.traits.map(normTrait));
+  const sizeNow = derived.size.toLowerCase();
+  const scoreNames: Record<string, AbilityKey> = ABILITY_NAMES;
+
+  // true = met, false = not met, null = can't tell
+  const check = (part: string): boolean | null => {
+    const text = part.trim();
+    if (!text) return null;
+    const lvl = text.match(/(\d+)(?:st|nd|rd|th) level/i);
+    if (lvl) return level >= Number(lvl[1]);
+    const kind = text.match(/^(Class [IV]+ Droid|(?:Tiny|Small|Medium) Humanoid)$/i);
+    if (kind) return kind[1].toLowerCase() === companion.variant.toLowerCase();
+    const size = text.match(/^size:?\s*(tiny|small|medium|large|huge)$/i);
+    if (size) return sizeNow.startsWith(size[1].toLowerCase());
+    const ability = text.match(/^(strength|dexterity|constitution|intelligence|wisdom|charisma)\s+(\d+)/i);
+    if (ability) return derived.scores[scoreNames[ability[1].toLowerCase()]] >= Number(ability[2]);
+    if (/^(proficiency|the ability|ability to)/i.test(text)) return null;
+    return chosen.has(normTrait(text)) ? true : false;
+  };
+
+  for (const line of prereqLines) {
+    for (const required of line.split(/,\s*/)) {
+      const results = required.split(/\s+or\s+/i).map(check);
+      if (results.some((r) => r === true) || results.every((r) => r === null)) continue;
+      return { eligible: false, reason: `Requires ${required.trim()}` };
+    }
   }
   return { eligible: true, reason: "" };
 }
@@ -378,6 +411,11 @@ export function companionSkills(companion: Companion, level: number): CompanionS
       if (slot.options.includes(s as SkillName)) add(s, slot.label.replace(/ skills$/, ""));
     });
   }
+  const traitSummary = companionTraitSummary(companion, level);
+  for (const pick of traitSummary.picks) {
+    const named = SKILL_LIST.find((s) => s.toLowerCase() === (companion.traitPicks?.[pick.key] ?? "").trim().toLowerCase());
+    if (named) add(named, pick.trait);
+  }
   const fx = companionFeatEffects(companion);
   const expertise = new Set<SkillName>();
   const featSkills = [fx.skill, ...fx.skillPicks].filter((s): s is SkillName => Boolean(s) && isSkillName(s as string));
@@ -396,4 +434,93 @@ export function companionSkills(companion: Companion, level: number): CompanionS
     const bonus = abilityModifier(scores[SKILL_ABILITY[name]]) + (proficient ? pb : 0) + (isExpert ? pb : 0);
     return { name, ability: SKILL_ABILITY[name], proficient, expertise: isExpert, bonus, sources: sources.get(name) ?? [] };
   });
+}
+
+// ---- Derived sheet stats (everything the traits and feat change) ----
+
+export function companionTraitSummary(companion: Companion, level: number): TraitSummary {
+  const variant = companionVariantDef(companion);
+  const scores = companionAbilities(companion, level);
+  return summarizeTraits(companion, level, scores, variant?.hitDie ?? 8, abilityModifier(scores.dex));
+}
+
+function featureLineValue(lines: string[], label: string): string {
+  const prefix = `${label}: `;
+  const hit = lines.find((l) => l.startsWith(prefix));
+  return hit ? hit.slice(prefix.length) : "";
+}
+
+export interface CompanionDerived {
+  scores: Record<AbilityKey, number>;
+  traits: TraitSummary;
+  featureLines: string[];
+  ac: number;
+  acSource: string;
+  speed: number | null;
+  speedLines: string[];
+  initiative: number;
+  size: string;
+  type: string;
+  attack: { toHit: number; damage: string; note: string } | null;
+}
+
+// The companion's AC, speed, initiative, size and natural attack once every chosen trait and its feat
+// have been applied.
+export function companionDerived(companion: Companion, level: number): CompanionDerived {
+  const def = COMPANION_NATURE_BY_NAME.get(companion.nature);
+  const variant = companionVariantDef(companion);
+  const featureLines = [...(def?.commonLines ?? []), ...(variant?.lines ?? [])];
+  const scores = companionAbilities(companion, level);
+  const dexMod = abilityModifier(scores.dex);
+  const traits = companionTraitSummary(companion, level);
+  const fx = companionFeatEffects(companion);
+
+  let ac = 10 + dexMod;
+  let acSource = `10 + Dex (${dexMod >= 0 ? "+" : ""}${dexMod})`;
+  for (const option of traits.acOptions) {
+    if (option.value > ac) {
+      ac = option.value;
+      acSource = option.label;
+    }
+  }
+
+  const baseSpeedMatch = featureLineValue(featureLines, "Speed").match(/(\d+)/);
+  const baseSpeed = baseSpeedMatch ? Number(baseSpeedMatch[1]) : null;
+  const speedLines: string[] = [];
+  let speed: number | null = null;
+  if (baseSpeed !== null) {
+    const walking = traits.speedSet ?? baseSpeed;
+    speed = walking + traits.speedBonus + fx.speedBonus;
+    speedLines.push(`Base ${baseSpeed} ft`);
+    if (traits.speedSet) speedLines.push(`Size trait: walking speed ${traits.speedSet} ft`);
+    if (traits.speedBonus) speedLines.push(`Traits: +${traits.speedBonus} ft`);
+    if (fx.speedBonus) speedLines.push(`${companion.feat}: +${fx.speedBonus} ft`);
+  }
+
+  const pb = companionProficiencyBonus(level);
+  let attack: CompanionDerived["attack"] = null;
+  if (companion.nature === "Beast") {
+    const strMod = abilityModifier(scores.str);
+    const mod = traits.finesse ? Math.max(strMod, dexMod) : strMod;
+    const die = traits.naturalDie ?? 4;
+    attack = {
+      toHit: pb + mod,
+      damage: `1d${die}${mod === 0 ? "" : mod > 0 ? `+${mod}` : `${mod}`} kinetic`,
+      note: traits.finesse ? "Finesse: uses the better of Strength or Dexterity" : "Uses Strength",
+    };
+  }
+
+  return {
+    scores,
+    traits,
+    featureLines,
+    ac,
+    acSource,
+    speed,
+    speedLines,
+    initiative: dexMod + traits.initiative,
+    size: traits.size ?? featureLineValue(featureLines, "Size"),
+    type: featureLineValue(featureLines, "Type"),
+    attack,
+  };
 }
