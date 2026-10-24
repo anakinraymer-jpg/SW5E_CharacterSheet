@@ -160,6 +160,38 @@ export const TECH_POWER_OPTIONS: PickerOption[] = TECH_POWERS.map((p) => ({
   name: p.name,
   group: levelLabel(p.level),
 })).sort((a, b) => powerGroupOrder(a, b, (n) => TECH_LEVEL.get(n) ?? 0));
+// Old characters may hold a power under a slightly different spelling or the wrong Force/Tech list,
+// so matching ignores case, spacing, punctuation and a trailing "(Light)"-style note, and tries the
+// other list if the stored type doesn't have it.
+const normPower = (name: string) =>
+  name
+    .toLowerCase()
+    .replace(/\s*\(.*\)\s*$/, "")
+    .replace(/[^a-z0-9]/g, "");
+const FORCE_BY_NORM = new Map(FORCE_POWERS.map((p) => [normPower(p.name), p]));
+const TECH_BY_NORM = new Map(TECH_POWERS.map((p) => [normPower(p.name), p]));
+
+export function findPowerEntry(
+  name: string,
+  type: "Force" | "Tech"
+): { entry: ForcePowerEntry | TechPowerEntry; type: "Force" | "Tech" } | null {
+  const key = normPower(name);
+  if (!key) return null;
+  const order: ("Force" | "Tech")[] = type === "Force" ? ["Force", "Tech"] : ["Tech", "Force"];
+  for (const t of order) {
+    const entry = (t === "Force" ? FORCE_BY_NORM : TECH_BY_NORM).get(key);
+    if (entry) return { entry, type: t };
+  }
+  return null;
+}
+
+// What the info box over a power on the sheet shows: its catalog entry, or the player's own description.
+export function powerInfoLines(power: { name: string; type: "Force" | "Tech"; description: string }): string[] {
+  const found = findPowerEntry(power.name, power.type);
+  if (found) return powerDetailLines(found.entry);
+  return power.description ? [power.description] : [];
+}
+
 export function forcePowerDetails(name: string): string[] {
   const p = FORCE_POWERS.find((x) => x.name === name);
   return p ? powerDetailLines(p) : [];

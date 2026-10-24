@@ -1,12 +1,17 @@
 import type { Character } from "./types";
 import { createBlankCharacter } from "./types";
+import { autoRepair } from "./characterMigrations";
 
 const STORAGE_KEY = "sw5e-characters";
 
 // Characters saved by an older version of the app lack any fields added since; fill those in
 // from a blank character so newer code never sees `undefined`.
+// Anything without a version stamp predates versioning, so it is treated as version 0 and given the
+// safe tracking repairs in characterMigrations.ts.
 function withDefaults(saved: Partial<Character>): Character {
-  return { ...createBlankCharacter(), ...saved } as Character;
+  const merged = { ...createBlankCharacter(), ...saved } as Character;
+  if (saved.dataVersion === undefined) merged.dataVersion = 0;
+  return autoRepair(merged);
 }
 
 export function loadAllCharacters(): Character[] {

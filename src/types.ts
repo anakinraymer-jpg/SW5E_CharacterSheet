@@ -438,6 +438,9 @@ export interface Companion {
   notes: string;
 }
 
+// Bumped whenever a new kind of derived/tracked data needs old characters repaired (see characterMigrations.ts).
+export const CURRENT_DATA_VERSION = 1;
+
 export interface Character {
   id: string;
   createdAt: string;
@@ -483,6 +486,7 @@ export interface Character {
   speciesSpeeds: { climb?: number | "walking"; swim?: number | "walking"; fly?: number | "walking" } | null;
   speciesGrantedSpecialMovement: string; // exact text last auto-filled into Combat's Special Movement field, mirrors speciesGrantedVision's non-destructive pattern
   speciesGrantedResistances: string; // exact text last auto-filled into Combat's Advantages/Resistances/Immunities field; removed by substring on revert since feats/the player share that field
+  dataVersion: number; // which repairs this character has had; missing (0) on characters saved before versioning
   companion: Companion | null;
   speciesBaseline: { size: string; speed: number; prevSize: string; prevSpeed: number } | null; // what the species set vs what was there before, so revert can restore it
   speciesTraitsText: string;
@@ -705,6 +709,7 @@ export function createBlankCharacter(): Character {
     speciesSpeeds: null,
     speciesGrantedSpecialMovement: "",
     speciesGrantedResistances: "",
+    dataVersion: CURRENT_DATA_VERSION,
     companion: null,
     speciesBaseline: null,
     speciesTraitsText: "",

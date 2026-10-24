@@ -53,6 +53,52 @@ function formatSpeciesSpeeds(speeds: { climb?: number | "walking"; swim?: number
     .join(", ");
 }
 
+// Everything a species' traits do to the sheet that doesn't depend on the player's selections:
+// natural armor/weapon, HP bonus, extra speeds, and the text auto-filled into Vision, Special Movement
+// and Resistances. Shared by applySpecies and the repair of characters saved before these existed.
+export function speciesMechanics(species: SpeciesEntry) {
+  const grantedVision = species.traits
+    .filter((t) => t.grantsVision)
+    .map((t) => t.grantsVision!)
+    .join(", ");
+  const grantedResistances = species.traits
+    .filter((t) => t.grantsResistance)
+    .map((t) => t.grantsResistance!)
+    .join(" ");
+
+  const naturalArmorTrait = species.traits.find((t) => t.naturalArmor);
+  const naturalArmor: SpeciesNaturalArmor | null = naturalArmorTrait?.naturalArmor
+    ? {
+        base: naturalArmorTrait.naturalArmor.base,
+        addDex: naturalArmorTrait.naturalArmor.addDex ?? true,
+        allowLightArmor: naturalArmorTrait.naturalArmor.allowLightArmor ?? true,
+        allowAnyArmor: naturalArmorTrait.naturalArmor.allowAnyArmor ?? false,
+        sourceLabel: speciesTraitLabel(species, naturalArmorTrait.name),
+      }
+    : null;
+
+  const naturalWeaponTrait = species.traits.find((t) => t.naturalWeapon);
+  const naturalWeapon: SpeciesNaturalWeapon | null = naturalWeaponTrait?.naturalWeapon
+    ? {
+        damage: naturalWeaponTrait.naturalWeapon.damage,
+        damageType: naturalWeaponTrait.naturalWeapon.damageType,
+        finesse: naturalWeaponTrait.naturalWeapon.finesse ?? false,
+        sourceLabel: speciesTraitLabel(species, naturalWeaponTrait.name),
+      }
+    : null;
+
+  const hpBonusTrait = species.traits.find((t) => t.hpBonusPerLevel);
+  const hpBonus: SpeciesHpBonus | null = hpBonusTrait?.hpBonusPerLevel
+    ? { perLevel: hpBonusTrait.hpBonusPerLevel, sourceLabel: speciesTraitLabel(species, hpBonusTrait.name) }
+    : null;
+
+  const speedsTrait = species.traits.find((t) => t.speeds);
+  const speeds = speedsTrait?.speeds ?? null;
+  const grantedSpecialMovement = speeds ? formatSpeciesSpeeds(speeds) : "";
+
+  return { grantedVision, grantedResistances, naturalArmor, naturalWeapon, hpBonus, speeds, grantedSpecialMovement };
+}
+
 export function speciesNeedsChoices(species: SpeciesEntry): boolean {
   if (species.abilityIncrease.humanVariant) return true;
   if (species.abilityIncrease.choices.length > 0) return true;
@@ -183,51 +229,16 @@ export function applySpecies(
 
   const creditsApplied = computeSpeciesCredits(species, base.level || 1);
 
-  const grantedVision = species.traits
-    .filter((t) => t.grantsVision)
-    .map((t) => t.grantsVision!)
-    .join(", ");
+  const { grantedVision, grantedResistances, naturalArmor, naturalWeapon, hpBonus, speeds, grantedSpecialMovement } =
+    speciesMechanics(species);
   // Only auto-fill Vision if it's currently blank or still holds a prior species' auto-fill —
   // never overwrite a player's own edit.
   const vision =
     grantedVision && (!base.vision || base.vision === base.speciesGrantedVision) ? grantedVision : base.vision;
 
-  const grantedResistances = species.traits
-    .filter((t) => t.grantsResistance)
-    .map((t) => t.grantsResistance!)
-    .join(" ");
   // Same non-destructive auto-fill pattern as Vision.
   const resistances = appendFragment(base.resistances, grantedResistances);
 
-  const naturalArmorTrait = species.traits.find((t) => t.naturalArmor);
-  const naturalArmor: SpeciesNaturalArmor | null = naturalArmorTrait?.naturalArmor
-    ? {
-        base: naturalArmorTrait.naturalArmor.base,
-        addDex: naturalArmorTrait.naturalArmor.addDex ?? true,
-        allowLightArmor: naturalArmorTrait.naturalArmor.allowLightArmor ?? true,
-        allowAnyArmor: naturalArmorTrait.naturalArmor.allowAnyArmor ?? false,
-        sourceLabel: speciesTraitLabel(species, naturalArmorTrait.name),
-      }
-    : null;
-
-  const naturalWeaponTrait = species.traits.find((t) => t.naturalWeapon);
-  const naturalWeapon: SpeciesNaturalWeapon | null = naturalWeaponTrait?.naturalWeapon
-    ? {
-        damage: naturalWeaponTrait.naturalWeapon.damage,
-        damageType: naturalWeaponTrait.naturalWeapon.damageType,
-        finesse: naturalWeaponTrait.naturalWeapon.finesse ?? false,
-        sourceLabel: speciesTraitLabel(species, naturalWeaponTrait.name),
-      }
-    : null;
-
-  const hpBonusTrait = species.traits.find((t) => t.hpBonusPerLevel);
-  const hpBonus: SpeciesHpBonus | null = hpBonusTrait?.hpBonusPerLevel
-    ? { perLevel: hpBonusTrait.hpBonusPerLevel, sourceLabel: speciesTraitLabel(species, hpBonusTrait.name) }
-    : null;
-
-  const speedsTrait = species.traits.find((t) => t.speeds);
-  const speeds = speedsTrait?.speeds ?? null;
-  const grantedSpecialMovement = speeds ? formatSpeciesSpeeds(speeds) : "";
   const specialMovement =
     grantedSpecialMovement && (!base.specialMovement || base.specialMovement === base.speciesGrantedSpecialMovement)
       ? grantedSpecialMovement

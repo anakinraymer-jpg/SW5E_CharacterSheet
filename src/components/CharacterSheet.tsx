@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import type {
   AbilityKey,
   ArchetypeEntry,
@@ -92,6 +92,8 @@ import ClassSubChoiceDialog from "./ClassSubChoiceDialog";
 import ManeuverSwapDialog from "./ManeuverSwapDialog";
 import SectionBlock from "./SectionBlock";
 import SectionNav from "./SectionNav";
+import Modal from "./Modal";
+import { applyUpdates, pendingUpdates } from "../characterMigrations";
 import HealthBar from "./HealthBar";
 import { DefenseBox, InitiativeBox, ProficiencyBonusBox, SpeedBaseBox } from "./StatBoxes";
 import {
@@ -153,6 +155,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   // Which Simple-mode card is currently popped open for editing.
   const [openSimple, setOpenSimple] = useState<SimpleKey | null>(null);
   const [companionPickerOpen, setCompanionPickerOpen] = useState(false);
+  const [updateOpen, setUpdateOpen] = useState(false);
 
   function toggleSimpleMode() {
     setSimpleMode((prev) => {
@@ -1035,6 +1038,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
   const renderForMode = simpleMode ? renderSimpleSectionContent : (id: SectionId) => renderSectionContent(id);
 
+  const updates = useMemo(() => pendingUpdates(character), [character]);
+
   const NAV_LABELS: Partial<Record<SectionId, string>> = {
     abilities: "Abilities",
     combat: "Combat",
@@ -1104,6 +1109,17 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           </button>
         </div>
       </div>
+
+      {updates.length > 0 && (
+        <div className="update-banner">
+          <span>
+            This character was saved by an older version and is missing {updates.length === 1 ? "an effect" : "some effects"}.
+          </span>
+          <button type="button" className="btn btn-primary btn-small" onClick={() => setUpdateOpen(true)}>
+            Review update
+          </button>
+        </div>
+      )}
 
       <SectionNav items={navItems} onJump={jumpToSection} />
 
@@ -1177,6 +1193,40 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         <SimpleModal title={SIMPLE_TITLES[openSimple] ?? "Edit"} onClose={() => setOpenSimple(null)}>
           {renderSimpleModalContent(openSimple)}
         </SimpleModal>
+      )}
+
+      {updateOpen && (
+        <Modal
+          title="Update this character"
+          onClose={() => setUpdateOpen(false)}
+          footer={
+            <>
+              <button className="btn btn-secondary" onClick={() => setUpdateOpen(false)}>
+                Not now
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setCharacter((prev) => applyUpdates(prev));
+                  setUpdateOpen(false);
+                }}
+              >
+                Apply all
+              </button>
+            </>
+          }
+        >
+          <p className="section-hint">
+            These add things newer versions of the sheet give automatically. Nothing is removed, and your own text is
+            kept.
+          </p>
+          {updates.map((u) => (
+            <div className="choice-group" key={u.id}>
+              <div className="choice-group-label">{u.title}</div>
+              <div className="choice-group-hint">{u.detail}</div>
+            </div>
+          ))}
+        </Modal>
       )}
 
       {companionPickerOpen && (

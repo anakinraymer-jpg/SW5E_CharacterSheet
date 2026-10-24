@@ -5,6 +5,7 @@ import {
   FORCE_POWER_OPTIONS,
   TECH_POWER_OPTIONS,
   forcePowerDetails,
+  powerInfoLines,
   techPowerDetails,
 } from "../pickerCatalogs";
 import PickerDialog from "./PickerDialog";
@@ -284,8 +285,7 @@ export default function PowersSection({
           const showHeader = power.level !== lastLevel;
           lastLevel = power.level;
           // Hovering a power shows its full info box: the catalog entry, or the player's own description.
-          const catalogLines = power.type === "Force" ? forcePowerDetails(power.name) : techPowerDetails(power.name);
-          const infoLines = catalogLines.length > 0 ? catalogLines : power.description ? [power.description] : [];
+          const infoLines = powerInfoLines(power);
           const rowBody = (
             <>
                 <input
