@@ -2560,3 +2560,31 @@
 .companion-skill-picks {
   margin-bottom: 10px;
 }
+
+/* Added powers: the whole row shows the power's info box on hover */
+.power-row.power-row-hover {
+  display: flex;
+  width: 100%;
+}
+
+.power-info-btn {
+  display: none;
+  flex: none;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  background: var(--bg-input);
+  color: var(--accent);
+  font-style: italic;
+  font-weight: 700;
+}
+
+@media (hover: none) {
+  .power-info-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

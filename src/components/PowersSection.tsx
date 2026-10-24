@@ -283,10 +283,11 @@ export default function PowersSection({
         {sortedPowers.map((power) => {
           const showHeader = power.level !== lastLevel;
           lastLevel = power.level;
-          return (
-            <div key={power.id}>
-              {showHeader && <h3 className="power-level-header">{levelLabel(power.level)}</h3>}
-              <div className="power-row">
+          // Hovering a power shows its full info box: the catalog entry, or the player's own description.
+          const catalogLines = power.type === "Force" ? forcePowerDetails(power.name) : techPowerDetails(power.name);
+          const infoLines = catalogLines.length > 0 ? catalogLines : power.description ? [power.description] : [];
+          const rowBody = (
+            <>
                 <input
                   type="text"
                   placeholder="Power name"
@@ -321,7 +322,21 @@ export default function PowersSection({
                 >
                   ×
                 </button>
-              </div>
+            </>
+          );
+          return (
+            <div key={power.id}>
+              {showHeader && <h3 className="power-level-header">{levelLabel(power.level)}</h3>}
+              {infoLines.length > 0 ? (
+                <HoverInfo title={power.name} lines={infoLines} className="power-row power-row-hover">
+                  {rowBody}
+                  <button type="button" className="power-info-btn" aria-label={`Show ${power.name} details`}>
+                    i
+                  </button>
+                </HoverInfo>
+              ) : (
+                <div className="power-row">{rowBody}</div>
+              )}
             </div>
           );
         })}
