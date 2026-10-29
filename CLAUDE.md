@@ -8,6 +8,12 @@ React + TypeScript + Vite (rolldown-vite), no backend. All persistence is browse
 - `sw5e-characters` — character data
 - `sw5e-theme` — dark/light choice
 - `sw5e-layout` — draggable sheet section layout
+- `sw5e-collapsed-sections` — which sections are folded (Legend starts folded)
+- `sw5e-simple-mode` — Simple mode on/off
+
+**Phone-first:** the user plays on phones and with older saved characters, so every feature must work with touch (no hover) and must not break or skip older saves (see the repair code below).
+
+**Deploy:** `npm run deploy` runs `tsc -b && vite build` and publishes `dist` to the `gh-pages` branch. Live at https://anakinraymer-jpg.github.io/SW5E_CharacterSheet/. `vite.config.ts` sets `base` to `/SW5E_CharacterSheet/` for builds only. Push to master is automatic; deploy only when the user says "deploy".
 
 Start the dev server with the Browser tool's `preview_start` using name `sw5e-charactersheet` (config in `.claude/launch.json`), not Bash/PowerShell.
 
@@ -16,17 +22,23 @@ Start the dev server with the Browser tool's `preview_start` using name `sw5e-ch
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 ```
 
+**PowerShell gotcha:** `git` isn't on PATH either. Also add the GitHub Desktop git folder: `%LOCALAPPDATA%\GitHubDesktop\app-*\resources\app\git\cmd`.
+
 **PowerShell gotcha:** `Invoke-RestMethod` silently returns garbage/empty on large JSON responses (>~100KB) in this environment. Use `Invoke-WebRequest -UseBasicParsing` and pipe `.Content` through `ConvertFrom-Json` instead — or better, use the Browser tool's `javascript_tool` with `fetch()`, which has no such issue and is generally faster for large payloads (see below).
 
 ## Data catalogs (`src/data/`)
 
 Reference data (species, classes, archetypes, powers, weapons, armor, gear, feats, backgrounds) is sourced from sw5e.com and split by sourcebook: **PHB** (core), **EC** (Echoes of the Force), **WH** (Wretched Hives). Convention, established across the catalog:
 
-- Small/medium catalogs keep all sources in one file, one array (`feats.ts`, `weapons.ts`, `armor.ts`, `gear.ts`, `powers.ts`, `sw5eData.ts`'s `BACKGROUNDS`). Header comment lists which sourcebooks are included.
+- Small/medium catalogs keep all sources in one file, one array (`feats.ts`, `weapons.ts`, `armor.ts`, `gear.ts`, `powers.ts`, `backgrounds.ts`; `sw5eData.ts` only holds shared lists such as languages and sizes). Header comment lists which sourcebooks are included.
 - Large catalogs split PHB and EC into separate files, merged at the call site with `[...CATALOG_PHB, ...CATALOG_EC]` (see `archetypeDetails.ts` + `archetypeDetailsEC.ts`, `species.ts` + `speciesEC.ts`). Follow this pattern if a catalog grows too large for one file.
 - `classFeatureChoices.ts` holds fighting styles, maneuvers, and per-class resource pools (`CLASS_RESOURCES`) — the latter only for resources with their own charge count and refresh (Rages, Superiority Dice, Focus Points, Potent Aptitude). Don't add things like Guardian's Focused Strikes or Sentinel's Kinetic Combat there — those are damage/die-size caps on *spending Force Points*, not independent pools; forcing them into `ClassResourceDef` misrepresents the mechanic. Their per-level values are already shown in `classes.ts`'s level tables.
 
-**Checking a catalog for completeness against sw5e.com:** the site's own REST API is at `https://sw5eapi.azurewebsites.net/api/<endpoint>` (JSON, no auth). Known endpoints and their `contentSource` values (`PHB`/`EC`/`WH`, or `None`/absent if a category has no non-PHB content): `power` (465: 399 PHB + 66 EC), `species` (141: 30 PHB + 111 EC), `equipment` (507: 186 PHB + 123 EC + 198 WH — weapons/armor/gear combined, split by `equipmentCategory`), `archetype` (137: 40 PHB + 97 EC, note some EC entries are `(Companion)`/`(Depreciated)`/`(Old)` duplicates meant to be excluded), `feat` (119: 65 PHB + 44 EC + 10 WH), `background` (61: 20 PHB + 41 EC), `class` (10, PHB only), `fightingstyle` (32, PHB only), `maneuvers` (119: 100 PHB + 19 EC — note the plural endpoint name), `armorproperty`/`weaponproperty` (metadata, no source split). A class's full level table (including resource-pool columns) is in its `levelChangesJson`/`levelChangeHeadersJson` fields from `/api/class`; per-feature rules text is in `/api/feature`, filterable by `sourceName` (class/archetype name) and `name`.
+**Checking a catalog for completeness against sw5e.com:** the site's own REST API is at `https://sw5eapi.azurewebsites.net/api/<endpoint>` (JSON, no auth). Known endpoints and their `contentSource` values (`PHB`/`EC`/`WH`, or `None`/absent if a category has no non-PHB content): `power` (465: 399 PHB + 66 EC), `species` (141: 30 PHB + 111 EC), `equipment` (507: 186 PHB + 123 EC + 198 WH — weapons/armor/gear combined, split by `equipmentCategory`), `archetype` (137: 40 PHB + 97 EC, note some EC entries are `(Companion)`/`(Depreciated)`/`(Old)` duplicates meant to be excluded), `feat` (119: 65 PHB + 44 EC + 10 WH), `ExpandedContent` (capital E; 10 chapters, each with `chapterName` and `contentMarkdown`, holding the Customization Options chapter with companions, natures, traits and companion classes, and the Archetypes chapter; `dataVersion` lists every dataset name), `background` (61: 20 PHB + 41 EC), `class` (10, PHB only), `fightingstyle` (32, PHB only), `maneuvers` (119: 100 PHB + 19 EC — note the plural endpoint name), `armorproperty`/`weaponproperty` (metadata, no source split). A class's full level table (including resource-pool columns) is in its `levelChangesJson`/`levelChangeHeadersJson` fields from `/api/class`; per-feature rules text is in `/api/feature`, filterable by `sourceName` (class/archetype name) and `name`.
+
+The archetype catalog is 135 entries (40 PHB + 95 EC). The API has 97 EC; the two `(Depreciated)` and `(Old)` Cybertech Engineering entries are left out on purpose, so don't re-add the "missing" EC archetypes: they are all present.
+
+**Generated data.** `data/companions.ts`, `data/companionClasses.ts` and `data/backgroundFeats.ts` are generated, never hand-typed or scraped from the sw5e.com page (its text isn't in the JS bundle; it is fetched from the API at runtime). The generators are in `scripts/`: `node scripts/gen-companions.mjs <chapter.md> <out.ts>` and `gen-companion-classes.mjs <chapter.md> <out.ts>` take the Customization Options chapter's `contentMarkdown` from `/api/ExpandedContent` saved to a file, and `gen-bgfeats.mjs <out.ts>` fetches `/api/background` itself. Check the output against the raw data before committing.
 
 When pulling data from this API for a catalog update: fetch via browser `fetch()`, transform to the target TS literal syntax in JS, and pull the result out via the tool's return value — don't paste it into a PowerShell heredoc or write it from memory. Always cross-check the transformed output against the raw fetched data (e.g. diff line-by-line) before writing it to a file; entries have been hand-typed from memory by mistake before and it produced fabricated data.
 
@@ -48,6 +60,12 @@ Catalog files (`weapons.ts`, `armor.ts`, `feats.ts`, `species.ts`, `archetypeDet
 - "Armor, Shield, Protections" panel: not a separate field — it's `CombatSection.tsx` filtering `character.equipment` through `armorCatalogMatch`.
 - Nested/secondary choice UI pattern (skill/tool/weapon/fighting-style/lightsaber-form picks, and now equipment-category disambiguation): `SpeciesTraitChoice` / `ClassSubChoiceOption` in `types.ts`, rendered by `ClassSubChoiceDialog.tsx` / `ClassChoiceDialog.tsx`.
 
+- Grants and revert: `grantOwnership.ts` (`revokeSkill` and friends: a proficiency is only removed when no other source grants it); `classLogic.ts`, `speciesLogic.ts`, `backgroundLogic.ts`, `featLogic.ts` apply and revert. `speciesMechanics()` in `speciesLogic.ts` is shared with the repair code.
+- Old-character repair: `characterMigrations.ts` plus `CURRENT_DATA_VERSION` in `types.ts`. `autoRepair` runs on every load (safe tracking only); `FIXES` feed the "Update this character" banner. When you add a new tracked or derived field, add a repair for old saves and bump the version.
+- Companions: `companionLogic.ts` (stats, HP, abilities, skills, derived AC/speed/initiative, prerequisites, rests), `companionResources.ts` (class resource boxes), `companionTraits.ts` (what each trait does, keyed "Nature|Trait"; combat-option and roleplay traits are intentionally hover text only), `components/CompanionSection.tsx`. Companion effects apply to the companion only, never the owner.
+- UI pieces: `PickerDialog`/`PickerField`/`pickerCatalogs.ts` (searchable add menus), `NumberInput.tsx` (clearable, with touch steppers; use it for every number field), `HoverInfo.tsx` (tap tooltips on touch), `SectionNav.tsx` (phone jump bar), `SimpleCard.tsx`/`simpleSummaries.ts` (Simple mode).
+- Power info boxes: `findPowerEntry`/`powerInfoLines` in `pickerCatalogs.ts` match names ignoring case and punctuation and try the other Force/Tech list.
+
 ## Testing workflow
 
 After any change observable in the browser:
@@ -64,6 +82,13 @@ Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.
 el.dispatchEvent(new Event('input', { bubbles: true }));
 ```
 For `<select>`, use `HTMLSelectElement.prototype`'s setter instead. For fields gated behind `onBlur` (e.g. class/species/archetype commit), prefer the `form_input` tool over synthetic dispatch — it reliably triggers blur-driven handlers where raw `dispatchEvent` sometimes doesn't.
+
+**More testing notes**
+- Old-save test: build a character with `createBlankCharacter()`, delete `dataVersion` and `companion`, null out `speciesBaseline`, `speciesSpeeds` and `speciesNaturalArmor`, put odd power names in, write it to `localStorage['sw5e-characters']`, reload in a fresh tab. Expect the Update banner and a `dataVersion` of 1 after load.
+- A `NumberInput` set through the native setter stays a draft until blur and can look stale; read `localStorage` for the real value.
+- Companion checks that worked: Beast level 1 has 4 HP, level 5 has 16 HP and 3 trait slots; Size: Small + Heavy Hide + Darkvision at level 5 gives max HP 28, AC 14, speed 25 ft; a Class V Droid gets Athletics free.
+- Phone testing: `resize_window` preset `mobile` (375px) counts as `pointer: coarse` and `hover: none`, which turns on the touch tooltips and stepper buttons. Reset to `desktop` afterwards.
+- Vite can serve a stale module after several quick edits to one file (blank page, "x is not defined"): `touch` the file, then reload in a fresh tab. Long Bash heredocs with mixed quotes can fail to parse: write patch scripts to a file and run them.
 
 **PowerShell here-string gotcha:** commit messages with embedded double quotes (e.g. quoting a formula like `"N + Dex modifier"`) can get mis-split into separate `git commit -m` arguments by PowerShell's native-command argument marshaling, producing `pathspec did not match` errors. If a commit message needs embedded quotes, write it to a scratch file and use `git commit -F <file>` instead of `-m`.
 
