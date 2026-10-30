@@ -3,6 +3,7 @@ import { abilityModifier, computeDefense, formatModifier, proficiencyBonus } fro
 import { computeUnarmoredDefenseBonus } from "../classLogic";
 import { activeSpeedBonusSources } from "../classFeatureLogic";
 import { hasFeat } from "../featLogic";
+import { armorInfusion } from "../infuseItem";
 import HoverInfo from "./HoverInfo";
 import NumberInput from "./NumberInput";
 
@@ -15,7 +16,8 @@ export function DefenseBox({ character }: Props) {
   const dexMod = abilityModifier(character.abilities.dex);
   const unarmoredDefense = computeUnarmoredDefenseBonus(character);
   const naturalArmor = character.speciesNaturalArmor;
-  const computed = computeDefense(character.equipment, dexMod, unarmoredDefense, naturalArmor);
+  const computed = computeDefense(character.equipment, dexMod, unarmoredDefense, naturalArmor, armorInfusion(character));
+  const infusedName = character.equipment.find((i) => i.id === character.infusedItemId)?.name;
 
   const lines = [
     computed.naturalArmorApplied && naturalArmor
@@ -31,6 +33,7 @@ export function DefenseBox({ character }: Props) {
       : []),
     ...(computed.naturalArmorApplied && computed.armor ? [`(overrides ${computed.armor.name}'s own AC)`] : []),
     ...computed.shields.map((s) => `${s.name}: ${s.ac}`),
+    ...(computed.infusionBonus ? [`Infuse Item (${infusedName}): +${computed.infusionBonus}`] : []),
   ];
   return (
     <section className="sheet-section stat-box-section">

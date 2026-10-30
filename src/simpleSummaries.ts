@@ -5,6 +5,7 @@ import { abilityModifier, formatModifier, proficiencyBonus } from "./utils";
 import { effectiveMaxHp } from "./classFeatureLogic";
 import { hasFeat } from "./featLogic";
 import { WEAPON_LOOKUP, toHitAbilityInfo } from "./weaponLogic";
+import { infusedWeaponBonus } from "./infuseItem";
 import { castingStats } from "./castingStats";
 import { grantedLanguages, grantedProficiencies } from "./grantsSummary";
 import { companionMaxHp } from "./companionLogic";
@@ -94,9 +95,10 @@ export function weaponTooltip(c: Character, w: Weapon): string[] {
   const pb = proficiencyBonus(c.level);
   const entry = WEAPON_LOOKUP.get(w.name.trim().toLowerCase());
   const { mod, label } = toHitAbilityInfo(c, w.name);
+  const infusion = infusedWeaponBonus(c, w);
   return [
-    `To hit ${formatModifier(mod + (w.proficient ? pb : 0))} (${label}${w.proficient ? ", proficient" : ""})`,
-    `Damage: ${w.damage || "—"} · Range: ${w.range || "Melee"}`,
+    `To hit ${formatModifier(mod + (w.proficient ? pb : 0) + infusion)} (${label}${w.proficient ? ", proficient" : ""}${infusion ? `, infused +${infusion}` : ""})`,
+    `Damage: ${w.damage || "—"}${infusion ? ` +${infusion} infused` : ""} · Range: ${w.range || "Melee"}`,
     entry ? `${entry.type}${entry.property ? ` — ${entry.property}` : ""}` : "",
     w.ammoType ? `Ammo: ${w.ammoType} (${w.ammoCount})` : "",
   ].filter(Boolean);

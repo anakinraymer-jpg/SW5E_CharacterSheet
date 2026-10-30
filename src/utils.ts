@@ -76,6 +76,7 @@ export interface EquippedDefense {
   shields: ArmorCatalogEntry[];
   unarmoredDefenseApplied: boolean;
   naturalArmorApplied: boolean;
+  infusionBonus: number; // Engineer's Infuse Item, when the infused armor/shield is the one counted
 }
 
 // Natural armor (e.g. Wookiee's Hide: "AC is 13 + Dex modifier while unarmored or wearing light
@@ -86,14 +87,17 @@ export function computeDefense(
   equipment: EquipmentItem[],
   dexModifier: number,
   unarmoredDefense?: UnarmoredDefenseInput | null,
-  naturalArmor?: SpeciesNaturalArmor | null
+  naturalArmor?: SpeciesNaturalArmor | null,
+  infusion?: { itemId: string; bonus: number } | null
 ): EquippedDefense {
-  const equippedMatches = equipment
+  const equippedRows = equipment
     .filter((item) => item.equipped)
-    .map((item) => armorCatalogMatch(item.name))
-    .filter((a): a is ArmorCatalogEntry => Boolean(a));
-  const shields = equippedMatches.filter((a) => a.type === "Shield");
-  const armor = equippedMatches.find((a) => a.type !== "Shield") ?? null;
+    .map((item) => ({ id: item.id, entry: armorCatalogMatch(item.name) }))
+    .filter((x): x is { id: string; entry: ArmorCatalogEntry } => Boolean(x.entry));
+  const shieldRows = equippedRows.filter((x) => x.entry.type === "Shield");
+  const armorRow = equippedRows.find((x) => x.entry.type !== "Shield") ?? null;
+  const shields = shieldRows.map((x) => x.entry);
+  const armor = armorRow?.entry ?? null;
 
   const usesUnarmoredDefense = Boolean(
     !armor && unarmoredDefense && (unarmoredDefense.allowShield || shields.length === 0)
@@ -118,11 +122,18 @@ export function computeDefense(
   }
 
   const shieldBonus = shields.reduce((sum, s) => sum + armorClassFromFormula(s.ac, dexModifier), 0);
+  // Infused armor only helps while its own AC is the one in use (natural armor can override it).
+  const infusionCounts = Boolean(
+    infusion &&
+      ((armorRow?.id === infusion.itemId && !usesNaturalArmor) || shieldRows.some((x) => x.id === infusion.itemId))
+  );
+  const infusionBonus = infusionCounts && infusion ? infusion.bonus : 0;
   return {
-    total: base + shieldBonus,
+    total: base + shieldBonus + infusionBonus,
     armor,
     shields,
     unarmoredDefenseApplied: usesUnarmoredDefense && !usesNaturalArmor,
     naturalArmorApplied: usesNaturalArmor,
+    infusionBonus,
   };
 }

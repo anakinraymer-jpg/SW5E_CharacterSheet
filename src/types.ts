@@ -542,6 +542,7 @@ export interface Character {
   maneuverPhysicalAbility: "str" | "dex" | "con"; // Fighter/Scholar Combat/Academic Superiority: ability for Physical maneuvers
   maneuverMentalAbility: "int" | "wis" | "cha"; // Fighter/Scholar Combat/Academic Superiority: ability for Mental maneuvers
   armorNotes: string;
+  infusedItemId: string; // Engineer's Infuse Item: id of the Weapon or EquipmentItem currently infused ("" = none) — see infuseItem.ts
   resistances: string;
   hitDiceTotal: string;
   hitDiceRemaining: string;
@@ -755,6 +756,7 @@ export function createBlankCharacter(): Character {
     maneuverPhysicalAbility: "str",
     maneuverMentalAbility: "int",
     armorNotes: "",
+    infusedItemId: "",
     resistances: "",
     hitDiceTotal: "1d8",
     hitDiceRemaining: "1d8",

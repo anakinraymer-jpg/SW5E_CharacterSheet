@@ -10,6 +10,7 @@ import {
   SCOUT_RANGERS_QUARRY_DIE_BY_LEVEL,
 } from "../data/classFeatureChoices";
 import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
+import { infusedWeaponBonus } from "../infuseItem";
 import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, isMeleeWeapon, toHitAbilityInfo, weaponAmmoType, weaponDamageDisplay } from "../weaponLogic";
 import { formatModifier, proficiencyBonus } from "../utils";
 import { WEAPON_PROPERTY_DEFINITIONS } from "../data/legend";
@@ -150,10 +151,12 @@ export default function WeaponsSection({
         <tbody>
           {weapons.map((w) => {
             const { mod: abilityMod, label: abilityLabel } = toHitAbilityInfo(character, w.name);
-            const toHit = abilityMod + (w.proficient ? pb : 0);
+            const infusion = infusedWeaponBonus(character, w);
+            const toHit = abilityMod + (w.proficient ? pb : 0) + infusion;
             const toHitLines = [
               `${abilityLabel} modifier: ${formatModifier(abilityMod)}`,
               w.proficient ? `Proficiency Bonus: ${formatModifier(pb)}` : "Not proficient",
+              ...(infusion ? [`Infuse Item: +${infusion}`] : []),
             ];
             const catalogEntry = WEAPON_LOOKUP.get(w.name.trim().toLowerCase());
             return (
@@ -201,6 +204,14 @@ export default function WeaponsSection({
                       value={w.damage}
                       onChange={(e) => updateWeapon(w.id, { damage: e.target.value })}
                     />
+                    {infusion > 0 && (
+                      <HoverInfo
+                        title="Infuse Item"
+                        lines={[`+${infusion} to this weapon's damage rolls (and attack rolls, already in To Hit) until your next long rest.`]}
+                      >
+                        <span className="rage-damage-note">+{infusion} Infused</span>
+                      </HoverInfo>
+                    )}
                     {isRaging && abilityLabel === "Strength" && (
                       <HoverInfo
                         title="Rage Damage"

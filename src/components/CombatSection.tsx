@@ -5,6 +5,7 @@ import { abilityModifier, armorCatalogMatch, formatModifier, passivePerception, 
 import { activeHpBonusSources, activeTravelPaceMultiplier, effectiveMaxHp, extraAttackInfo } from "../classFeatureLogic";
 import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { hasFeat } from "../featLogic";
+import { INFUSE_ITEM_TEXT, canInfuseWeapon, infuseItemBonus, infusedWeaponBonus } from "../infuseItem";
 import { ARMOR_PROPERTY_DEFINITIONS } from "../data/legend";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
@@ -65,6 +66,15 @@ export default function CombatSection({
     .filter(
       (x): x is { item: EquipmentItem; catalog: ArmorCatalogEntry } => Boolean(x.catalog)
     );
+
+  const infuseBonus = infuseItemBonus(character);
+  const infusedChoices = [
+    ...character.weapons.filter(canInfuseWeapon).map((w) => ({ id: w.id, label: `${w.name} (weapon: +${infuseBonus} attack & damage)` })),
+    ...armorItems.map(({ item, catalog }) => ({
+      id: item.id,
+      label: `${item.name} (${catalog.type === "Shield" ? "shield" : "armor"}: +${infuseBonus} AC)`,
+    })),
+  ];
 
   const isObservant = hasFeat(character, "Observant");
 
@@ -281,6 +291,28 @@ export default function CombatSection({
         </div>
       )}
 
+      {infuseBonus > 0 && (
+        <div className="field field-wide">
+          <label htmlFor="infused-item">Infuse Item (+{infuseBonus})</label>
+          <select
+            id="infused-item"
+            value={infusedChoices.some((x) => x.id === character.infusedItemId) ? character.infusedItemId : ""}
+            onChange={(e) => update("infusedItemId", e.target.value)}
+          >
+            <option value="">Nothing infused</option>
+            {infusedChoices.map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.label}
+              </option>
+            ))}
+          </select>
+          <p className="section-hint">
+            {INFUSE_ITEM_TEXT} The choice carries over each long rest; change it here when you infuse
+            something else.
+          </p>
+        </div>
+      )}
+
       <div className="field field-wide">
         <label>Armor, Shield, Protections</label>
         {armorItems.length > 0 ? (
@@ -296,6 +328,7 @@ export default function CombatSection({
                   <span className="armor-equip-name">{item.name}</span>
                   <span className="armor-equip-meta">
                     {catalog.type} · AC {catalog.ac}
+                    {infuseBonus > 0 && item.id === character.infusedItemId && ` · Infused +${infuseBonus} AC`}
                   </span>
                   {catalog.property && (
                     <PropertyTagList property={catalog.property} definitions={ARMOR_PROPERTY_DEFINITIONS} />
@@ -333,8 +366,10 @@ export default function CombatSection({
           <div className="armor-equip-list">
             {equippedWeapons.map((w) => {
               const { mod: abilityMod, label: abilityLabel } = toHitAbilityInfo(character, w.name);
-              const toHit = abilityMod + (w.proficient ? pb : 0);
-              const { display: damageDisplay } = weaponDamageDisplay(character, w);
+              const infusion = infusedWeaponBonus(character, w);
+              const toHit = abilityMod + (w.proficient ? pb : 0) + infusion;
+              const { display: baseDamage } = weaponDamageDisplay(character, w);
+              const damageDisplay = baseDamage && infusion ? `${baseDamage} +${infusion} (infused)` : baseDamage;
               return (
                 <div key={w.id} className="armor-equip-row is-readonly">
                   <span className="armor-equip-text">
