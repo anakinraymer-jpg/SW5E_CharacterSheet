@@ -7,6 +7,7 @@ import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { hasFeat } from "../featLogic";
 import { INFUSE_ITEM_TEXT, canInfuseWeapon, infuseItemBonus, infusedWeaponBonus } from "../infuseItem";
 import { isModifiedItem, modWeaponBonus } from "../modifications";
+import { archetypeWeaponDamageBonus } from "../archetypeEffects";
 import { ARMOR_PROPERTY_DEFINITIONS } from "../data/legend";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
@@ -373,7 +374,7 @@ export default function CombatSection({
               const mods = modWeaponBonus(character, w);
               const toHit = abilityMod + (w.proficient ? pb : 0) + infusion + mods.attack;
               const { display: baseDamage } = weaponDamageDisplay(character, w);
-              const damageBonus = infusion + mods.damage;
+              const damageBonus = infusion + mods.damage + (archetypeWeaponDamageBonus(character)?.amount ?? 0);
               const damageDisplay = baseDamage && damageBonus ? `${baseDamage} +${damageBonus}` : baseDamage;
               return (
                 <div key={w.id} className="armor-equip-row is-readonly">

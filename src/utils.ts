@@ -77,6 +77,7 @@ export interface EquippedDefense {
   unarmoredDefenseApplied: boolean;
   naturalArmorApplied: boolean;
   infusionBonus: number; // Engineer's Infuse Item, when the infused armor/shield is the one counted
+  armorAbilityApplied: boolean; // armorAbility replaced Dex in the worn armor's formula
 }
 
 // Natural armor (e.g. Wookiee's Hide: "AC is 13 + Dex modifier while unarmored or wearing light
@@ -88,7 +89,9 @@ export function computeDefense(
   dexModifier: number,
   unarmoredDefense?: UnarmoredDefenseInput | null,
   naturalArmor?: SpeciesNaturalArmor | null,
-  infusion?: { itemId: string; bonus: number } | null
+  infusion?: { itemId: string; bonus: number } | null,
+  // A modifier allowed in place of Dex for light/medium armor (Path of Iron); used only if higher.
+  armorAbility?: { modifier: number } | null
 ): EquippedDefense {
   const equippedRows = equipment
     .filter((item) => item.equipped)
@@ -107,8 +110,11 @@ export function computeDefense(
       (!armor || naturalArmor.allowAnyArmor || (armor.type === "Light" && naturalArmor.allowLightArmor))
   );
 
+  const armorAbilityApplied = Boolean(
+    armor && armorAbility && (armor.type === "Light" || armor.type === "Medium") && armorAbility.modifier > dexModifier
+  );
   let base = armor
-    ? armorClassFromFormula(armor.ac, dexModifier)
+    ? armorClassFromFormula(armor.ac, armorAbilityApplied && armorAbility ? armorAbility.modifier : dexModifier)
     : usesUnarmoredDefense
       ? 10 + dexModifier + (unarmoredDefense?.modifier ?? 0)
       : 10 + dexModifier;
@@ -135,5 +141,6 @@ export function computeDefense(
     unarmoredDefenseApplied: usesUnarmoredDefense && !usesNaturalArmor,
     naturalArmorApplied: usesNaturalArmor,
     infusionBonus,
+    armorAbilityApplied: armorAbilityApplied && !usesNaturalArmor,
   };
 }

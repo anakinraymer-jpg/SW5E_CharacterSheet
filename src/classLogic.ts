@@ -17,6 +17,7 @@ import { resolveEquipmentParts } from "./equipmentLogic";
 import { effectiveMaxHp, forcePointsAbilityBonus, monkSubstituteAbility } from "./classFeatureLogic";
 import { abilityModifier } from "./utils";
 import { revokeSkill, saveGrantedByOther } from "./grantOwnership";
+import { archetypeSavingThrows } from "./archetypeEffects";
 
 export interface UnarmoredDefenseBonus {
   modifier: number; // the class's secondary ability modifier, added on top of 10 + Dex
@@ -427,11 +428,15 @@ export function recalcClassForLevel(character: Character, classEntry: ClassEntry
   for (const key of character.classLevelSavingThrowsApplied) {
     // Don't strip a save that's independently granted by the class's fixed base saves —
     // only unset it if this level-granted feature (e.g. Diamond Soul) was its sole source.
-    if (!character.classSavingThrowsApplied.includes(key)) {
+    if (!character.classSavingThrowsApplied.includes(key) && !character.feats.some((f) => f.savingThrowGranted === key)) {
       savingThrows[key] = false;
     }
   }
-  const levelSavingThrows = levelGrantedSavingThrows(classEntry.name, level);
+  // Archetype features granting a save at their level (e.g. Praetorian's Resilient Retainer) ride
+  // along with the class's level-granted saves, so a level or archetype change re-evaluates both.
+  const levelSavingThrows = [
+    ...new Set([...levelGrantedSavingThrows(classEntry.name, level), ...archetypeSavingThrows(character)]),
+  ];
   for (const key of levelSavingThrows) {
     savingThrows[key] = true;
   }

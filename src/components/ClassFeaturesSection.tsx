@@ -8,6 +8,7 @@ import {
   resourceMaxBonus,
 } from "../classFeatureLogic";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
+import { archetypePassiveChips, archetypeResourceDef } from "../archetypeEffects";
 import HoverInfo from "./HoverInfo";import SectionHeader from "./SectionHeader";
 import NumberInput from "./NumberInput";
 
@@ -142,12 +143,8 @@ export default function ClassFeaturesSection({
   const hasDiamondSoul = character.classAppliedName === "Monk" && character.level >= 14;
   const hasPurityOfBody = character.classAppliedName === "Monk" && character.level >= 13;
   const hasForcePurity = character.classAppliedName === "Guardian" && character.level >= 6;
-  const hasElectricAttunement = character.archetypeAppliedName === "Way of Lightning" && character.level >= 14;
-  const hasForceResistance = character.archetypeAppliedName === "Way of Balance" && character.level >= 18;
-  const hasHighVoltage = character.archetypeAppliedName === "Mechanist Technique" && character.level >= 11;
-  const hasGeneticistsResilience = character.archetypeAppliedName === "Geneticist Pursuit" && character.level >= 9;
-  const hasThunderousMomentum = character.archetypeAppliedName === "Path of Aggression" && character.level >= 3;
-  const hasSupremeSneak = character.archetypeAppliedName === "Acquisitions Practice" && character.level >= 9;
+
+  const archetypeChips = archetypePassiveChips(character);
 
   const hasManeuvers = subChoiceDefs.some((def) => def.key.endsWith("-maneuvers"));
   const canSwapManeuvers = hasManeuvers && chosenOptions.some((o) => o.allowsManeuverSwap);
@@ -184,11 +181,21 @@ export default function ClassFeaturesSection({
             const idx = Math.max(1, Math.min(20, character.level || 1)) - 1;
             const max = (def.maxByLevel[idx] ?? 0) + resourceMaxBonus(character, def.key);
             const die = def.dieByLevel?.[idx];
+            const archetypeDef = archetypeResourceDef(def.key);
             const current = state?.current ?? max;
             return (
               <div className="class-resource-card" key={def.key}>
                 <div className="class-resource-label">
-                  {def.label}
+                  {archetypeDef ? (
+                    <HoverInfo
+                      title={def.label}
+                      lines={[`${character.archetypeAppliedName}, level ${archetypeDef.minLevel}.`, archetypeDef.featureText]}
+                    >
+                      <span>{def.label}</span>
+                    </HoverInfo>
+                  ) : (
+                    def.label
+                  )}
                   {die ? ` (${die})` : ""}
                 </div>
                 <div className="class-resource-controls">
@@ -348,12 +355,7 @@ export default function ClassFeaturesSection({
         hasDiamondSoul ||
         hasPurityOfBody ||
         hasForcePurity ||
-        hasElectricAttunement ||
-        hasForceResistance ||
-        hasHighVoltage ||
-        hasGeneticistsResilience ||
-        hasThunderousMomentum ||
-        hasSupremeSneak) && (
+        archetypeChips.length > 0) && (
         <div className="species-traits-box">
           <div className="species-traits-header">Passive Feature Effects</div>
           <div className="chip-row">
@@ -404,48 +406,11 @@ export default function ClassFeaturesSection({
                 <span className="info-chip">Immune: poison, disease</span>
               </HoverInfo>
             )}
-            {hasElectricAttunement && (
-              <HoverInfo
-                title="Electric Attunement"
-                lines={["Resistance to lightning damage; your force powers ignore resistance to lightning damage."]}
-              >
-                <span className="info-chip">Resistant: lightning</span>
+            {archetypeChips.map((c) => (
+              <HoverInfo key={c.title} title={c.title} lines={c.lines}>
+                <span className="info-chip">{c.chip}</span>
               </HoverInfo>
-            )}
-            {hasForceResistance && (
-              <HoverInfo title="Force Resistance" lines={["Advantage on saving throws against force powers, and resistance to their damage."]}>
-                <span className="info-chip">Resistant: force powers</span>
-              </HoverInfo>
-            )}
-            {hasHighVoltage && (
-              <HoverInfo title="High Voltage" lines={["You gain resistance to ion and lightning damage."]}>
-                <span className="info-chip">Resistant: ion, lightning</span>
-              </HoverInfo>
-            )}
-            {hasGeneticistsResilience && (
-              <HoverInfo
-                title="Geneticist's Resilience"
-                lines={["Your genetic alterations make you immune to poison and disease. Additionally, you have resistance to poison damage."]}
-              >
-                <span className="info-chip">Immune: poison, disease (resistant)</span>
-              </HoverInfo>
-            )}
-            {hasThunderousMomentum && (
-              <HoverInfo
-                title="Thunderous Momentum"
-                lines={["You are immune to the shocked condition, and each slowed level only reduces your speed by 5 feet, unless it would reduce your speed to 0."]}
-              >
-                <span className="info-chip">Immune: shocked</span>
-              </HoverInfo>
-            )}
-            {hasSupremeSneak && (
-              <HoverInfo
-                title="Supreme Sneak"
-                lines={["Advantage on Stealth if you move no more than half speed; resistance to and immunity from damage on falls under 100 feet."]}
-              >
-                <span className="info-chip">Immune: fall damage under 100 ft</span>
-              </HoverInfo>
-            )}
+            ))}
             {passiveBuffOptions.map((o) => (
               <HoverInfo key={o.name} title={o.name} lines={[o.passiveBuffText!]}>
                 <span className="info-chip">{o.passiveBuffText}</span>

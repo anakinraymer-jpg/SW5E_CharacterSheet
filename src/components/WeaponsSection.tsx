@@ -12,6 +12,7 @@ import {
 import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
 import { infusedWeaponBonus } from "../infuseItem";
 import { modWeaponBonus } from "../modifications";
+import { archetypeWeaponDamageBonus } from "../archetypeEffects";
 import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, isMeleeWeapon, toHitAbilityInfo, weaponAmmoType, weaponDamageDisplay } from "../weaponLogic";
 import { formatModifier, proficiencyBonus } from "../utils";
 import { WEAPON_PROPERTY_DEFINITIONS } from "../data/legend";
@@ -118,6 +119,7 @@ export default function WeaponsSection({
   }
   const pb = proficiencyBonus(character.level);
   const isRaging = character.classAppliedName === "Berserker" && character.isRaging;
+  const archetypeDamage = archetypeWeaponDamageBonus(character);
   const rageDamageBonus = BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
   const hasMartialArts = character.classAppliedName === "Monk" && monkRetainsUnarmoredBenefits(character);
   const martialArtsDie = MONK_MARTIAL_ARTS_DIE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
@@ -216,6 +218,14 @@ export default function WeaponsSection({
                         lines={[`+${infusion} to this weapon's damage rolls (and attack rolls, already in To Hit) until your next long rest.`]}
                       >
                         <span className="rage-damage-note">+{infusion} Infused</span>
+                      </HoverInfo>
+                    )}
+                    {archetypeDamage && (
+                      <HoverInfo
+                        title={archetypeDamage.label}
+                        lines={[`+${archetypeDamage.amount} to weapon damage rolls (${character.archetypeAppliedName}).`]}
+                      >
+                        <span className="rage-damage-note">+{archetypeDamage.amount} {archetypeDamage.label}</span>
                       </HoverInfo>
                     )}
                     {mods.damage > 0 && (

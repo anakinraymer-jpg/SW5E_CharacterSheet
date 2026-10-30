@@ -1,6 +1,7 @@
 import type {
   AbilityKey,
   Character,
+  ClassResourceDef,
   ClassResourceState,
   ClassSubChoiceDef,
   ClassSubChoiceOption,
@@ -22,6 +23,7 @@ import { restCompanion } from "./companionLogic";
 import { abilityModifier, armorCatalogMatch } from "./utils";
 import { revokeSkill } from "./grantOwnership";
 import { effectiveTechPointMax, modSpeedSources } from "./modifications";
+import { applicableArchetypeResources, archetypeResourceMaxBonus, hasArchetypeFeature } from "./archetypeEffects";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 
@@ -185,9 +187,8 @@ export function activeHpBonusSources(character: Character): { label: string; amo
   if (character.speciesHpBonus) {
     sources.push({ label: character.speciesHpBonus.sourceLabel, amount: character.speciesHpBonus.perLevel * level });
   }
-  const archetypeHp = HP_BONUS_ARCHETYPES[character.archetypeAppliedName];
-  if (archetypeHp && level >= archetypeHp.level) {
-    sources.push({ label: archetypeHp.label, amount: level });
+  for (const [archetype, hp] of Object.entries(HP_BONUS_ARCHETYPES)) {
+    if (hasArchetypeFeature(character, archetype, hp.level)) sources.push({ label: hp.label, amount: level });
   }
   for (const cf of character.feats) {
     const feat = FEATS_BY_NAME.get(cf.name);
@@ -291,14 +292,16 @@ export function chosenDamageTypesFor(character: Character, optionName: string): 
 
 // Class resources filtered to those the character currently qualifies for — either unconditional,
 // or gated behind a specific sub-choice pick (e.g. Fyrnock's Leap only once that instinct is chosen).
-export function applicableClassResources(character: Character) {
+// Archetype features with limited uses (archetypeEffects.ts) are appended once their level is reached.
+export function applicableClassResources(character: Character): ClassResourceDef[] {
   const defs = CLASS_RESOURCES_BY_CLASS.get(character.classAppliedName) ?? [];
-  return defs.filter((def) => {
+  const classDefs = defs.filter((def) => {
     if (def.archetypeName && def.archetypeName !== character.archetypeAppliedName) return false;
     if (!def.requiresSubChoicePick) return true;
     const { defKey, optionName } = def.requiresSubChoicePick;
     return (character.classSubChoicePicks[defKey] ?? []).includes(optionName);
   });
+  return [...classDefs, ...applicableArchetypeResources(character)];
 }
 
 export function grantedProficienciesFromSubChoices(character: Character): string[] {
@@ -360,6 +363,7 @@ function resyncSubChoiceGrantedSkills(character: Character): Character {
 // maximum focus points — a formula-based bonus, unlike the flat countBonusFrom mechanism, so it's
 // special-cased here rather than added as a new generic ClassResourceDef field for one resource.
 export function resourceMaxBonus(character: Character, defKey: string): number {
+  if (defKey.startsWith("arch-")) return archetypeResourceMaxBonus(character, defKey);
   if (defKey !== "monk-focus-points") return 0;
   if (!allChosenSubChoiceOptions(character).some((o) => o.name === "Vow of Serenity")) return 0;
   const mod = abilityModifier(character.abilities[character.monkUnarmoredDefenseAbility]);

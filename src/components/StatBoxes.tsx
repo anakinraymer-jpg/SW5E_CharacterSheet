@@ -4,7 +4,17 @@ import { computeUnarmoredDefenseBonus } from "../classLogic";
 import { activeSpeedBonusSources } from "../classFeatureLogic";
 import { hasFeat } from "../featLogic";
 import { armorInfusion } from "../infuseItem";
-import { betterNaturalArmor, modDefenseNotes, modNaturalArmor } from "../modifications";
+import { modDefenseNotes, modNaturalArmor } from "../modifications";
+import {
+  archetypeAcBonuses,
+  archetypeDefenseNotes,
+  archetypeExtraSpeeds,
+  archetypeInitiativeNotes,
+  archetypeInitiativeSources,
+  archetypeNaturalArmor,
+  armorAbilitySubstitute,
+  bestNaturalArmor,
+} from "../archetypeEffects";
 import HoverInfo from "./HoverInfo";
 import NumberInput from "./NumberInput";
 
@@ -16,10 +26,16 @@ interface Props {
 export function DefenseBox({ character }: Props) {
   const dexMod = abilityModifier(character.abilities.dex);
   const unarmoredDefense = computeUnarmoredDefenseBonus(character);
-  const naturalArmor = betterNaturalArmor(character.speciesNaturalArmor, modNaturalArmor(character));
-  const computed = computeDefense(character.equipment, dexMod, unarmoredDefense, naturalArmor, armorInfusion(character));
+  const naturalArmor = bestNaturalArmor(
+    [character.speciesNaturalArmor, modNaturalArmor(character), archetypeNaturalArmor(character)],
+    dexMod
+  );
+  const armorAbility = armorAbilitySubstitute(character);
+  const computed = computeDefense(character.equipment, dexMod, unarmoredDefense, naturalArmor, armorInfusion(character), armorAbility);
+  const acBonuses = archetypeAcBonuses(character, computed);
+  const total = computed.total + acBonuses.reduce((sum, b) => sum + b.amount, 0);
   const infusedName = character.equipment.find((i) => i.id === character.infusedItemId)?.name;
-  const situational = modDefenseNotes(character);
+  const situational = [...modDefenseNotes(character), ...archetypeDefenseNotes(character)];
 
   const lines = [
     computed.naturalArmorApplied && naturalArmor
@@ -29,13 +45,16 @@ export function DefenseBox({ character }: Props) {
         : computed.unarmoredDefenseApplied && unarmoredDefense
           ? `${unarmoredDefense.sourceLabel}: 10 + Dex + ${unarmoredDefense.abilityLabel}`
           : `Unarmored: 10 + Dex modifier`,
-    `Dex modifier: ${formatModifier(dexMod)}`,
+    computed.armorAbilityApplied && armorAbility
+      ? `${armorAbility.label}: ${formatModifier(armorAbility.modifier)}`
+      : `Dex modifier: ${formatModifier(dexMod)}`,
     ...(computed.unarmoredDefenseApplied && unarmoredDefense
       ? [`${unarmoredDefense.abilityLabel} modifier: ${formatModifier(unarmoredDefense.modifier)}`]
       : []),
     ...(computed.naturalArmorApplied && computed.armor ? [`(overrides ${computed.armor.name}'s own AC)`] : []),
     ...computed.shields.map((s) => `${s.name}: ${s.ac}`),
     ...(computed.infusionBonus ? [`Infuse Item (${infusedName}): +${computed.infusionBonus}`] : []),
+    ...acBonuses.map((b) => `${b.label}: +${b.amount}`),
     ...(situational.length ? ["Situational (not included above):", ...situational] : []),
   ];
   return (
@@ -44,7 +63,7 @@ export function DefenseBox({ character }: Props) {
         <label htmlFor="defense">Defense</label>
         <HoverInfo title="Defense Breakdown" lines={lines}>
           <div id="defense" className="readonly-box">
-            {computed.total}
+            {total}
           </div>
         </HoverInfo>
         {situational.length > 0 && (
@@ -61,17 +80,21 @@ export function InitiativeBox({ character }: Props) {
   const dexMod = abilityModifier(character.abilities.dex);
   const isAlert = hasFeat(character, "Alert");
   const pb = proficiencyBonus(character.level);
-  const initiative = dexMod + (isAlert ? pb : 0);
+  const archetypeSources = archetypeInitiativeSources(character);
+  const notes = archetypeInitiativeNotes(character);
+  const initiative = dexMod + (isAlert ? pb : 0) + archetypeSources.reduce((sum, s) => sum + s.amount, 0);
   return (
     <section className="sheet-section stat-box-section">
       <div className="field">
         <label>Initiative</label>
-        {isAlert ? (
+        {isAlert || archetypeSources.length > 0 || notes.length > 0 ? (
           <HoverInfo
-            title="Alert"
+            title="Initiative"
             lines={[
               `Dexterity modifier: ${formatModifier(dexMod)}`,
-              `Proficiency Bonus (Alert): ${formatModifier(pb)}`,
+              ...(isAlert ? [`Proficiency Bonus (Alert): ${formatModifier(pb)}`] : []),
+              ...archetypeSources.map((s) => `${s.label}: ${formatModifier(s.amount)}`),
+              ...notes,
             ]}
           >
             <div className="readonly-box">{formatModifier(initiative)}</div>
@@ -99,6 +122,7 @@ export function ProficiencyBonusBox({ character }: Props) {
 export function SpeedBaseBox({ character, update }: Props) {
   const sources = activeSpeedBonusSources(character);
   const bonus = sources.reduce((sum, s) => sum + s.amount, 0);
+  const otherSpeeds = archetypeExtraSpeeds(character);
   return (
     <section className="sheet-section stat-box-section">
       <div className="field">
@@ -117,6 +141,11 @@ export function SpeedBaseBox({ character, update }: Props) {
             ]}
           >
             <span className="rage-damage-note">Effective {character.speedBase + bonus} ft</span>
+          </HoverInfo>
+        )}
+        {otherSpeeds.length > 0 && (
+          <HoverInfo title="Other Speeds" lines={otherSpeeds}>
+            <span className="rage-damage-note">+ climb/swim</span>
           </HoverInfo>
         )}
       </div>
