@@ -156,72 +156,16 @@ export function speedMultiplier(c: Character, tool: string): number {
 
 // ---- Which tool crafts an enhanced item ----
 
-const WEAPON_TYPE_BY_NAME = new Map(WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), w.type]));
 const ARMORMECH = "Armormech's implements";
 const ARMSTECH = "Armstech's implements";
 const ARTIFICER = "Artificer's implements";
-const CYBERTECH = "Cybertech's implements";
 const SYNTHWEAVER = "Synthweaver's implements";
 
-const MOD_TOOL: Record<string, string> = {
-  armor: ARMORMECH,
-  blaster: ARMSTECH,
-  vibroweapon: ARMSTECH,
-  lightweapon: ARTIFICER,
-  "focus generator": ARTIFICER,
-  wristpad: CYBERTECH,
-  clothing: SYNTHWEAVER,
-  augment: "Tinker's implements",
-};
-const CONSUMABLE_TOOL: Record<string, string> = {
-  Adrenals: "Biochemist's kit",
-  Stimpacs: "Biochemist's kit",
-  Barriers: "Gadgeteer's implements",
-  Explosives: "Demolitions kit",
-  Poisons: "Poisoner's kit",
-};
-const CONSUMABLE_SUBTYPE_TOOL: Record<string, string> = {
-  medpac: "Biochemist's kit",
-  ammunition: "Munitions kit",
-  substance: "Spicer's kit",
-};
-
-// The tool(s) that craft an enhanced item, matched to the Item Specific Tools table. An empty list means
-// the table doesn't clearly name one (general gear, technology consumables): the GM decides.
+// The tool(s) that craft an enhanced item. Assigned in scripts/gen-enhanced-items.mjs (see
+// docs/CRAFTING_ITEMS.md for the full list); "*" (the enhanced Tool items) means any artisan tool.
 export function enhancedItemTools(e: EnhancedItemEntry): string[] {
-  switch (e.type) {
-    case "Armor":
-    case "Shield":
-      return [ARMORMECH];
-    case "Weapon": {
-      if (e.group === "Any") return [ARMSTECH, ARTIFICER];
-      if (e.group === "AnyLightweapon" || /saber|lightweapon/.test(e.subtype)) return [ARTIFICER];
-      const type = WEAPON_TYPE_BY_NAME.get(e.subtype) ?? "";
-      return [/Lightweapon/.test(type) ? ARTIFICER : ARMSTECH];
-    }
-    case "ItemModification":
-      return MOD_TOOL[e.subtype] ? [MOD_TOOL[e.subtype]] : [];
-    case "Consumable": {
-      const tool = CONSUMABLE_TOOL[e.group] ?? CONSUMABLE_SUBTYPE_TOOL[e.subtype];
-      return tool ? [tool] : [];
-    }
-    case "CyberneticAugmentation":
-      return ["Biotech's implements"];
-    case "DroidCustomization":
-      return ["Astrotech's implements"];
-    case "Focus":
-      return [e.subtype === "tech" ? CYBERTECH : ARTIFICER];
-    case "AdventuringGear": {
-      const n = e.name.toLowerCase();
-      if (/holocron/.test(n)) return [ARTIFICER];
-      if (/datacron/.test(n)) return [CYBERTECH];
-      if (/jetpack|rocketpack|rocket boots/.test(n)) return ["Gadgeteer's implements"];
-      if (/\bring\b|necklace|amulet|circlet/.test(n)) return ["Jeweler's implements"];
-      if (/clothes|robe|tunic|pants|cloak|cape|cowl|mantle|boots|kickers|handwraps|flightsuit/.test(n)) return [SYNTHWEAVER];
-      return [];
-    }
-  }
-  return [];
+  const tools = e.tools ?? [];
+  return tools.includes("*") ? CRAFTING_TOOLS.map((t) => t.name) : tools;
 }
 
 // Lowest rarity an item comes in (some come in several).

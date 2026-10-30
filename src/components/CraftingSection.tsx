@@ -104,22 +104,17 @@ export default function CraftingSection({ character, update, addWeapon, addItem,
     return state.tools[tool]?.blueprints ?? [];
   }
 
-  // Enhanced items this tool can know: those the Item Specific Tools table gives it, plus the ones the
-  // table leaves to the GM. Only rarities the character's level allows.
+  // Enhanced items this tool crafts (docs/CRAFTING_ITEMS.md). Only rarities the character's level allows.
   function blueprintOptions(tool: string) {
     const known = new Set(blueprintsOf(tool));
     return (enhanced ?? [])
-      .filter((e) => !known.has(e.name) && RARITY_LEVEL[itemRarity(e)] <= level)
-      .map((e) => ({ e, tools: enhancedItemTools(e) }))
-      .filter(({ tools: t }) => t.length === 0 || t.includes(tool))
-      .map(({ e, tools: t }) => ({
+      .filter((e) => !known.has(e.name) && RARITY_LEVEL[itemRarity(e)] <= level && enhancedItemTools(e).includes(tool))
+      .map((e) => ({
         name: e.name,
-        group: t.length === 0 ? "Other (your GM decides the tool)" : e.type.replace(/([a-z])([A-Z])/g, "$1 $2"),
-        subtitle: itemRarity(e),
-        other: t.length === 0,
+        group: e.type.replace(/([a-z])([A-Z])/g, "$1 $2"),
+        subtitle: `${itemRarity(e)} · ${e.source}`,
       }))
-      .sort((a, b) => Number(a.other) - Number(b.other) || a.group.localeCompare(b.group) || a.name.localeCompare(b.name))
-      .map(({ other: _other, ...o }) => o);
+      .sort((a, b) => a.group.localeCompare(b.group) || a.name.localeCompare(b.name));
   }
 
   function craftOptions(tool: string) {
