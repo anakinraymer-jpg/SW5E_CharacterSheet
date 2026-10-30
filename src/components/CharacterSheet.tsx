@@ -373,6 +373,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     if (!pendingBackground) return;
     setCharacter((prev) => applyBackground(prev, pendingBackground, selections));
     setPendingBackground(null);
+    if (selections.feat) handleAddFeat(selections.feat);
   }
 
   function handleClassCommit(value: string) {
@@ -845,8 +846,6 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             updateItem={updateItem}
             collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
-            onShortRest={handleShortRest}
-            onLongRest={handleLongRest}
           />
         );
       case "skills":
@@ -1178,6 +1177,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       </div>
 
       <HealthBar character={character} update={update} />
+      <div className="rest-buttons rest-buttons-main">
+        <button type="button" className="btn btn-secondary" onClick={handleShortRest}>
+          Short Rest
+        </button>
+        <button type="button" className="btn btn-primary" onClick={handleLongRest}>
+          Long Rest
+        </button>
+      </div>
 
       <div className="sheet-stat-row">
         {layout.statRow.map((id) => (
@@ -1304,6 +1311,9 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         <BackgroundChoiceDialog
           background={pendingBackground}
           skills={character.skills}
+          ownedFeats={character.feats
+            .map((f) => f.name)
+            .filter((n) => n !== character.backgroundGrantedFeat)}
           onCancel={() => {
             setPendingBackground(null);
             update("background", character.backgroundAppliedName);

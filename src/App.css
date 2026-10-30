@@ -1140,6 +1140,18 @@
   margin-bottom: 12px;
 }
 
+/* Under the health bar: bigger, easy to tap */
+.rest-buttons-main {
+  margin: -6px 0 16px;
+}
+
+.rest-buttons-main .btn {
+  flex: 1;
+  max-width: 220px;
+  padding: 10px 18px;
+  font-size: 1rem;
+}
+
 .class-resource-controls {
   display: flex;
   align-items: center;
@@ -2428,24 +2440,6 @@
     width: auto;
     min-height: 34px;
   }
-}
-
-/* Feats suggested by the character's background */
-.suggested-feats {
-  margin: 8px 0 10px;
-}
-
-.suggested-feats-label {
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--accent);
-  margin-bottom: 4px;
-}
-
-.suggested-feat-chip {
-  cursor: pointer;
-  color: var(--text);
 }
 
 /* Companion: improvements, class features, warnings */

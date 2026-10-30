@@ -20,8 +20,6 @@ interface Props {
   updateItem: (id: string, patch: Partial<EquipmentItem>) => void;
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
-  onShortRest: () => void;
-  onLongRest: () => void;
 }
 
 function DeathSavePips({
@@ -52,8 +50,6 @@ export default function CombatSection({
   updateItem,
   collapsedSections,
   onToggleSection,
-  onShortRest,
-  onLongRest,
 }: Props) {
   const collapsed = !!collapsedSections["combat"];
   const pb = proficiencyBonus(character.level);
@@ -100,14 +96,6 @@ export default function CombatSection({
       <SectionHeader title="Combat" collapsed={collapsed} onToggle={() => onToggleSection("combat")} />
       {!collapsed && (
       <>
-      <div className="rest-buttons">
-        <button type="button" className="btn btn-secondary btn-small" onClick={onShortRest}>
-          Short Rest
-        </button>
-        <button type="button" className="btn btn-primary btn-small" onClick={onLongRest}>
-          Long Rest
-        </button>
-      </div>
       <div className="combat-grid">
         <div className="field">
           <label>Passive Perception</label>

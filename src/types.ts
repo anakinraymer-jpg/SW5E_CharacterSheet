@@ -197,6 +197,7 @@ export interface BackgroundSelections {
   skillChoice: string[];
   languageChoice: string[];
   toolChoice: string[][];
+  feat?: string; // picked from the background's feat table; added after the background applies
 }
 
 export interface ArchetypeEntry {
@@ -495,6 +496,7 @@ export interface Character {
   backgroundGrantedWeaponIds: string[]; // Weapon ids created by applyBackground, so revert only removes background-granted weapons
   backgroundCreditsApplied: number;
   backgroundGrantedFeature: string; // exact feature text last auto-filled into backgroundFeature, cleared on revert if untouched
+  backgroundGrantedFeat: string; // name of the feat picked from the background's feat table, removed on revert
   level: number;
   alignment: string;
   allegiance: string;
@@ -716,6 +718,7 @@ export function createBlankCharacter(): Character {
     archetype: "",
     background: "",
     backgroundAppliedName: "",
+    backgroundGrantedFeat: "",
     backgroundGrantedSkills: [],
     backgroundGrantedLanguages: [],
     backgroundGrantedProficiencies: [],

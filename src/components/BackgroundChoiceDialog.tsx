@@ -1,16 +1,24 @@
 import { useState } from "react";
 import type { BackgroundEntry, BackgroundSelections, SkillName, SkillState } from "../types";
 import { LANGUAGES } from "../data/sw5eData";
+import { backgroundFeatOptions } from "../backgroundLogic";
+import { featDetails } from "../pickerCatalogs";
 import Modal from "./Modal";
 
 interface Props {
   background: BackgroundEntry;
   skills: Record<SkillName, SkillState>;
+  ownedFeats: string[];
   onCancel: () => void;
   onConfirm: (selections: BackgroundSelections) => void;
 }
 
-export default function BackgroundChoiceDialog({ background, skills, onCancel, onConfirm }: Props) {
+export default function BackgroundChoiceDialog({ background, skills, ownedFeats, onCancel, onConfirm }: Props) {
+  // The background grants one feat from its table. Already having one of them counts as the pick.
+  const featTable = backgroundFeatOptions(background);
+  const featAlreadyOwned = featTable.some((f) => ownedFeats.includes(f));
+  const featOptions = featTable.filter((f) => !ownedFeats.includes(f));
+  const [feat, setFeat] = useState("");
   const [skillChoice, setSkillChoice] = useState<string[]>(
     Array(background.skillChoice.count).fill("")
   );
@@ -31,7 +39,8 @@ export default function BackgroundChoiceDialog({ background, skills, onCancel, o
   const toolsComplete = toolChoice.every(
     (picks) => picks.every(Boolean) && new Set(picks).size === picks.length
   );
-  const isComplete = skillsComplete && languagesComplete && toolsComplete;
+  const featComplete = featOptions.length === 0 || featAlreadyOwned || Boolean(feat);
+  const isComplete = skillsComplete && languagesComplete && toolsComplete && featComplete;
 
   return (
     <Modal
@@ -45,7 +54,7 @@ export default function BackgroundChoiceDialog({ background, skills, onCancel, o
           <button
             className="btn btn-primary"
             disabled={!isComplete}
-            onClick={() => onConfirm({ skillChoice, languageChoice, toolChoice })}
+            onClick={() => onConfirm({ skillChoice, languageChoice, toolChoice, feat: feat || undefined })}
           >
             Apply
           </button>
@@ -54,7 +63,7 @@ export default function BackgroundChoiceDialog({ background, skills, onCancel, o
     >
       <p className="section-hint">
         Starting equipment, credits, and your background feature apply automatically. Choose your
-        starting skills, languages, and tool proficiencies below.
+        starting skills, languages, tool proficiencies{featOptions.length > 0 ? ", and feat" : ""} below.
       </p>
 
       {background.skillChoice.count > 0 && (
@@ -146,6 +155,31 @@ export default function BackgroundChoiceDialog({ background, skills, onCancel, o
           </div>
         </div>
       ))}
+
+      {featOptions.length > 0 && (
+        <div className="choice-group">
+          <div className="choice-group-label">Feat{featAlreadyOwned ? " (optional)" : ""}</div>
+          {featAlreadyOwned && (
+            <div className="choice-group-hint">You already have a feat from this background's table.</div>
+          )}
+          <div className="choice-selects">
+            <select value={feat} onChange={(e) => setFeat(e.target.value)}>
+              <option value="">{featAlreadyOwned ? "None" : "Choose…"}</option>
+              {featOptions.map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
+            </select>
+          </div>
+          {feat &&
+            featDetails(feat).map((line, i) => (
+              <div className="choice-group-hint" key={i}>
+                {line}
+              </div>
+            ))}
+        </div>
+      )}
 
       <div className="choice-group">
         <div className="choice-group-label">{background.featureName}</div>

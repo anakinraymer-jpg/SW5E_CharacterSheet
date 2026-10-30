@@ -1,13 +1,28 @@
 import type { BackgroundEntry, BackgroundSelections, Character, SkillName } from "./types";
 import { resolveEquipmentParts } from "./equipmentLogic";
 import { revokeSkill } from "./grantOwnership";
+import { BACKGROUND_FEAT_OPTIONS } from "./data/backgroundFeats";
+import { FEATS_CATALOG } from "./data/feats";
+import { removeFeat } from "./featLogic";
 
-export function backgroundNeedsChoices(bg: BackgroundEntry): boolean {
-  return bg.skillChoice.count > 0 || bg.languages.choiceCount > 0 || bg.toolChoices.length > 0;
+// The background's feat table, limited to feats the sheet knows.
+export function backgroundFeatOptions(bg: BackgroundEntry): string[] {
+  return (BACKGROUND_FEAT_OPTIONS[bg.name] ?? []).filter((name) => FEATS_CATALOG.some((f) => f.name === name));
 }
 
-export function revertBackground(character: Character): Character {
-  if (!character.backgroundAppliedName) return character;
+export function backgroundNeedsChoices(bg: BackgroundEntry): boolean {
+  return (
+    bg.skillChoice.count > 0 ||
+    bg.languages.choiceCount > 0 ||
+    bg.toolChoices.length > 0 ||
+    backgroundFeatOptions(bg).length > 0
+  );
+}
+
+export function revertBackground(input: Character): Character {
+  if (!input.backgroundAppliedName) return input;
+  const grantedFeat = input.feats.find((f) => f.name === input.backgroundGrantedFeat);
+  const character = grantedFeat ? removeFeat(input, grantedFeat.id) : input;
   const skills = { ...character.skills };
   for (const skillName of character.backgroundGrantedSkills) {
     revokeSkill(skills, skillName, character, { except: "background" });
@@ -24,6 +39,7 @@ export function revertBackground(character: Character): Character {
     equipment: character.equipment.filter((item) => !grantedEquipmentIds.has(item.id)),
     weapons: character.weapons.filter((w) => !grantedWeaponIds.has(w.id)),
     backgroundAppliedName: "",
+    backgroundGrantedFeat: "",
     backgroundGrantedSkills: [],
     backgroundGrantedLanguages: [],
     backgroundGrantedProficiencies: [],
@@ -64,6 +80,7 @@ export function applyBackground(
     skills,
     credits: base.credits + bg.startingCredits,
     backgroundAppliedName: bg.name,
+    backgroundGrantedFeat: selections.feat ?? "",
     backgroundGrantedSkills: grantedSkills,
     backgroundGrantedLanguages: grantedLanguages,
     backgroundGrantedProficiencies: grantedProficiencies,
