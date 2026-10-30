@@ -75,7 +75,10 @@ import {
   skillsSummary,
   traitsSummary,
   companionSummary,
+  modificationsSummary,
 } from "../simpleSummaries";
+import ModificationsSection from "./ModificationsSection";
+import { modDiscipline } from "../modifications";
 
 type SimpleKey = SectionId | "identity" | "characterData" | "notes";
 import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
@@ -797,6 +800,10 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   // ClassFeaturesSection renders nothing until a class/archetype is applied — skip its
   // block entirely rather than showing an empty draggable box in edit mode.
   const hasClassFeaturesContent = Boolean(character.classTraitsText || character.archetypeTraitsText);
+  // Same for Modifications: only Engineers (3rd level+) whose discipline modifies an item.
+  const hasModifications = Boolean(modDiscipline(character));
+  const isShown = (id: SectionId) =>
+    (id !== "classFeatures" || hasClassFeaturesContent) && (id !== "modifications" || hasModifications);
 
   // `sectionCollapsed` lets Simple mode's pop-up show a section fully expanded; `opts` selects the
   // reduced Class Features view or one half of the Backstory section.
@@ -842,6 +849,15 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             toggleSkillProficiency={toggleSkillProficiency}
             toggleSkillExpertise={toggleSkillExpertise}
             toggleSavingThrow={toggleSavingThrow}
+            collapsedSections={sectionCollapsed}
+            onToggleSection={toggleSection}
+          />
+        );
+      case "modifications":
+        return (
+          <ModificationsSection
+            character={character}
+            update={update}
             collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
           />
@@ -960,6 +976,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     abilities: "Ability Scores",
     combat: "Combat",
     skills: "Skills",
+    modifications: "Modifications",
     feats: "Feats",
     powers: "Force & Tech Powers",
     weapons: "Weapons & Ammunitions",
@@ -993,6 +1010,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         return <SimpleCard title="Combat" summary={combatSummary(character)} onOpen={open("combat")} />;
       case "skills":
         return <SimpleCard title="Skills" summary={skillsSummary(character)} onOpen={open("skills")} />;
+      case "modifications":
+        return <SimpleCard title="Modifications" summary={modificationsSummary(character)} onOpen={open("modifications")} />;
       case "feats":
         return <SimpleCard title="Feats" summary={featsSummary(character)} onOpen={open("feats")} />;
       case "powers": {
@@ -1044,6 +1063,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     abilities: "Abilities",
     combat: "Combat",
     skills: "Skills",
+    modifications: "Mods",
     powers: "Powers",
     feats: "Feats",
     classFeatures: "Class",
@@ -1055,8 +1075,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     legend: "Legend",
   };
   const navIds: SectionId[] = [
-    ...layout.columns.flat(),
-    ...layout.wide.filter((id) => id !== "classFeatures" || hasClassFeaturesContent),
+    ...layout.columns.flat().filter(isShown),
+    ...layout.wide.filter(isShown),
   ];
   const navItems = [
     { id: "identity", label: "Character" },
@@ -1158,7 +1178,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             className={`sheet-column${editLayout ? " edit-mode" : ""}`}
             data-column-index={i}
           >
-            {col.map((id) => (
+            {col.filter(isShown).map((id) => (
               <SectionBlock
                 key={id}
                 id={id}
@@ -1175,7 +1195,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
       <div className="sheet-wide-stack">
         {layout.wide
-          .filter((id) => id !== "classFeatures" || hasClassFeaturesContent)
+          .filter(isShown)
           .map((id) => (
             <SectionBlock
               key={id}

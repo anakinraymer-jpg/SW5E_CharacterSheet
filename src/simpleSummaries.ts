@@ -6,7 +6,7 @@ import { effectiveMaxHp } from "./classFeatureLogic";
 import { hasFeat } from "./featLogic";
 import { WEAPON_LOOKUP, toHitAbilityInfo } from "./weaponLogic";
 import { infusedWeaponBonus } from "./infuseItem";
-import { effectiveTechPointMax, modWeaponBonus } from "./modifications";
+import { effectiveTechPointMax, installedMods, modDiscipline, modWeaponBonus, modifiedItems, totalSlots } from "./modifications";
 import { castingStats } from "./castingStats";
 import { grantedLanguages, grantedProficiencies } from "./grantsSummary";
 import { companionMaxHp } from "./companionLogic";
@@ -89,6 +89,18 @@ export function equipmentSummary(c: Character): string[] {
     `Credits: ${c.credits}`,
     ...cap(items.length ? items : ["No items yet."], 24),
     `Carrying ${weight} kg`,
+  ];
+}
+
+export function modificationsSummary(c: Character): string[] {
+  const d = modDiscipline(c);
+  if (!d) return [];
+  const mods = installedMods(c, d);
+  const items = modifiedItems(c, d).map((id) => c.weapons.find((w) => w.id === id)?.name ?? c.equipment.find((i) => i.id === id)?.name);
+  return [
+    `${d.itemLabel}${items.length ? `: ${items.join(", ")}` : ""}`,
+    `Slots used: ${mods.length} / ${totalSlots(c, d)}`,
+    ...cap(mods.length ? mods.map((m) => m.option.name) : ["No modifications installed yet."], 12),
   ];
 }
 

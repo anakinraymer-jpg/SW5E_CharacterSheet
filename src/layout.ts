@@ -6,6 +6,7 @@ export type SectionId =
   | "abilities"
   | "combat"
   | "skills"
+  | "modifications"
   | "weapons"
   | "powers"
   | "classFeatures"
@@ -21,7 +22,7 @@ export type SectionId =
 // dragged between columns. Wide sections always span the full width and only reorder
 // among themselves.
 export const STAT_SECTIONS: SectionId[] = ["proficiencyBonus", "defense", "speedBase", "initiative"];
-export const NARROW_SECTIONS: SectionId[] = ["abilities", "combat", "skills", "powers", "feats"];
+export const NARROW_SECTIONS: SectionId[] = ["abilities", "combat", "skills", "modifications", "powers", "feats"];
 export const WIDE_SECTIONS: SectionId[] = ["classFeatures", "weapons", "equipment", "backstory", "traitsFeatures", "companion", "legend"];
 
 const ALL_SECTIONS = new Set<SectionId>([...STAT_SECTIONS, ...NARROW_SECTIONS, ...WIDE_SECTIONS]);
@@ -34,7 +35,7 @@ export interface SheetLayout {
 
 export const DEFAULT_LAYOUT: SheetLayout = {
   statRow: ["proficiencyBonus", "defense", "speedBase", "initiative"],
-  columns: [["abilities", "combat"], ["skills"], ["powers", "feats"]],
+  columns: [["abilities", "combat"], ["skills", "modifications"], ["powers", "feats"]],
   wide: ["classFeatures", "weapons", "equipment", "backstory", "traitsFeatures", "companion", "legend"],
 };
 
@@ -90,7 +91,9 @@ function sanitizeLayout(raw: unknown): SheetLayout {
     if (!seen.has(id)) statRow.push(id);
   }
   for (const id of NARROW_SECTIONS) {
-    if (!seen.has(id)) columns[0].push(id);
+    if (seen.has(id)) continue;
+    const defaultColumn = DEFAULT_LAYOUT.columns.findIndex((col) => col.includes(id));
+    columns[Math.max(0, defaultColumn)].push(id);
   }
   for (const id of WIDE_SECTIONS) {
     if (!seen.has(id)) wide.push(id);

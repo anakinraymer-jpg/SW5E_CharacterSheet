@@ -8,9 +8,7 @@ import {
   resourceMaxBonus,
 } from "../classFeatureLogic";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
-import HoverInfo from "./HoverInfo";
-import ModificationsPanel from "./ModificationsPanel";
-import SectionHeader from "./SectionHeader";
+import HoverInfo from "./HoverInfo";import SectionHeader from "./SectionHeader";
 import NumberInput from "./NumberInput";
 
 interface Props {
@@ -125,7 +123,7 @@ export default function ClassFeaturesSection({
   const collapsed = !!collapsedSections["classFeatures"];
   const resources = applicableClassResources(character);
   const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
-  // Modifications (managedInPanel) get their own panel instead of chips here.
+  // Modifications (managedInPanel) have their own Modifications section instead of chips here.
   const subChoiceDefs = (CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? []).filter((d) => !d.managedInPanel);
   const hasChosenSubChoices = subChoiceDefs.some(
     (def) => (character.classSubChoicePicks[def.key] ?? []).length > 0
@@ -456,8 +454,6 @@ export default function ClassFeaturesSection({
           </div>
         </div>
       )}
-
-      {full && <ModificationsPanel character={character} update={update} />}
 
       {full && hasChosenSubChoices && (
         <div className="species-traits-box">
