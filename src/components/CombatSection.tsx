@@ -6,6 +6,7 @@ import { activeHpBonusSources, activeTravelPaceMultiplier, effectiveMaxHp, extra
 import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { hasFeat } from "../featLogic";
 import { INFUSE_ITEM_TEXT, canInfuseWeapon, infuseItemBonus, infusedWeaponBonus } from "../infuseItem";
+import { isModifiedItem, modWeaponBonus } from "../modifications";
 import { ARMOR_PROPERTY_DEFINITIONS } from "../data/legend";
 import SectionHeader from "./SectionHeader";
 import HoverInfo from "./HoverInfo";
@@ -68,13 +69,14 @@ export default function CombatSection({
     );
 
   const infuseBonus = infuseItemBonus(character);
+  // A discipline's modified item is already enhanced, so it can't be infused.
   const infusedChoices = [
     ...character.weapons.filter(canInfuseWeapon).map((w) => ({ id: w.id, label: `${w.name} (weapon: +${infuseBonus} attack & damage)` })),
     ...armorItems.map(({ item, catalog }) => ({
       id: item.id,
       label: `${item.name} (${catalog.type === "Shield" ? "shield" : "armor"}: +${infuseBonus} AC)`,
     })),
-  ];
+  ].filter((x) => !isModifiedItem(character, x.id));
 
   const isObservant = hasFeat(character, "Observant");
 
@@ -328,7 +330,8 @@ export default function CombatSection({
                   <span className="armor-equip-name">{item.name}</span>
                   <span className="armor-equip-meta">
                     {catalog.type} · AC {catalog.ac}
-                    {infuseBonus > 0 && item.id === character.infusedItemId && ` · Infused +${infuseBonus} AC`}
+                    {infuseBonus > 0 && item.id === character.infusedItemId && !isModifiedItem(character, item.id) && ` · Infused +${infuseBonus} AC`}
+                    {isModifiedItem(character, item.id) && " · Modified"}
                   </span>
                   {catalog.property && (
                     <PropertyTagList property={catalog.property} definitions={ARMOR_PROPERTY_DEFINITIONS} />
@@ -367,9 +370,11 @@ export default function CombatSection({
             {equippedWeapons.map((w) => {
               const { mod: abilityMod, label: abilityLabel } = toHitAbilityInfo(character, w.name);
               const infusion = infusedWeaponBonus(character, w);
-              const toHit = abilityMod + (w.proficient ? pb : 0) + infusion;
+              const mods = modWeaponBonus(character, w);
+              const toHit = abilityMod + (w.proficient ? pb : 0) + infusion + mods.attack;
               const { display: baseDamage } = weaponDamageDisplay(character, w);
-              const damageDisplay = baseDamage && infusion ? `${baseDamage} +${infusion} (infused)` : baseDamage;
+              const damageBonus = infusion + mods.damage;
+              const damageDisplay = baseDamage && damageBonus ? `${baseDamage} +${damageBonus}` : baseDamage;
               return (
                 <div key={w.id} className="armor-equip-row is-readonly">
                   <span className="armor-equip-text">

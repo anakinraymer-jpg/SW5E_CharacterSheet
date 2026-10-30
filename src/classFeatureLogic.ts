@@ -21,6 +21,7 @@ import { FEATS_CATALOG } from "./data/feats";
 import { restCompanion } from "./companionLogic";
 import { abilityModifier, armorCatalogMatch } from "./utils";
 import { revokeSkill } from "./grantOwnership";
+import { effectiveTechPointMax, modSpeedSources } from "./modifications";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 
@@ -158,6 +159,7 @@ export function activeSpeedBonusSources(character: Character): { label: string; 
     const feat = FEATS_BY_NAME.get(cf.name);
     if (feat?.speedBonus) sources.push({ label: feat.name, amount: feat.speedBonus });
   }
+  sources.push(...modSpeedSources(character));
   return sources;
 }
 
@@ -229,7 +231,8 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
       tempHp: 0,
       deathSaves: { successes: 0, failures: 0 },
       forcePoints: { ...character.forcePoints, current: character.forcePoints.max },
-      techPoints: { ...character.techPoints, current: character.techPoints.max },
+      // Unstable Engineering's override penalty ends with this rest, so it's left out of the refill.
+      techPoints: { ...character.techPoints, current: effectiveTechPointMax({ ...character, classResources }) },
     },
     "long"
   );
@@ -291,6 +294,7 @@ export function chosenDamageTypesFor(character: Character, optionName: string): 
 export function applicableClassResources(character: Character) {
   const defs = CLASS_RESOURCES_BY_CLASS.get(character.classAppliedName) ?? [];
   return defs.filter((def) => {
+    if (def.archetypeName && def.archetypeName !== character.archetypeAppliedName) return false;
     if (!def.requiresSubChoicePick) return true;
     const { defKey, optionName } = def.requiresSubChoicePick;
     return (character.classSubChoicePicks[defKey] ?? []).includes(optionName);
@@ -408,6 +412,7 @@ export function pendingSubChoice(character: Character): { def: ClassSubChoiceDef
   const defs = applicableSubChoiceDefs(character);
   const idx = levelIndex(character);
   for (const def of defs) {
+    if (def.managedInPanel) continue;
     const max = subChoiceCountAt(character, def, idx);
     const have = (character.classSubChoicePicks[def.key] ?? []).length;
     if (have < max) return { def, needed: max - have };

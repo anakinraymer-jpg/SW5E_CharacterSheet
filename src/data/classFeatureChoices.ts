@@ -321,6 +321,11 @@ export const SCOUT_RANGERS_QUARRY_DIE_BY_LEVEL = [
   "d4", "d4", "d4", "d4", "d6", "d6", "d6", "d6", "d8", "d8", "d8", "d8", "d10", "d10", "d10", "d10", "d12", "d12", "d12", "d12",
 ];
 
+// The engineer table's "Modification Slots" column (also Unstable Engineering's tinkercannon overrides).
+export const ENGINEER_MOD_SLOTS_BY_LEVEL = [0, 0, 4, 4, 5, 5, 5, 5, 6, 6, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9];
+// Armormech and Armstech maintain a second modified item from 9th level, each with its own slots.
+export const ENGINEER_DUAL_MOD_SLOTS_BY_LEVEL = ENGINEER_MOD_SLOTS_BY_LEVEL.map((n, i) => (i >= 8 ? n * 2 : n));
+
 export const CLASS_RESOURCES: ClassResourceDef[] = [
   {
     key: "berserker-rages",
@@ -367,6 +372,14 @@ export const CLASS_RESOURCES: ClassResourceDef[] = [
     refresh: "Short Rest",
     maxByLevel: [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6],
     dieByLevel: ["d4", "d4", "d4", "d4", "d6", "d6", "d6", "d6", "d8", "d8", "d8", "d8", "d10", "d10", "d10", "d10", "d12", "d12", "d12", "d12"],
+  },
+  {
+    key: "engineer-tinkercannon-overrides",
+    label: "Tinkercannon Overrides",
+    className: "Engineer",
+    archetypeName: "Unstable Engineering",
+    refresh: "Long Rest",
+    maxByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
   },
   {
     key: "guardian-channel-the-force",
@@ -420,10 +433,9 @@ export const SPLASHCLASS_IMPROVEMENTS: ClassSubChoiceOption[] = [
   { name: "Sentinel", text: "When you hit with a melee weapon attack, spend 1 force point to use a Force-Empowered Self effect (once each per turn, one per hit): Deflection (roll a d4, add to AC against one attack before your next turn); Double Strike (roll a d4, deal that much additional damage of the same type); Slow Time (roll a d4, increase speed by 5x the amount until end of turn). You can spend a number of force points this way equal to your proficiency bonus, regained on a long rest.", prerequisite: "No levels in sentinel, the ability to cast force powers" },
 ];
 
-// Engineer "Infuse Item" modification lists, one per Engineering Discipline archetype.
-// Each discipline's modified item (Modified Armor, Modified Weaponry, etc.) has a slot count
-// that grows per the shared "Modification Slots" column of the engineer class table.
-const ENGINEER_MOD_SLOTS_BY_LEVEL = [0, 0, 4, 4, 5, 5, 5, 5, 6, 6, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9];
+// Engineer modification lists, one per Engineering Discipline archetype. Each discipline's
+// modified item (Modified Armor, Modified Weaponry, etc.) has slots per the engineer table; see
+// modifications.ts for the item, slot and effect rules.
 
 export const ARMORMECH_MODIFICATIONS: ClassSubChoiceOption[] = [{"name":"Absorption Shield","text":"You modify your physical shield to block incoming damage. As a bonus action you can activate this ability and gain temporary hit points equal to 1d4 + Intelligence modifier, which last for one hour.\n\nYou can use this feature twice. You gain an additional use at 5th, 9th, 13th, and 17th level. You regain any expended uses when you finish a long rest.","prerequisite":"Physical Shield"},{"name":"Accelerated Movement","text":"You reduce the weight of your modified armor's bulk and increase the power to joints. If the armor has a Strength requirement, you ignore it. The modified armor's weight is reduced by 15 lbs. While wearing your modified armor your speed increases by 10 feet. This applies to all movement speeds you have while wearing your armor.","prerequisite":"Armor"},{"name":"Adaptable Armor","text":"You integrate deployable hooks and fins into your armor, augmenting its mobility. While wearing your modified armor, you gain a climbing speed equal to your walking speed, and you can move up, down, and across vertical surfaces and upside down along ceilings, while leaving your hands free. Additionally, you gain a swim speed equal to your walking speed.","prerequisite":"Armor"},{"name":"Advanced Power Fist","text":"You further modify your modified armor's gauntlet with increased reinforcement and weight. Your modified armor's unarmed strike deals 1d8 kinetic damage. Additionally, your critical hit range with your unarmed strikes increases by 1.","prerequisite":"11th level, Prototype Power Fist"},{"name":"Artificially Intelligent","text":"You install an artificial intelligence into your modified armor. While wearing your modified armor, when you make an ability check, your armor's artificial intelligence can take the Help action.\n\nYou can use this feature four times. You gain an additional use at 13th and 17th level. You regain all expended uses when you complete a long rest.","prerequisite":"9th level, Armor"},{"name":"Bonded Plates","text":"You gain a +1 bonus to AC against melee attacks. This bonus increases to +2 at 9th level and +3 at 13th level.","prerequisite":"5th level"},{"name":"Collapsible Suit","text":"Your modified armor can collapse into a case for easy storage. When transformed this way the armor is indistinguishable from a normal case and weighs one-\n\nthird its normal weight. As an action you can don or doff the armor, allowing it to transform as needed.","prerequisite":"5th level, Armor"},{"name":"Darkvision Visor","text":"While wearing your modified armor, you have darkvision to a range of 60 feet. If you already have darkvision, this modification increases its range by 30 feet.","prerequisite":"Armor"},{"name":"Enhanced Endurance","text":"When you are reduced to 0 hit points while wearing your modified armor but not killed outright, you can drop to 1 hit point instead. You can't use this feature again until you finish a long rest.","prerequisite":"Armor"},{"name":"Electroshock Shield","text":"You install electroshockers in your shield generator. Whenever an enemy misses you with a melee attack, you can use your reaction to do 1d4 + your Intelligence modifier lightning damage to the attacker.","prerequisite":"Shield Generator"},{"name":"Flight","text":"You integrate a propulsion system into your modified armor. While wearing your modified armor you have an enhanced flying speed of 30 feet.","prerequisite":"9th level, Armor"},{"name":"Grappling Harpoon","text":"Your modified armor gains an integrated grappling harpoon set into your gauntlet. With this harpoon, you can make a ranged weapon attack with a range of 30/60. On a hit, it deals 1d6 kinetic damage. This attack can target a surface, object, or creature.\n\nA creature struck by this attack is impaled by the harpoon. As an action, a creature can attempt to remove the harpoon. Removing the harpoon requires a Strength check. While the harpoon is stuck in the target, you are connected to the target by a 60 foot cable.\n\nWhile the harpoon is deployed, you can use your bonus action to activate the reel, pulling yourself to the location if the target is larger than you. A creature or object your size or smaller is pulled to you. Alternatively, you can opt to release the cable (no action required).\n\nOnce you've used this feature, you can't use it again until you recover and reinsert the harpoon as an action.","prerequisite":"Armor"},{"name":"Heavy Suit","text":"You enhance your suit, making it difficult to move. As a bonus action, you can anchor or deanchor your feet to the ground. While anchored, your speed is 0, you have advantage on Strength checks and Strength saving throws, and your carrying capacity and the weight you can push, drag, or lift doubles. If it would already double, it instead triples.","prerequisite":"5th level, Armor"},{"name":"Infiltration Suit","text":"You install a cloaking device in your modified armor. This device has 2 charges. As an action you can use 1 charge to cast _infiltrate_ targeting yourself.\n\nThe cloaking device regains all expended charges after a long rest.","prerequisite":"Armor"},{"name":"Magnetized Shield","text":"You modify your physical shield such that when a melee weapon attack misses you by an amount less than or equal to your bonus to AC from your shield, the attacking creature must make a Strength check against your tech save DC. On a failed save, the creature's weapon adheres to the shield. As an action, a creature can repeat this check. On a success, the weapon is freed.","prerequisite":"Physical Shield"},{"name":"Overload Shield","text":"You modify your shield generator to overload. As an action you can overload your shield. Each Large or smaller creature within 5 feet of you must make a Dexterity or Strength saving throw (their choice). On a failed save, they are pushed back 5 feet and knocked prone.\n\nYou can use this feature twice. You gain an additional use at 5th, 9th, 13th, and 17th level. You regain any expended uses when you finish a long rest.","prerequisite":"Shield Generator"},{"name":"Power Fist","text":"You modify your modified armor gauntlet with increased reinforcement and weight. Your modified armor's unarmed strike deals 1d4 kinetic damage.\n\nAdditionally, when you take the Attack action and make an unarmed strike, you can make an additional unarmed strike as a bonus action.","prerequisite":"Armor"},{"name":"Prototype Power Fist","text":"You further modify your modified armor gauntlet with increased reinforcement and weight. Your modified armor's unarmed strike deals 1d6 kinetic damage and has the following property.\n\nIf you or your target move at least 10 feet in a straight line immediately before making an unarmed strike, the first unarmed strike you make deals additional damage equal to your Intelligence modifier.","prerequisite":"5th level, Power Fist"},{"name":"Reinforced Underlay","text":"You gain a +1 bonus to AC against ranged attacks. This bonus increases to +2 at 9th level and +3 at 13th level.","prerequisite":"5th level"},{"name":"Resistance","text":"You tune your modified armor against certain forms of damage. Choose acid, cold, fire, ion, lightning, or sonic damage. While wearing your modified armor you have resistance to that type of damage.\n\nYou can select this modification multiple times. Each time you do so, you must choose a different damage type.","prerequisite":"Armor"},{"name":"Sealed Suit","text":"As a bonus action you can hermetically seal your modified armor, giving you an air supply for up to 1 hour and making you immune to poison (but not curing you of existing poisoned conditions). Your armor regains 1 minute of air for every minute that you are not submerged and the armor is not sealed.\n\nAdditionally, while you are wearing your modified armor you are considered adapted to cold and hot climates as well as high altitude, as described in chapter 5 of the Dungeon Master's Guide.","prerequisite":"5th level, Armor"},{"name":"Sentient Armor","text":"Your artificial intelligence has learned to control the suit without you being in it. It is now a valid target of the _tracker droid interface_ tech power.\n\nWhile your armor is acting independently, it uses your ability scores, saving throws, and skills, and it has hit points equal to your engineer level. If reduced to 0 hit points, it falls directly to the ground, and it can not be equipped again until you finish a long rest.","prerequisite":"13th level, Artificially Intelligent"},{"name":"Shield Amplifier","text":"You modify your shield generator to project outward. As a bonus action you can amplify your shield until the start of your next turn. Each creature within 5 feet of you gains a bonus to AC equal to your shield's bonus.\n\nYou can use this feature twice. You gain an additional use at 5th, 9th, 13th, and 17th level. You regain any expended uses when you finish a long rest.","prerequisite":"Shield Generator"},{"name":"Shield Anchor","text":"You modify your shield to be used as a portable source of cover. As an action, you can anchor or deanchor the shield. While anchored, you gain no benefit from a shield, and it does not require the use of a hand. Instead, while anchored, a light shield provides one-quarter cover, a medium shield provides half cover, and a heavy shield provides three-quarters cover.","prerequisite":"Physical Shield"},{"name":"Tech Blast","text":"You modify your modified armor gauntlet with a blaster weapon with which you are proficient. The weapon uses your Intelligence modifier for its attack and damage rolls, and deals 1d8 energy damage on a hit. It has a normal range of 30 feet and a long range of 120 feet.","prerequisite":"Armor"},{"name":"Weapon Integration Armoring","text":"You can integrate a single weapon that weighs no more than 8 lb. into your armor. While integrated, that weapon gains the hidden property. Additionally, you have advantage on Strength saving throws to avoid being disarmed.","prerequisite":"Armor"}];
 
@@ -761,7 +773,8 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     label: "Armormech Modifications",
     className: "Engineer",
     archetypeName: "Armormech Engineering",
-    countByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
+    countByLevel: ENGINEER_DUAL_MOD_SLOTS_BY_LEVEL,
+    managedInPanel: true,
     options: ARMORMECH_MODIFICATIONS,
   },
   {
@@ -769,7 +782,8 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     label: "Armstech Modifications",
     className: "Engineer",
     archetypeName: "Armstech Engineering",
-    countByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
+    countByLevel: ENGINEER_DUAL_MOD_SLOTS_BY_LEVEL,
+    managedInPanel: true,
     options: ARMSTECH_MODIFICATIONS,
   },
   {
@@ -778,6 +792,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     className: "Engineer",
     archetypeName: "Gadgeteer Engineering",
     countByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
+    managedInPanel: true,
     options: GADGETEER_MODIFICATIONS,
   },
   {
@@ -786,6 +801,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     className: "Engineer",
     archetypeName: "Artificer Engineering",
     countByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
+    managedInPanel: true,
     options: ARTIFICER_MODIFICATIONS,
   },
   {
@@ -794,6 +810,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     className: "Engineer",
     archetypeName: "Astrotech Engineering",
     countByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
+    managedInPanel: true,
     options: ASTROTECH_MODIFICATIONS,
   },
   {
@@ -802,6 +819,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     className: "Engineer",
     archetypeName: "Audiotech Engineering",
     countByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
+    managedInPanel: true,
     options: AUDIOTECH_MODIFICATIONS,
   },
   {
@@ -810,6 +828,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     className: "Engineer",
     archetypeName: "Biochem Engineering",
     countByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
+    managedInPanel: true,
     options: BIOCHEM_MODIFICATIONS,
   },
   {
@@ -818,6 +837,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     className: "Engineer",
     archetypeName: "Biotech Engineering",
     countByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
+    managedInPanel: true,
     options: BIOTECH_MODIFICATIONS,
   },
   {
@@ -826,6 +846,7 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     className: "Engineer",
     archetypeName: "Cybertech Engineering",
     countByLevel: ENGINEER_MOD_SLOTS_BY_LEVEL,
+    managedInPanel: true,
     options: CYBERTECH_MODIFICATIONS,
   },
 ];

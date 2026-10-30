@@ -6,6 +6,7 @@ import { effectiveMaxHp } from "./classFeatureLogic";
 import { hasFeat } from "./featLogic";
 import { WEAPON_LOOKUP, toHitAbilityInfo } from "./weaponLogic";
 import { infusedWeaponBonus } from "./infuseItem";
+import { effectiveTechPointMax, modWeaponBonus } from "./modifications";
 import { castingStats } from "./castingStats";
 import { grantedLanguages, grantedProficiencies } from "./grantsSummary";
 import { companionMaxHp } from "./companionLogic";
@@ -75,7 +76,7 @@ export function powersSummary(c: Character): string[] {
   const known = (type: "Force" | "Tech") => c.powers.filter((p) => p.type === type && p.name).length;
   return [
     `Force: Save DC ${s.forceDC} · Attack ${formatModifier(s.forceAttack)} · ${c.forcePoints.current}/${c.forcePoints.max} points · ${known("Force")} known`,
-    `Tech: Save DC ${s.techDC} · Attack ${formatModifier(s.techAttack)} · ${c.techPoints.current}/${c.techPoints.max} points · ${known("Tech")} known`,
+    `Tech: Save DC ${s.techDC} · Attack ${formatModifier(s.techAttack)} · ${c.techPoints.current}/${effectiveTechPointMax(c)} points · ${known("Tech")} known`,
   ];
 }
 
@@ -96,9 +97,11 @@ export function weaponTooltip(c: Character, w: Weapon): string[] {
   const entry = WEAPON_LOOKUP.get(w.name.trim().toLowerCase());
   const { mod, label } = toHitAbilityInfo(c, w.name);
   const infusion = infusedWeaponBonus(c, w);
+  const mods = modWeaponBonus(c, w);
+  const damageBonus = infusion + mods.damage;
   return [
-    `To hit ${formatModifier(mod + (w.proficient ? pb : 0) + infusion)} (${label}${w.proficient ? ", proficient" : ""}${infusion ? `, infused +${infusion}` : ""})`,
-    `Damage: ${w.damage || "—"}${infusion ? ` +${infusion} infused` : ""} · Range: ${w.range || "Melee"}`,
+    `To hit ${formatModifier(mod + (w.proficient ? pb : 0) + infusion + mods.attack)} (${label}${w.proficient ? ", proficient" : ""}${infusion ? `, infused +${infusion}` : ""}${mods.attack ? `, modifications +${mods.attack}` : ""})`,
+    `Damage: ${w.damage || "—"}${damageBonus ? ` +${damageBonus}` : ""} · Range: ${w.range || "Melee"}`,
     entry ? `${entry.type}${entry.property ? ` — ${entry.property}` : ""}` : "",
     w.ammoType ? `Ammo: ${w.ammoType} (${w.ammoCount})` : "",
   ].filter(Boolean);

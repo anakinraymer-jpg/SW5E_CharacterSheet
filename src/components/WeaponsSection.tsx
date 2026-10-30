@@ -11,6 +11,7 @@ import {
 } from "../data/classFeatureChoices";
 import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
 import { infusedWeaponBonus } from "../infuseItem";
+import { modWeaponBonus } from "../modifications";
 import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, isMeleeWeapon, toHitAbilityInfo, weaponAmmoType, weaponDamageDisplay } from "../weaponLogic";
 import { formatModifier, proficiencyBonus } from "../utils";
 import { WEAPON_PROPERTY_DEFINITIONS } from "../data/legend";
@@ -152,11 +153,13 @@ export default function WeaponsSection({
           {weapons.map((w) => {
             const { mod: abilityMod, label: abilityLabel } = toHitAbilityInfo(character, w.name);
             const infusion = infusedWeaponBonus(character, w);
-            const toHit = abilityMod + (w.proficient ? pb : 0) + infusion;
+            const mods = modWeaponBonus(character, w);
+            const toHit = abilityMod + (w.proficient ? pb : 0) + infusion + mods.attack;
             const toHitLines = [
               `${abilityLabel} modifier: ${formatModifier(abilityMod)}`,
               w.proficient ? `Proficiency Bonus: ${formatModifier(pb)}` : "Not proficient",
               ...(infusion ? [`Infuse Item: +${infusion}`] : []),
+              ...mods.lines.filter((l) => l.endsWith("attack")),
             ];
             const catalogEntry = WEAPON_LOOKUP.get(w.name.trim().toLowerCase());
             return (
@@ -210,6 +213,11 @@ export default function WeaponsSection({
                         lines={[`+${infusion} to this weapon's damage rolls (and attack rolls, already in To Hit) until your next long rest.`]}
                       >
                         <span className="rage-damage-note">+{infusion} Infused</span>
+                      </HoverInfo>
+                    )}
+                    {mods.damage > 0 && (
+                      <HoverInfo title="Modifications" lines={mods.lines.filter((l) => l.endsWith("damage"))}>
+                        <span className="rage-damage-note">+{mods.damage} Modified</span>
                       </HoverInfo>
                     )}
                     {isRaging && abilityLabel === "Strength" && (

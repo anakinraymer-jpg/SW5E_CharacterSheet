@@ -224,6 +224,7 @@ export interface ClassResourceDef {
   maxByLevel: number[]; // length 20, index 0 = level 1
   dieByLevel?: (string | null)[]; // parallel die-size text, e.g. "d4"
   requiresSubChoicePick?: { defKey: string; optionName: string }; // only shown once this specific sub-choice option is picked (e.g. Fyrnock's Instinct)
+  archetypeName?: string; // when set, only applies if character.archetypeAppliedName matches
 }
 
 export interface ClassResourceState {
@@ -266,6 +267,9 @@ export interface ClassSubChoiceDef {
   // Adds `bonus` to this def's effective count-by-level once `optionName` has been picked under
   // `defKey` (e.g. Fighter's Maneuver Strategist grants 2 extra known maneuvers).
   countBonusFrom?: { defKey: string; optionName: string; bonus: number };
+  // Picked from its own panel instead of the level-up prompt (Engineer modifications: slots can be left
+  // empty, and filling past your proficiency bonus costs tech points).
+  managedInPanel?: boolean;
 }
 
 // Player-chosen detail for one entry of classSubChoicePicks[key], at the same array index.
@@ -281,6 +285,7 @@ export interface ClassSubChoicePickDetail {
   damageTypes?: string[];
   actions?: string[];
   substituteAbility?: AbilityKey;
+  modItemId?: string; // Engineer modification: which modified item (Weapon/EquipmentItem id) it's installed on
 }
 
 export interface FeatEntry {
@@ -543,6 +548,7 @@ export interface Character {
   maneuverMentalAbility: "int" | "wis" | "cha"; // Fighter/Scholar Combat/Academic Superiority: ability for Mental maneuvers
   armorNotes: string;
   infusedItemId: string; // Engineer's Infuse Item: id of the Weapon or EquipmentItem currently infused ("" = none) — see infuseItem.ts
+  modifiedItemIds: string[]; // Engineer discipline's modified item(s) (armor/shield, weapon, lightsaber rows), max 2 — see modifications.ts
   resistances: string;
   hitDiceTotal: string;
   hitDiceRemaining: string;
@@ -757,6 +763,7 @@ export function createBlankCharacter(): Character {
     maneuverMentalAbility: "int",
     armorNotes: "",
     infusedItemId: "",
+    modifiedItemIds: [],
     resistances: "",
     hitDiceTotal: "1d8",
     hitDiceRemaining: "1d8",

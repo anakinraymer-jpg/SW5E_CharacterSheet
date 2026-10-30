@@ -13,6 +13,7 @@ import { formatModifier } from "../utils";
 import { ABILITY_LABEL } from "../speciesLogic";
 import { hasBenduAffinity } from "../classFeatureLogic";
 import { castingStats } from "../castingStats";
+import { effectiveTechPointMax, techPointPenaltySources } from "../modifications";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
 import NumberInput from "./NumberInput";
@@ -58,8 +59,10 @@ export default function PowersSection({
   const [activeType, setActiveType] = useState<Power["type"]>("Force");
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const { pb, specialistBonus, forceAbility, forceMod, forceAttack, forceDC, techMod, techAttack, techDC } =
+  const { pb, specialistBonus, forceAbility, forceMod, forceAttack, forceDC, techMod, techAttack, techDC, techMods } =
     castingStats(character);
+  const techPenalty = techPointPenaltySources(character);
+  const techMaxEffective = effectiveTechPointMax(character);
   const isCastingSpecialist = specialistBonus > 0;
   const isBendu = hasBenduAffinity(character);
   const forceAbilityLabel = isBendu
@@ -80,12 +83,14 @@ export default function PowersSection({
     `Proficiency Bonus: ${formatModifier(pb)}`,
     `Intelligence modifier: ${formatModifier(techMod)}`,
     ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
+    ...techMods.lines.attack,
   ];
   const techDCLines = [
     `Base: 8`,
     `Proficiency Bonus: ${formatModifier(pb)}`,
     `Intelligence modifier: ${formatModifier(techMod)}`,
     ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
+    ...techMods.lines.dc,
   ];
 
   const techCounts = countByAlignment(character.powers, "Tech");
@@ -254,6 +259,17 @@ export default function PowersSection({
                 }
               />
             </div>
+            {techPenalty.length > 0 && (
+              <HoverInfo
+                title="Tech Point Maximum"
+                lines={[
+                  `Effective maximum: ${techMaxEffective} (${character.techPoints.max} − ${character.techPoints.max - techMaxEffective}).`,
+                  ...techPenalty.map((s) => `${s.label}: −${s.amount}`),
+                ]}
+              >
+                <span className="rage-damage-note">Effective max {techMaxEffective}</span>
+              </HoverInfo>
+            )}
           </div>
           <div className="field">
             <label htmlFor="tech-attack">Tech Attack</label>
@@ -271,6 +287,15 @@ export default function PowersSection({
               </div>
             </HoverInfo>
           </div>
+          {techMods.notes.length > 0 && (
+            <div className="field field-wide">
+              <HoverInfo title="Situational Modification Bonuses" lines={techMods.notes}>
+                <span className="rage-damage-note">
+                  {techMods.notes.length} situational modification bonus{techMods.notes.length > 1 ? "es" : ""} (tap)
+                </span>
+              </HoverInfo>
+            </div>
+          )}
         </div>
       )}
 
