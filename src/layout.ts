@@ -12,6 +12,7 @@ export type SectionId =
   | "classFeatures"
   | "feats"
   | "equipment"
+  | "crafting"
   | "backstory"
   | "traitsFeatures"
   | "companion"
@@ -23,7 +24,7 @@ export type SectionId =
 // among themselves.
 export const STAT_SECTIONS: SectionId[] = ["proficiencyBonus", "defense", "speedBase", "initiative"];
 export const NARROW_SECTIONS: SectionId[] = ["abilities", "combat", "skills", "modifications", "powers", "feats"];
-export const WIDE_SECTIONS: SectionId[] = ["classFeatures", "weapons", "equipment", "backstory", "traitsFeatures", "companion", "legend"];
+export const WIDE_SECTIONS: SectionId[] = ["classFeatures", "weapons", "equipment", "crafting", "backstory", "traitsFeatures", "companion", "legend"];
 
 const ALL_SECTIONS = new Set<SectionId>([...STAT_SECTIONS, ...NARROW_SECTIONS, ...WIDE_SECTIONS]);
 
@@ -36,7 +37,7 @@ export interface SheetLayout {
 export const DEFAULT_LAYOUT: SheetLayout = {
   statRow: ["proficiencyBonus", "defense", "speedBase", "initiative"],
   columns: [["abilities", "combat"], ["skills", "modifications"], ["powers", "feats"]],
-  wide: ["classFeatures", "weapons", "equipment", "backstory", "traitsFeatures", "companion", "legend"],
+  wide: ["classFeatures", "weapons", "equipment", "crafting", "backstory", "traitsFeatures", "companion", "legend"],
 };
 
 function cloneLayout(layout: SheetLayout): SheetLayout {
@@ -95,8 +96,11 @@ function sanitizeLayout(raw: unknown): SheetLayout {
     const defaultColumn = DEFAULT_LAYOUT.columns.findIndex((col) => col.includes(id));
     columns[Math.max(0, defaultColumn)].push(id);
   }
+  // A missing wide section goes right after the one before it in the default order (e.g. Crafting after Equipment).
   for (const id of WIDE_SECTIONS) {
-    if (!seen.has(id)) wide.push(id);
+    if (seen.has(id)) continue;
+    const before = DEFAULT_LAYOUT.wide.slice(0, DEFAULT_LAYOUT.wide.indexOf(id)).reverse().find((w) => wide.includes(w));
+    wide.splice(before ? wide.indexOf(before) + 1 : 0, 0, id);
   }
   return { statRow, columns, wide };
 }

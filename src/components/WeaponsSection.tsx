@@ -59,6 +59,21 @@ function defaultProficient(className: string, entry: WeaponCatalogEntry): boolea
   return classEntry.weaponProficiencies.some((wp) => classProficientWithType(entry.type, wp.label));
 }
 
+// A new weapon row for a catalog weapon, stats filled in; just the name for one not in the catalog.
+export function catalogWeaponPatch(className: string, name: string): Partial<Weapon> {
+  const known = WEAPON_LOOKUP.get(name.toLowerCase());
+  if (!known) return { name };
+  const ammoType = weaponAmmoType(known.property);
+  return {
+    name: known.name,
+    damage: known.damage,
+    weight: known.weight,
+    range: extractRange(known.property),
+    proficient: defaultProficient(className, known),
+    ...(ammoType ? { ammoType } : {}),
+  };
+}
+
 interface Props {
   character: Character;
   weapons: Weapon[];
@@ -97,21 +112,9 @@ export default function WeaponsSection({
   // just adds a blank weapon with that name.
   function handlePickWeapon(name: string) {
     setPickerOpen(false);
-    const known = WEAPON_LOOKUP.get(name.toLowerCase());
-    if (!known) {
-      addWeapon({ name });
-      return;
-    }
-    const ammoType = weaponAmmoType(known.property);
-    addWeapon({
-      name: known.name,
-      damage: known.damage,
-      weight: known.weight,
-      range: extractRange(known.property),
-      proficient: defaultProficient(character.classAppliedName, known),
-      ...(ammoType ? { ammoType } : {}),
-    });
-    if (ammoType) onAmmoNeeded(ammoType);
+    const patch = catalogWeaponPatch(character.classAppliedName, name);
+    addWeapon(patch);
+    if (patch.ammoType) onAmmoNeeded(patch.ammoType);
   }
   const pb = proficiencyBonus(character.level);
   const isRaging = character.classAppliedName === "Berserker" && character.isRaging;

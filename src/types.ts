@@ -341,6 +341,35 @@ export interface EquipmentPart {
 
 export type ItemLocation = "Donned" | "Backpack" | "Pouch" | "Storage";
 
+// Crafting (see crafting.ts). Tool proficiency itself comes from the rest of the sheet; this only holds
+// what the Crafting section adds: tool expertise, known blueprints, extra tools, and items in progress.
+export interface CraftingToolState {
+  expertise: boolean;
+  blueprints: string[]; // enhanced item names
+}
+
+export interface CraftingProject {
+  id: string;
+  name: string;
+  tool: string;
+  kind: "weapon" | "armor" | "gear" | "enhanced" | "custom"; // where the finished item goes and what it looks up
+  enhanced: boolean;
+  rarity: string; // enhanced items only
+  value: number; // credits; set by the GM for enhanced items
+  weight: number;
+  workers: number;
+  daysWorked: number;
+  rareMaterial: boolean; // enhanced items: the rare material has been found
+  checkTotal: number | null; // Intelligence check with the tool
+  d100: number | null;
+}
+
+export interface CraftingState {
+  tools: Record<string, CraftingToolState>;
+  addedTools: string[]; // tools added by hand in the Crafting section
+  projects: CraftingProject[];
+}
+
 export interface EquipmentItem {
   id: string;
   name: string;
@@ -549,6 +578,7 @@ export interface Character {
   armorNotes: string;
   infusedItemId: string; // Engineer's Infuse Item: id of the Weapon or EquipmentItem currently infused ("" = none) — see infuseItem.ts
   modifiedItemIds: string[]; // Engineer discipline's modified item(s) (armor/shield, weapon, lightsaber rows), max 2 — see modifications.ts
+  crafting: CraftingState; // see crafting.ts
   resistances: string;
   hitDiceTotal: string;
   hitDiceRemaining: string;
@@ -764,6 +794,7 @@ export function createBlankCharacter(): Character {
     armorNotes: "",
     infusedItemId: "",
     modifiedItemIds: [],
+    crafting: { tools: {}, addedTools: [], projects: [] },
     resistances: "",
     hitDiceTotal: "1d8",
     hitDiceRemaining: "1d8",

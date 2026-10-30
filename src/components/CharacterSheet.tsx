@@ -76,9 +76,12 @@ import {
   traitsSummary,
   companionSummary,
   modificationsSummary,
+  craftingSummary,
 } from "../simpleSummaries";
 import ModificationsSection from "./ModificationsSection";
 import { modDiscipline } from "../modifications";
+import CraftingSection from "./CraftingSection";
+import { craftingTools } from "../crafting";
 
 type SimpleKey = SectionId | "identity" | "characterData" | "notes";
 import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
@@ -802,8 +805,12 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const hasClassFeaturesContent = Boolean(character.classTraitsText || character.archetypeTraitsText);
   // Same for Modifications: only Engineers (3rd level+) whose discipline modifies an item.
   const hasModifications = Boolean(modDiscipline(character));
+  // And Crafting: anyone proficient with a crafting tool.
+  const hasCrafting = craftingTools(character).length > 0;
   const isShown = (id: SectionId) =>
-    (id !== "classFeatures" || hasClassFeaturesContent) && (id !== "modifications" || hasModifications);
+    (id !== "classFeatures" || hasClassFeaturesContent) &&
+    (id !== "modifications" || hasModifications) &&
+    (id !== "crafting" || hasCrafting);
 
   // `sectionCollapsed` lets Simple mode's pop-up show a section fully expanded; `opts` selects the
   // reduced Class Features view or one half of the Backstory section.
@@ -928,6 +935,17 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             onToggleSection={toggleSection}
           />
         );
+      case "crafting":
+        return (
+          <CraftingSection
+            character={character}
+            update={update}
+            addWeapon={addWeapon}
+            addItem={addItem}
+            collapsedSections={sectionCollapsed}
+            onToggleSection={toggleSection}
+          />
+        );
       case "backstory":
         return (
           <BackstorySection
@@ -981,6 +999,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     powers: "Force & Tech Powers",
     weapons: "Weapons & Ammunitions",
     equipment: "Equipment",
+    crafting: "Crafting",
     characterData: "Character Data",
     notes: "Features, Backstory & Notes",
     traitsFeatures: "Traits & Features",
@@ -1031,6 +1050,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         return <SimpleWeapons character={character} onOpen={open("weapons")} />;
       case "equipment":
         return <SimpleCard title="Equipment" summary={equipmentSummary(character)} onOpen={open("equipment")} />;
+      case "crafting":
+        return <SimpleCard title="Crafting" summary={craftingSummary(character)} onOpen={open("crafting")} />;
       case "backstory":
         return (
           <>
@@ -1069,6 +1090,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     classFeatures: "Class",
     weapons: "Weapons",
     equipment: "Gear",
+    crafting: "Craft",
     backstory: "Backstory",
     traitsFeatures: "Traits",
     companion: "Companion",

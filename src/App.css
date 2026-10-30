@@ -406,6 +406,24 @@
   padding: 12px 14px;
 }
 
+.species-traits-header input {
+  width: 100%;
+}
+
+.crafting-check {
+  display: block;
+  font-size: 0.85rem;
+  margin: 8px 0;
+  line-height: 1.4;
+}
+
+.crafting-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
 .species-traits-header {
   font-weight: 600;
   color: var(--accent);

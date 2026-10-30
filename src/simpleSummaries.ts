@@ -8,6 +8,7 @@ import { WEAPON_LOOKUP, toHitAbilityInfo } from "./weaponLogic";
 import { infusedWeaponBonus } from "./infuseItem";
 import { effectiveTechPointMax, installedMods, modDiscipline, modWeaponBonus, modifiedItems, totalSlots } from "./modifications";
 import { castingStats } from "./castingStats";
+import { craftingState, craftingTools, toolCheckBonus } from "./crafting";
 import { grantedLanguages, grantedProficiencies } from "./grantsSummary";
 import { companionMaxHp } from "./companionLogic";
 
@@ -101,6 +102,14 @@ export function modificationsSummary(c: Character): string[] {
     `${d.itemLabel}${items.length ? `: ${items.join(", ")}` : ""}`,
     `Slots used: ${mods.length} / ${totalSlots(c, d)}`,
     ...cap(mods.length ? mods.map((m) => m.option.name) : ["No modifications installed yet."], 12),
+  ];
+}
+
+export function craftingSummary(c: Character): string[] {
+  const state = craftingState(c);
+  return [
+    ...craftingTools(c).map((t) => `${t}: ${formatModifier(toolCheckBonus(c, t))} · ${state.tools[t]?.blueprints.length ?? 0} blueprints`),
+    ...cap(state.projects.length ? state.projects.map((p) => `Crafting ${p.name || "an item"} (${p.daysWorked} days worked)`) : ["Nothing being crafted."], 8),
   ];
 }
 
