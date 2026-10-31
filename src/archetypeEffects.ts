@@ -30,6 +30,11 @@ function mod(c: Character, key: AbilityKey): number {
   return abilityModifier(c.abilities[key]);
 }
 
+// A picked archetype list option (Scholar pursuit discovery, totem, ammunition enhancement).
+function picked(c: Character, defKey: string, option: string): boolean {
+  return (c.classSubChoicePicks?.[defKey] ?? []).includes(option);
+}
+
 // --- Defense ---
 
 // Way of Endurance's Upheld by the Force: base AC 13 + Con while unarmored (shields still add).
@@ -41,6 +46,15 @@ export function archetypeNaturalArmor(c: Character): SpeciesNaturalArmor | null 
       allowLightArmor: false,
       allowAnyArmor: false,
       sourceLabel: "Upheld by the Force (13 + Con modifier)",
+    };
+  }
+  if (picked(c, "scholar-discoveries", "Adapted Hide")) {
+    return {
+      base: 13,
+      addDex: true,
+      allowLightArmor: false,
+      allowAnyArmor: false,
+      sourceLabel: "Adapted Hide (13 + Dex modifier)",
     };
   }
   return null;
@@ -141,6 +155,9 @@ export function archetypeExtraSpeeds(c: Character): string[] {
   const out: string[] = [];
   if (hasArchetypeFeature(c, "Explorer Pursuit", 9)) out.push("Unstoppable Adventurer: climbing and swimming speed equal to your walking speed");
   if (hasArchetypeFeature(c, "Beastmaster Approach", 6)) out.push("Animalistic Momentum: climbing or swimming speed (your choice) equal to your walking speed");
+  if (picked(c, "scholar-discoveries", "Athletic")) out.push("Athletic: climbing, crawling, or swimming speed (your choice) equal to your walking speed");
+  if (picked(c, "scholar-discoveries", "Icarian Mutation")) out.push("Icarian Mutation: flying speed equal to half your walking speed");
+  if (picked(c, "scholar-discoveries", "Underground Adaptation")) out.push("Underground Adaptation: burrowing speed equal to your walking speed (two free hands)");
   return out;
 }
 

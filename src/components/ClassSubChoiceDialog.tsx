@@ -60,6 +60,7 @@ interface Props {
   needed: number;
   alreadyChosen: string[];
   skills: Record<SkillName, SkillState>;
+  level: number;
   onCancel: () => void;
   onConfirm: (names: string[], details: ClassSubChoicePickDetail[]) => void;
 }
@@ -124,7 +125,7 @@ function detailComplete(option: ClassSubChoiceDef["options"][number] | undefined
   return true;
 }
 
-export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skills, onCancel, onConfirm }: Props) {
+export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skills, level, onCancel, onConfirm }: Props) {
   const [picks, setPicks] = useState<string[]>(Array(needed).fill(""));
   const [details, setDetails] = useState<ClassSubChoicePickDetail[]>(Array(needed).fill({}));
   const availableSkills = SKILL_LIST.filter((s) => !skills[s].proficient && !skills[s].expertise);
@@ -183,7 +184,7 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
                   <option value="">Choose…</option>
                   {def.options
                     .filter((o) => !takenElsewhere.has(o.name) || o.repeatable || o.name === v)
-                    .filter((o) => isVisibleOption(o, knownNames, skills))
+                    .filter((o) => isVisibleOption(o, knownNames, skills, level))
                     .sort(
                       (a, b) =>
                         Number(Boolean(chainPrerequisiteName(b.prerequisite))) -
@@ -195,6 +196,7 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
                         <option key={o.name} value={o.name} style={upgradeAvailable ? { fontWeight: "bold" } : undefined}>
                           {upgradeAvailable ? "★ " : ""}
                           {o.name}
+                          {o.group ? ` · ${o.group}` : ""}
                           {o.prerequisite ? ` (${o.prerequisite})` : ""}
                         </option>
                       );
@@ -421,12 +423,13 @@ export default function ClassSubChoiceDialog({ def, needed, alreadyChosen, skill
       </div>
 
       {def.options
-        .filter((o) => isVisibleOption(o, knownNames, skills))
+        .filter((o) => isVisibleOption(o, knownNames, skills, level))
         .map((o) => (
           <div className="choice-group" key={o.name}>
             <div className="choice-group-label">
               {chainPrerequisiteName(o.prerequisite) ? "★ " : ""}
               {o.name}
+              {o.group ? ` (${o.group})` : ""}
               {o.prerequisite ? ` — Prerequisite: ${o.prerequisite}` : ""}
             </div>
             <div className="choice-group-hint">{o.text}</div>

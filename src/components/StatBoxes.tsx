@@ -145,7 +145,7 @@ export function SpeedBaseBox({ character, update }: Props) {
         )}
         {otherSpeeds.length > 0 && (
           <HoverInfo title="Other Speeds" lines={otherSpeeds}>
-            <span className="rage-damage-note">+ climb/swim</span>
+            <span className="rage-damage-note">+ other speeds</span>
           </HoverInfo>
         )}
       </div>

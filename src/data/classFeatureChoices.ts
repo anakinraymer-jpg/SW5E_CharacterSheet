@@ -10,6 +10,7 @@
 // none of the three are modeled here.
 
 import type { ClassResourceDef, ClassSubChoiceDef, ClassSubChoiceOption } from "../types";
+import { AMMUNITION_ENHANCEMENTS, TOTEMS } from "./archetypeOptionLists";
 
 // Damage types resistance/vulnerability choices can be made from (e.g. Dewback's Instinct).
 // "True damage" is deliberately excluded — it's explicitly unresistable in the rules text.
@@ -374,6 +375,15 @@ export const CLASS_RESOURCES: ClassResourceDef[] = [
     dieByLevel: ["d4", "d4", "d4", "d4", "d6", "d6", "d6", "d6", "d8", "d8", "d8", "d8", "d10", "d10", "d10", "d10", "d12", "d12", "d12", "d12"],
   },
   {
+    // Enhancement Specialist's Amplified Shots: two, regained on a short or long rest.
+    key: "fighter-amplified-shots",
+    label: "Amplified Shots",
+    className: "Fighter",
+    archetypeName: "Enhancement Specialist",
+    refresh: "Short Rest",
+    maxByLevel: [0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+  },
+  {
     key: "engineer-tinkercannon-overrides",
     label: "Tinkercannon Overrides",
     className: "Engineer",
@@ -566,6 +576,24 @@ export const CLASS_SUB_CHOICES: ClassSubChoiceDef[] = [
     optionName: "Maneuver Strategist",
     bonus: 2,
   }),
+  {
+    // Enhancement Specialist's Special Ammunition: two at 3rd, one more at 7th, 10th, 15th and 18th.
+    key: "fighter-ammunition-enhancements",
+    label: "Ammunition Enhancements",
+    className: "Fighter",
+    archetypeName: "Enhancement Specialist",
+    countByLevel: [0, 0, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 6, 6, 6],
+    options: AMMUNITION_ENHANCEMENTS,
+  },
+  {
+    // Totem Specialist's Totem Creation: two totems at 3rd, a third at 10th (Primal Avatar).
+    key: "fighter-totems",
+    label: "Totems",
+    className: "Fighter",
+    archetypeName: "Totem Specialist",
+    countByLevel: [0, 0, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+    options: TOTEMS,
+  },
   {
     key: "fighter-strategies",
     label: "Fighter Strategies",

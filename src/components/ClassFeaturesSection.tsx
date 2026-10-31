@@ -1,8 +1,9 @@
 import type { AbilityKey, Character } from "../types";
-import { BERSERKER_RAGE_DAMAGE_BY_LEVEL, CLASS_SUB_CHOICES_BY_CLASS } from "../data/classFeatureChoices";
+import { BERSERKER_RAGE_DAMAGE_BY_LEVEL } from "../data/classFeatureChoices";
 import { CLASSES_CATALOG } from "../data/classes";
 import {
   allChosenSubChoiceOptions,
+  applicableSubChoiceDefs,
   applicableClassResources,
   chosenDamageTypesFor,
   resourceMaxBonus,
@@ -125,7 +126,7 @@ export default function ClassFeaturesSection({
   const resources = applicableClassResources(character);
   const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
   // Modifications (managedInPanel) have their own Modifications section instead of chips here.
-  const subChoiceDefs = (CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? []).filter((d) => !d.managedInPanel);
+  const subChoiceDefs = applicableSubChoiceDefs(character).filter((d) => !d.managedInPanel);
   const hasChosenSubChoices = subChoiceDefs.some(
     (def) => (character.classSubChoicePicks[def.key] ?? []).length > 0
   );

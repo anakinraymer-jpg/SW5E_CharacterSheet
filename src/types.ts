@@ -256,6 +256,8 @@ export interface ClassSubChoiceOption {
   actionChoiceCount?: number; // e.g. Fighter's Cunning Strategist: pick this many actions usable as a bonus action
   allowsManeuverSwap?: boolean; // e.g. Fighter's Maneuver Strategist: lets the player swap a known maneuver for another
   abilitySubstituteOptions?: AbilityKey[]; // e.g. Monk's Vow of the Focused: pick one of these to replace Wis/Cha on monk features
+  hpBonusPerLevel?: number; // max HP bonus × character level while picked (e.g. Geneticist's Mutagenic Hardiness)
+  group?: string; // where the option comes from when a def mixes lists (e.g. "Archaeologist Pursuit" discoveries)
 }
 
 export interface ClassSubChoiceDef {

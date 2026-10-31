@@ -1397,6 +1397,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           needed={pendingSubChoiceDef.needed}
           alreadyChosen={character.classSubChoicePicks[pendingSubChoiceDef.def.key] ?? []}
           skills={character.skills}
+          level={character.level}
           onCancel={() => setPendingSubChoiceDef(null)}
           onConfirm={handleSubChoiceConfirm}
         />

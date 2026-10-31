@@ -19,6 +19,7 @@ import {
   MONK_UNARMORED_MOVEMENT_BY_LEVEL,
 } from "./data/classFeatureChoices";
 import { FEATS_CATALOG } from "./data/feats";
+import { PURSUIT_DISCOVERIES } from "./data/archetypeOptionLists";
 import { restCompanion } from "./companionLogic";
 import { abilityModifier, armorCatalogMatch } from "./utils";
 import { revokeSkill } from "./grantOwnership";
@@ -52,15 +53,24 @@ export function skillPrerequisiteName(prerequisite: string | undefined): SkillNa
   return m && isSkillName(m[1]) ? m[1] : null;
 }
 
+// "9th level" or "12th level, Filling Meal": the level, and an earlier pick that must be known.
+export function levelPrerequisite(prerequisite: string | undefined): { level: number; requires: string | null } | null {
+  const m = prerequisite?.match(/^(\d+)(?:st|nd|rd|th) level(?:,\s*(.+))?$/);
+  return m ? { level: Number(m[1]), requires: m[2] ?? null } : null;
+}
+
 export function isVisibleOption(
   option: ClassSubChoiceOption,
   knownNames: Set<string>,
-  skills: Record<SkillName, SkillState>
+  skills: Record<SkillName, SkillState>,
+  level = 20
 ): boolean {
   const chainReq = chainPrerequisiteName(option.prerequisite);
   if (chainReq) return knownNames.has(chainReq);
   const skillReq = skillPrerequisiteName(option.prerequisite);
   if (skillReq) return skills[skillReq]?.proficient ?? false;
+  const levelReq = levelPrerequisite(option.prerequisite);
+  if (levelReq) return level >= levelReq.level && (!levelReq.requires || knownNames.has(levelReq.requires));
   return true;
 }
 
@@ -75,9 +85,19 @@ function subChoiceCountAt(character: Character, def: ClassSubChoiceDef, idx: num
   return count;
 }
 
+// A Scholar's pursuit adds its own discoveries to the Discoveries choice.
+function withArchetypeOptions(character: Character, def: ClassSubChoiceDef): ClassSubChoiceDef {
+  if (def.key !== "scholar-discoveries") return def;
+  const pursuit = character.archetypeAppliedName.replace(/\s*\(Companion\)$/, "");
+  const extra = PURSUIT_DISCOVERIES[pursuit];
+  return extra ? { ...def, options: [...def.options, ...extra.map((o) => ({ ...o, group: pursuit }))] } : def;
+}
+
 export function applicableSubChoiceDefs(character: Character): ClassSubChoiceDef[] {
   const defs = CLASS_SUB_CHOICES_BY_CLASS.get(character.classAppliedName) ?? [];
-  return defs.filter((d) => !d.archetypeName || d.archetypeName === character.archetypeAppliedName);
+  return defs
+    .filter((d) => !d.archetypeName || d.archetypeName === character.archetypeAppliedName)
+    .map((d) => withArchetypeOptions(character, d));
 }
 
 // Every option the character has picked across all applicable sub-choice defs (e.g. all chosen
@@ -193,6 +213,9 @@ export function activeHpBonusSources(character: Character): { label: string; amo
   for (const cf of character.feats) {
     const feat = FEATS_BY_NAME.get(cf.name);
     if (feat?.hpBonusPerLevel) sources.push({ label: feat.name, amount: feat.hpBonusPerLevel * level });
+  }
+  for (const o of allChosenSubChoiceOptions(character)) {
+    if (o.hpBonusPerLevel) sources.push({ label: o.name, amount: o.hpBonusPerLevel * level });
   }
   return sources;
 }
@@ -402,6 +425,13 @@ export function recalcClassSubChoices(character: Character): Character {
   }
   for (const def of defs) {
     const max = subChoiceCountAt(character, def, idx);
+    // Drop picks the def no longer offers (a previous pursuit's discoveries), keeping details aligned.
+    const offered = new Set(def.options.map((o) => o.name));
+    const kept = (picks[def.key] ?? []).map((name, i) => ({ name, detail: (details[def.key] ?? [])[i] })).filter((p) => offered.has(p.name));
+    if (picks[def.key] && kept.length !== picks[def.key].length) {
+      picks[def.key] = kept.map((p) => p.name);
+      details[def.key] = kept.map((p) => p.detail ?? {});
+    }
     const chosen = picks[def.key] ?? [];
     if (chosen.length > max) {
       picks[def.key] = chosen.slice(0, max);
