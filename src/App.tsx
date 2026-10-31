@@ -5,10 +5,12 @@ import {
   loadAllCharacters,
   saveCharacter,
   deleteCharacter,
-  importCharacterFromFile,
+  importCharactersFromFile,
+  restoreCharacters,
 } from "./storage";
 import CharacterList from "./components/CharacterList";
 import ThemeToggle from "./components/ThemeToggle";
+import { applyUpdate, isUpdateReady, onUpdateReady } from "./serviceWorker";
 import "./App.css";
 
 // The sheet and its data catalogs are most of the app's size, so the character list shows first
@@ -19,6 +21,9 @@ const CharacterSheet = lazy(loadSheet);
 function App() {
   const [characters, setCharacters] = useState<Character[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
+
+  const [updateReady, setUpdateReady] = useState(isUpdateReady);
+  useEffect(() => onUpdateReady(() => setUpdateReady(isUpdateReady())), []);
 
   useEffect(() => {
     setCharacters(loadAllCharacters());
@@ -43,12 +48,20 @@ function App() {
   }
 
   async function handleImport(file: File) {
+    let incoming: Character[];
     try {
-      const character = await importCharacterFromFile(file);
-      saveCharacter(character);
-      refresh();
+      incoming = await importCharactersFromFile(file);
     } catch {
-      alert("Could not read that file as a character JSON export.");
+      alert("Could not read that file as a character JSON export or backup.");
+      return;
+    }
+    const { saved, skipped } = restoreCharacters(incoming);
+    refresh();
+    if (incoming.length > 1 || skipped.length) {
+      alert(
+        `Imported ${saved} character${saved === 1 ? "" : "s"}.` +
+          (skipped.length ? `\nKept the newer copy already on this device: ${skipped.join(", ")}.` : "")
+      );
     }
   }
 
@@ -62,6 +75,14 @@ function App() {
   return (
     <>
       <ThemeToggle />
+      {updateReady && (
+        <div className="update-banner" role="status">
+          <span>A new version of the sheet is ready.</span>
+          <button className="btn btn-primary btn-small" onClick={applyUpdate}>
+            Update now
+          </button>
+        </div>
+      )}
       {openCharacter ? (
         <Suspense fallback={<p className="section-hint" style={{ padding: 24 }}>Loading character…</p>}>
           <CharacterSheet initial={openCharacter} onBack={handleBack} />
