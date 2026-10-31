@@ -254,6 +254,7 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
       combatFeatures,
       isRaging: false,
       activeEffects: [],
+      modRestChanges: { added: [], removed: [] },
       currentHp: effectiveMaxHp(character),
       tempHp: 0,
       deathSaves: { successes: 0, failures: 0 },

@@ -1,11 +1,14 @@
 import { useState } from "react";
 import type { Character } from "../types";
-import { abilityModifier, proficiencyBonus } from "../utils";
+import { proficiencyBonus } from "../utils";
 import {
   effectiveTechPointMax,
   installMod,
   installedMods,
   itemCount,
+  modChangeAllowed,
+  modChangesLeft,
+  modChangesPerRest,
   modDef,
   modDiscipline,
   modEffects,
@@ -13,6 +16,7 @@ import {
   modifiableItems,
   modifiedItems,
   moveMod,
+  recordModChange,
   removeMod,
   slotsPerItem,
   totalSlots,
@@ -33,6 +37,7 @@ interface Props {
 export default function ModificationsSection({ character, update, collapsedSections, onToggleSection }: Props) {
   const [chosenTarget, setChosenTarget] = useState("");
   const [selected, setSelected] = useState("");
+  const [freeEdit, setFreeEdit] = useState(false);
   const d = modDiscipline(character);
   if (!d) return null;
   const collapsed = !!collapsedSections["modifications"];
@@ -44,7 +49,10 @@ export default function ModificationsSection({ character, update, collapsedSecti
   const slots = totalSlots(character, d);
   const perItem = slotsPerItem(character);
   const ownSlots = d.secondItem === "own-slots" && items.length > 1;
-  const swapsPerRest = Math.max(1, abilityModifier(character.abilities.int));
+  const swapsPerRest = modChangesPerRest(character);
+  const changesLeft = modChangesLeft(character);
+  // Free edit (not saved) lifts the long-rest limit for building the character or a GM's okay.
+  const canChange = (name: string, kind: "install" | "remove") => freeEdit || modChangeAllowed(character, name, kind);
   const nameOf = (id: string) => choices.find((x) => x.id === id)?.name ?? "";
   const usedOn = (id: string) => mods.filter((m) => m.itemId === id).length;
   const excess = Math.max(0, mods.length - pb);
@@ -64,6 +72,12 @@ export default function ModificationsSection({ character, update, collapsedSecti
   function apply(next: Character) {
     update("classSubChoicePicks", next.classSubChoicePicks);
     update("classSubChoiceDetails", next.classSubChoiceDetails);
+    if (next.modRestChanges !== character.modRestChanges) update("modRestChanges", next.modRestChanges);
+  }
+
+  // Counts against the long-rest limit unless Free edit is on.
+  function counted(next: Character, name: string, kind: "install" | "remove") {
+    return freeEdit ? next : recordModChange(next, name, kind);
   }
 
   function setItem(slot: number, id: string) {
@@ -81,8 +95,8 @@ export default function ModificationsSection({ character, update, collapsedSecti
   }
 
   function install() {
-    if (!preview || preview.lock || full) return;
-    apply(installMod(character, d!, preview.o.name, targetItem));
+    if (!preview || preview.lock || full || !canChange(preview.o.name, "install")) return;
+    apply(counted(installMod(character, d!, preview.o.name, targetItem), preview.o.name, "install"));
     setSelected("");
   }
 
@@ -122,6 +136,21 @@ export default function ModificationsSection({ character, update, collapsedSecti
                 ]}
               >
                 <div className="readonly-box">{excess > 0 ? `−${excess}` : "None"}</div>
+              </HoverInfo>
+            </div>
+            <div className="field">
+              <label>Changes Left</label>
+              <HoverInfo
+                title="Changes per Long Rest"
+                lines={[
+                  `Over a long rest you can install, replace or remove up to ${swapsPerRest} modifications (your Intelligence modifier, minimum 1).`,
+                  "Each install or removal counts; a removal plus an install is one replacement. Undoing a change you made since your last long rest is free.",
+                  "A long rest resets this. Turn on Free edit below while building the character.",
+                ]}
+              >
+                <div className="readonly-box">
+                  {freeEdit ? "Free edit" : `${changesLeft} / ${swapsPerRest}`}
+                </div>
               </HoverInfo>
             </div>
           </div>
@@ -190,11 +219,14 @@ export default function ModificationsSection({ character, update, collapsedSecti
             <button
               type="button"
               className="btn btn-primary btn-small"
-              disabled={!preview || Boolean(preview.lock) || full}
+              disabled={!preview || Boolean(preview.lock) || full || !canChange(preview.o.name, "install")}
               onClick={install}
             >
               Install
             </button>
+            {preview && !preview.lock && !full && !canChange(preview.o.name, "install") && (
+              <p className="section-hint">No changes left until your next long rest.</p>
+            )}
           </div>
 
           <div className="field">
@@ -237,7 +269,9 @@ export default function ModificationsSection({ character, update, collapsedSecti
                       <button
                         type="button"
                         className="btn btn-secondary btn-small"
-                        onClick={() => apply(removeMod(character, d, m.index))}
+                        disabled={!canChange(m.option.name, "remove")}
+                        title={canChange(m.option.name, "remove") ? undefined : "No changes left until your next long rest"}
+                        onClick={() => apply(counted(removeMod(character, d, m.index), m.option.name, "remove"))}
                       >
                         Remove
                       </button>
@@ -250,10 +284,12 @@ export default function ModificationsSection({ character, update, collapsedSecti
             )}
           </div>
 
-          <p className="section-hint">
-            Over a long rest you can install, replace or remove up to {swapsPerRest} (your Intelligence modifier,
-            minimum 1).
-          </p>
+          <div className="mod-free-edit">
+            <label className="crafting-check">
+              <input type="checkbox" checked={freeEdit} onChange={(e) => setFreeEdit(e.target.checked)} />{" "}
+              Free edit (building the character, or your GM allows it)
+            </label>
+          </div>
         </>
       )}
     </section>

@@ -1,7 +1,7 @@
 import type { Character, ClassSubChoiceDef, ClassSubChoiceOption, EquipmentItem, SpeciesNaturalArmor, Weapon } from "./types";
 import { CLASS_SUB_CHOICES, ENGINEER_MOD_SLOTS_BY_LEVEL } from "./data/classFeatureChoices";
 import { WEAPON_CATALOG } from "./data/weapons";
-import { armorCatalogMatch, proficiencyBonus } from "./utils";
+import { abilityModifier, armorCatalogMatch, proficiencyBonus } from "./utils";
 
 // Own lookup rather than weaponLogic's, which imports classFeatureLogic (and that imports this file).
 const WEAPON_LOOKUP = new Map(WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), w]));
@@ -348,6 +348,52 @@ export function modSpeedSources(c: Character): { label: string; amount: number }
 }
 
 // ---- Editing ----
+
+// --- Long-rest change limit ---
+// "Over the course of a long rest, you can install, replace, or remove a number of modifications up
+// to your Intelligence modifier (minimum of one)." Each install and each removal since the last long
+// rest counts; undoing one (removing a mod added since, or reinstalling one removed since) is free.
+// A removal paired with an install is one replacement, so the count is the larger of the two lists.
+
+export function modChangesPerRest(c: Character): number {
+  return Math.max(1, abilityModifier(c.abilities.int));
+}
+
+function restChanges(c: Character): { added: string[]; removed: string[] } {
+  return { added: c.modRestChanges?.added ?? [], removed: c.modRestChanges?.removed ?? [] };
+}
+
+export function modChangesUsed(c: Character): number {
+  const r = restChanges(c);
+  return Math.max(r.added.length, r.removed.length);
+}
+
+// Whether installing/removing `name` stays within this long rest's limit.
+export function modChangeAllowed(c: Character, name: string, kind: "install" | "remove"): boolean {
+  return modChangesUsed(recordModChange(c, name, kind)) <= modChangesPerRest(c);
+}
+
+export function modChangesLeft(c: Character): number {
+  return Math.max(0, modChangesPerRest(c) - modChangesUsed(c));
+}
+
+// Records an install/removal against the limit (or cancels the change it undoes).
+export function recordModChange(c: Character, name: string, kind: "install" | "remove"): Character {
+  const r = restChanges(c);
+  const drop = (list: string[]) => {
+    const i = list.indexOf(name);
+    return list.filter((_, j) => j !== i);
+  };
+  const next =
+    kind === "install"
+      ? r.removed.includes(name)
+        ? { ...r, removed: drop(r.removed) }
+        : { ...r, added: [...r.added, name] }
+      : r.added.includes(name)
+        ? { ...r, added: drop(r.added) }
+        : { ...r, removed: [...r.removed, name] };
+  return { ...c, modRestChanges: next };
+}
 
 export function installMod(c: Character, d: ModDiscipline, name: string, itemId: string): Character {
   const key = d.defKey;
