@@ -99,7 +99,7 @@ import ManeuverSwapDialog from "./ManeuverSwapDialog";
 import SectionBlock from "./SectionBlock";
 import SectionNav from "./SectionNav";
 import Modal from "./Modal";
-import { applyUpdates, pendingUpdates } from "../characterMigrations";
+import { applyUpdates, autoRepair, pendingUpdates } from "../characterMigrations";
 import HealthBar from "./HealthBar";
 import { DefenseBox, InitiativeBox, ProficiencyBonusBox, SpeedBaseBox } from "./StatBoxes";
 import {
@@ -136,9 +136,11 @@ interface Props {
 }
 
 export default function CharacterSheet({ initial, onBack }: Props) {
-  const [character, setCharacter] = useState<Character>(initial);
+  // Older saves are repaired here (not in the light character list) so the list loads fast.
+  const [character, setCharacter] = useState<Character>(() => autoRepair(initial));
   const [pendingSpecies, setPendingSpecies] = useState<SpeciesEntry | null>(null);
   const [pendingBackground, setPendingBackground] = useState<BackgroundEntry | null>(null);
+  const [pendingBackgroundSelections, setPendingBackgroundSelections] = useState<BackgroundSelections | null>(null);
   const [pendingClass, setPendingClass] = useState<ClassEntry | null>(null);
   const [pendingAsi, setPendingAsi] = useState<{ level: number; className: string } | null>(null);
   const [pendingClassCapstoneFeature, setPendingClassCapstoneFeature] = useState<ClassFeature | null>(null);
@@ -186,7 +188,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   }
 
   useEffect(() => {
-    setCharacter(initial);
+    setCharacter(autoRepair(initial));
   }, [initial]);
 
   useEffect(() => {
@@ -371,6 +373,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
   function handleBackgroundConfirm(selections: BackgroundSelections) {
     if (!pendingBackground) return;
+    // A background feat with its own choices: hold the background until the feat dialog is
+    // confirmed, so cancelling it goes back to the background dialog instead of half-applying.
+    const feat = selections.feat ? FEATS_CATALOG.find((f) => f.name === selections.feat) : undefined;
+    if (feat && featNeedsChoices(feat)) {
+      setPendingBackgroundSelections(selections);
+      setPendingFeat(feat);
+      return;
+    }
     setCharacter((prev) => applyBackground(prev, pendingBackground, selections));
     setPendingBackground(null);
     if (selections.feat) handleAddFeat(selections.feat);
@@ -507,9 +517,22 @@ export default function CharacterSheet({ initial, onBack }: Props) {
 
   function handleFeatConfirm(selections: FeatSelections) {
     if (!pendingFeat) return;
+    if (pendingBackground && pendingBackgroundSelections) {
+      const bg = pendingBackground;
+      const bgSelections = pendingBackgroundSelections;
+      setCharacter((prev) => applyBackground(prev, bg, bgSelections));
+      setPendingBackground(null);
+      setPendingBackgroundSelections(null);
+    }
     setCharacter((prev) => addFeat(prev, pendingFeat, selections));
     offerCompanionFor(pendingFeat.name);
     setPendingFeat(null);
+  }
+
+  function handleFeatCancel() {
+    setPendingFeat(null);
+    // Back to the background dialog (still open underneath with its picks).
+    setPendingBackgroundSelections(null);
   }
 
   function handleRemoveFeat(id: string) {
@@ -1308,6 +1331,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       )}
 
       {pendingBackground && (
+        // Kept mounted (hidden) while its feat's dialog is up, so cancelling that keeps these picks.
+        <div style={pendingBackgroundSelections ? { display: "none" } : undefined}>
         <BackgroundChoiceDialog
           background={pendingBackground}
           skills={character.skills}
@@ -1320,6 +1345,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           }}
           onConfirm={handleBackgroundConfirm}
         />
+        </div>
       )}
 
       {pendingClass && (
@@ -1365,7 +1391,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         <FeatChoiceDialog
           feat={pendingFeat}
           skills={character.skills}
-          onCancel={() => setPendingFeat(null)}
+          onCancel={handleFeatCancel}
           onConfirm={handleFeatConfirm}
         />
       )}

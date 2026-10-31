@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import type { Character } from "./types";
 import { createBlankCharacter } from "./types";
 import {
@@ -8,9 +8,13 @@ import {
   importCharacterFromFile,
 } from "./storage";
 import CharacterList from "./components/CharacterList";
-import CharacterSheet from "./components/CharacterSheet";
 import ThemeToggle from "./components/ThemeToggle";
 import "./App.css";
+
+// The sheet and its data catalogs are most of the app's size, so the character list shows first
+// and the sheet loads in the background right after (phones open the list much faster).
+const loadSheet = () => import("./components/CharacterSheet");
+const CharacterSheet = lazy(loadSheet);
 
 function App() {
   const [characters, setCharacters] = useState<Character[]>([]);
@@ -18,6 +22,8 @@ function App() {
 
   useEffect(() => {
     setCharacters(loadAllCharacters());
+    const t = setTimeout(() => void loadSheet(), 300);
+    return () => clearTimeout(t);
   }, []);
 
   function refresh() {
@@ -57,7 +63,9 @@ function App() {
     <>
       <ThemeToggle />
       {openCharacter ? (
-        <CharacterSheet initial={openCharacter} onBack={handleBack} />
+        <Suspense fallback={<p className="section-hint" style={{ padding: 24 }}>Loading character…</p>}>
+          <CharacterSheet initial={openCharacter} onBack={handleBack} />
+        </Suspense>
       ) : (
         <CharacterList
           characters={characters}
