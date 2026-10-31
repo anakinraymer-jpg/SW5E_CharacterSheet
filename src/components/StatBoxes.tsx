@@ -15,7 +15,7 @@ import {
   armorAbilitySubstitute,
   bestNaturalArmor,
 } from "../archetypeEffects";
-import { activeEffectAcBonuses, activeEffectExtraSpeeds, activeEffects } from "../activeEffects";
+import { activeEffectAcBonuses, activeEffectExtraSpeeds, activeEffectNaturalArmor, activeEffects } from "../activeEffects";
 import HoverInfo from "./HoverInfo";
 import NumberInput from "./NumberInput";
 
@@ -28,7 +28,7 @@ export function DefenseBox({ character }: Props) {
   const dexMod = abilityModifier(character.abilities.dex);
   const unarmoredDefense = computeUnarmoredDefenseBonus(character);
   const naturalArmor = bestNaturalArmor(
-    [character.speciesNaturalArmor, modNaturalArmor(character), archetypeNaturalArmor(character)],
+    [character.speciesNaturalArmor, modNaturalArmor(character), archetypeNaturalArmor(character), activeEffectNaturalArmor(character)],
     dexMod
   );
   const armorAbility = armorAbilitySubstitute(character);

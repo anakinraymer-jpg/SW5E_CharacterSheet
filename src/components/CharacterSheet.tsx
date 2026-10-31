@@ -101,6 +101,7 @@ import SectionNav from "./SectionNav";
 import Modal from "./Modal";
 import { applyUpdates, autoRepair, pendingUpdates } from "../characterMigrations";
 import HealthBar from "./HealthBar";
+import ConcentrationBar from "./ConcentrationBar";
 import { DefenseBox, InitiativeBox, ProficiencyBonusBox, SpeedBaseBox } from "./StatBoxes";
 import {
   DEFAULT_LAYOUT,
@@ -1208,6 +1209,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           Long Rest
         </button>
       </div>
+      <ConcentrationBar character={character} update={update} />
 
       <div className="sheet-stat-row">
         {layout.statRow.map((id) => (

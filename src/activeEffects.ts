@@ -4,7 +4,8 @@
 // While on, its effects show as chips and the numeric ones (AC, speed, other speeds, extra weapon
 // damage dice) are added to the sheet. Any rest ends them all. Berserker Rage keeps its own toggle.
 
-import type { ArchetypeEntry, Character } from "./types";
+import type { ArchetypeEntry, Character, SpeciesNaturalArmor } from "./types";
+import { findPowerEntry } from "./pickerCatalogs";
 import { ARCHETYPES_CATALOG as ARCHETYPES_CATALOG_PHB } from "./data/archetypeDetails";
 import { ARCHETYPES_CATALOG_EC } from "./data/archetypeDetailsEC";
 import { CLASSES_CATALOG } from "./data/classes";
@@ -28,8 +29,19 @@ export interface ActiveEffect {
   chips: EffectChip[];
   acBonus: number;
   doublesSpeed: boolean;
+  speedBonus: number;
+  naturalArmor: SpeciesNaturalArmor | null;
   extraSpeeds: string[];
-  weaponDice?: string; // extra damage dice on weapon attacks
+  weaponNotes: WeaponNote[];
+  meleeForceAbility: boolean; // melee attacks may use Wisdom or Charisma (applied in toHitAbilityInfo)
+}
+
+// A badge next to weapon damage while an effect is on.
+export interface WeaponNote {
+  badge: string; // short text, e.g. "+1d6 Totemic Might"
+  detail: string;
+  appliesTo: "melee" | "ranged" | "any";
+  strengthOnly?: boolean; // only weapons attacking with Strength
 }
 
 // Hand-written effects for features whose numbers the sheet can apply (or whose text doesn't
@@ -39,8 +51,11 @@ interface Override {
   chips?: (c: Character) => string[];
   ac?: (c: Character) => number;
   doublesSpeed?: boolean;
+  speed?: number; // flat walking speed bonus
+  naturalArmor?: (c: Character) => SpeciesNaturalArmor;
   speeds?: string[];
-  weaponDice?: string;
+  weaponNotes?: (c: Character) => WeaponNote[];
+  meleeForceAbility?: boolean;
 }
 
 function mod(c: Character, key: keyof Character["abilities"]): number {
@@ -53,12 +68,56 @@ function forceMod(c: Character): number {
 const OVERRIDES: Record<string, Override> = {
   "The Way of the Ysalamiri": {
     chips: (c) => [`${formatModifier(forceMod(c))} (Wis/Cha) to your first melee attack and damage roll each turn`],
+    weaponNotes: (c) => [
+      {
+        badge: `${formatModifier(forceMod(c))} 1st attack/turn`,
+        detail: `Way of the Ysalamiri: add ${formatModifier(forceMod(c))} (Wisdom or Charisma) to the first melee attack roll and its damage each turn.`,
+        appliesTo: "melee",
+      },
+    ],
   },
   "The Way of the Rancor": {
-    chips: () => ["Melee attack as part of casting a force power", "Wisdom or Charisma for melee attack and damage rolls"],
+    chips: () => ["Melee attack as part of casting a force power", "Wisdom or Charisma for melee attack and damage rolls (applied to To Hit)"],
+    meleeForceAbility: true,
+    weaponNotes: (c) => [
+      {
+        badge: `Wis/Cha ${formatModifier(forceMod(c))} for damage`,
+        detail: `Way of the Rancor: use your Wisdom or Charisma modifier (${formatModifier(forceMod(c))}) instead of Strength or Dexterity for this melee damage roll. To Hit already uses it.`,
+        appliesTo: "melee",
+      },
+    ],
   },
   "The Way of the Krayt Dragon": {
     chips: (c) => [`First Strength melee hit each turn: ${formatModifier(Math.max(1, mod(c, "str")))} damage, redirectable to an adjacent creature`],
+    weaponNotes: (c) => [
+      {
+        badge: `${formatModifier(Math.max(1, mod(c, "str")))} 1st hit/turn`,
+        detail: `Way of the Krayt Dragon: the first Strength melee hit each turn deals ${formatModifier(Math.max(1, mod(c, "str")))} extra damage (Strength modifier), which you can redirect to a creature within 5 ft of the target.`,
+        appliesTo: "melee",
+        strengthOnly: true,
+      },
+    ],
+  },
+  "The Way of the Acklay": {
+    weaponNotes: (c) => {
+      const half = Math.max(1, Math.floor(Math.max(mod(c, "str"), mod(c, "dex")) / 2));
+      return [
+        {
+          badge: `+${half} Acklay (off-hand)`,
+          detail: `Way of the Acklay: add half your Strength or Dexterity modifier (+${half}) to melee weapon damage rolls that don't already include that modifier, such as off-hand attacks.`,
+          appliesTo: "melee",
+        },
+      ];
+    },
+  },
+  "The Way of the Yerdua": {
+    weaponNotes: (c) => [
+      {
+        badge: `${formatModifier(forceMod(c))} one shot/turn`,
+        detail: `Way of the Yerdua: add your Wisdom or Charisma modifier (${formatModifier(forceMod(c))}) to one ranged weapon attack and its damage each turn.`,
+        appliesTo: "ranged",
+      },
+    ],
   },
   "The Way of the Mynock": {
     chips: (c) => ["Saber ward as part of the bonus action and each turn", `${proficiencyBonus(levelOf(c))} special reactions for saber reflect`],
@@ -85,7 +144,7 @@ const OVERRIDES: Record<string, Override> = {
     chips: () => ["Resistant: cold, energy, fire, kinetic, lightning, sonic", "Elemental bonus-action abilities"],
   },
   "Totemic Might": {
-    weaponDice: "1d6",
+    weaponNotes: () => [{ badge: "+1d6 Totemic Might", detail: "Totemic Might: your weapon attacks deal an extra 1d6 damage.", appliesTo: "any" }],
     chips: () => ["+1d6 weapon damage", "Advantage: Strength checks & saves", "Carrying capacity doubled"],
   },
   "Flow State": {
@@ -160,8 +219,7 @@ interface ToggleSource {
   resourceKey?: string;
 }
 
-function toEffect(c: Character, src: ToggleSource): ActiveEffect {
-  const o = OVERRIDES[src.name];
+function toEffect(c: Character, src: ToggleSource, o: Override | undefined = OVERRIDES[src.name]): ActiveEffect {
   const name = o?.label ?? src.name;
   return {
     key: slug(`${src.source}-${src.name}`),
@@ -173,8 +231,11 @@ function toEffect(c: Character, src: ToggleSource): ActiveEffect {
     chips: o?.chips ? o.chips(c).map((chip) => ({ label: chip, detail: chip })) : chipsFromText(src.text),
     acBonus: o?.ac?.(c) ?? 0,
     doublesSpeed: !!o?.doublesSpeed,
+    speedBonus: o?.speed ?? 0,
+    naturalArmor: o?.naturalArmor?.(c) ?? null,
     extraSpeeds: o?.speeds ?? [],
-    weaponDice: o?.weaponDice,
+    weaponNotes: o?.weaponNotes?.(c) ?? [],
+    meleeForceAbility: !!o?.meleeForceAbility,
   };
 }
 
@@ -205,13 +266,103 @@ export function availableActiveEffects(c: Character): ActiveEffect[] {
     const m = o.text.match(/Manifest \(bonus action\):\s*(.*)$/);
     if (m) sources.push({ name: `Manifest: ${o.name}`, source: o.name, text: `Bonus action: ${m[1]}` });
   }
-  return sources.map((s) => toEffect(c, s));
+  const effects = sources.map((s) => toEffect(c, s));
+  // Known self-buff powers that aren't concentration (Battle Precognition, Saber Ward); concentration
+  // powers go through the concentration tracker instead.
+  for (const p of c.powers ?? []) {
+    const buff = POWER_BUFFS[p.name];
+    const found = buff && findPowerEntry(p.name, p.type);
+    if (!found || found.entry.concentration) continue;
+    const key = `power-${slug(p.name)}`;
+    if (effects.some((e) => e.key === key)) continue;
+    effects.push({ ...toEffect(c, { name: p.name, source: `${found.type} power`, text: found.entry.description }, buff), key });
+  }
+  return effects;
 }
 
 export function activeEffects(c: Character): ActiveEffect[] {
   const on = c.activeEffects ?? [];
-  if (!on.length) return [];
-  return availableActiveEffects(c).filter((e) => on.includes(e.key));
+  const toggled = on.length ? availableActiveEffects(c).filter((e) => on.includes(e.key)) : [];
+  const conc = concentrationEffect(c);
+  return conc ? [...toggled, conc] : toggled;
+}
+
+// --- Concentration ---
+
+// Buff powers whose numbers the sheet applies while they affect you. Powers not listed still show
+// in the concentration tracker, just without automatic numbers.
+const SPEED_POWER: Override = {
+  ac: () => 2,
+  doublesSpeed: true,
+  chips: () => ["Double speed", "+2 AC", "Advantage: Dexterity saves", "Extra limited action each turn"],
+};
+const POWER_BUFFS: Record<string, Override> = {
+  "Improved Force Intuition": { ac: () => 2, chips: () => ["+2 AC", "Advantage on initiative"] },
+  "Knight Speed": SPEED_POWER,
+  "Master Speed": SPEED_POWER,
+  "Tactical Advantage": SPEED_POWER,
+  "Tactical Superiority": SPEED_POWER,
+  "Motivator Boost": { ac: () => 2, doublesSpeed: true, chips: () => ["Double speed", "+2 AC", "Advantage: Dexterity saves"] },
+  "Tactical Barrier": { ac: () => 2, chips: () => ["+2 AC"] },
+  "Art of Movement": { speed: 10, chips: () => ["+10 ft speed", "Leap over obstacles"] },
+  "Force Focus": {
+    chips: () => ["+1d4 force damage on weapon hits"],
+    weaponNotes: () => [{ badge: "+1d4 Force Focus", detail: "Force Focus: your weapon attacks deal an extra 1d4 force damage on a hit.", appliesTo: "any" }],
+  },
+  "Aura of Vigor": {
+    chips: () => ["+1d4 weapon damage (you and allies within 30 ft)"],
+    weaponNotes: () => [{ badge: "+1d4 Aura of Vigor", detail: "Aura of Vigor: creatures in the aura, including you, deal an extra 1d4 damage with weapon attacks.", appliesTo: "any" }],
+  },
+  "Dark Aura": {
+    chips: () => ["+1d8 necrotic on hits within 10 ft"],
+    weaponNotes: () => [{ badge: "+1d8 Dark Aura (10 ft)", detail: "Dark Aura: any attack you make deals an extra 1d8 necrotic damage when you hit a creature within 10 feet of you.", appliesTo: "any" }],
+  },
+  "Ballistic Shield": { chips: () => ["Resistant: kinetic, energy, ion"] },
+  "Disperse Energy": { chips: () => ["Resistant: acid, cold, fire, lightning, sonic"] },
+  "Shroud of Darkness": { chips: () => ["Resistant: force", "Heavily obscured"] },
+  Valor: { chips: () => ["+1d4 to attack rolls and saving throws"] },
+  "Battle Precognition": {
+    naturalArmor: () => ({ base: 13, addDex: true, allowLightArmor: false, allowAnyArmor: false, sourceLabel: "Battle Precognition (13 + Dex modifier)" }),
+    chips: () => ["Base AC 13 + Dex (no armor)"],
+  },
+  "Saber Ward": { chips: () => ["Resistant: kinetic, energy, ion from weapons", "Until the end of your next turn"] },
+};
+
+export interface ConcentrationInfo {
+  name: string;
+  type: "Force" | "Tech";
+  selfRange: boolean; // Self-range powers always affect the caster
+  affectsMe: boolean;
+  text: string;
+  effect: ActiveEffect | null; // numbers/chips applied while it affects you
+}
+
+export function concentrationInfo(c: Character): ConcentrationInfo | null {
+  const name = c.concentratingOn;
+  if (!name) return null;
+  const known = (c.powers ?? []).find((p) => p.name === name);
+  const found = findPowerEntry(name, known?.type ?? "Force");
+  const selfRange = found ? /^Self/i.test(found.entry.range) : false;
+  const affectsMe = selfRange || c.concentrationSelf !== false;
+  const buff = POWER_BUFFS[found?.entry.name ?? name];
+  const effect =
+    buff && affectsMe
+      ? { ...toEffect(c, { name, source: "Concentration", text: found?.entry.description ?? "" }, buff), key: `conc-${slug(name)}` }
+      : null;
+  return { name, type: found?.type ?? known?.type ?? "Force", selfRange, affectsMe, text: found?.entry.description ?? "", effect };
+}
+
+function concentrationEffect(c: Character): ActiveEffect | null {
+  return concentrationInfo(c)?.effect ?? null;
+}
+
+// Whether a power needs concentration (catalog entry), for the Powers list's C button.
+export function isConcentrationPower(name: string, type: "Force" | "Tech"): boolean {
+  return !!findPowerEntry(name, type)?.entry.concentration;
+}
+
+export function activeEffectNaturalArmor(c: Character): SpeciesNaturalArmor | null {
+  return activeEffects(c).find((e) => e.naturalArmor)?.naturalArmor ?? null;
 }
 
 // True while the toggle for the feature named `feature` is on.
@@ -227,16 +378,27 @@ export function activeEffectAcBonuses(c: Character): { label: string; amount: nu
 
 // `otherBonus` is every other speed bonus; "double speed" adds base + those once more.
 export function activeEffectSpeedSources(c: Character, otherBonus: number): { label: string; amount: number }[] {
-  const doubler = activeEffects(c).find((e) => e.doublesSpeed);
-  return doubler ? [{ label: `${doubler.name} (double speed)`, amount: c.speedBase + otherBonus }] : [];
+  const effects = activeEffects(c);
+  const flat = effects.filter((e) => e.speedBonus > 0).map((e) => ({ label: e.name, amount: e.speedBonus }));
+  const flatTotal = flat.reduce((sum, s) => sum + s.amount, 0);
+  const doubler = effects.find((e) => e.doublesSpeed);
+  return doubler
+    ? [...flat, { label: `${doubler.name} (double speed)`, amount: c.speedBase + otherBonus + flatTotal }]
+    : flat;
 }
 
 export function activeEffectExtraSpeeds(c: Character): string[] {
   return activeEffects(c).flatMap((e) => e.extraSpeeds);
 }
 
-export function activeEffectWeaponDice(c: Character): { label: string; dice: string }[] {
-  return activeEffects(c)
-    .filter((e) => e.weaponDice)
-    .map((e) => ({ label: e.name, dice: e.weaponDice! }));
+export function activeEffectWeaponNotes(c: Character): WeaponNote[] {
+  return activeEffects(c).flatMap((e) => e.weaponNotes);
+}
+
+// Way of the Rancor: Wisdom or Charisma (the higher) for melee attacks, if better than the usual.
+export function meleeForceAbilitySubstitute(c: Character): { mod: number; label: string } | null {
+  const e = activeEffects(c).find((x) => x.meleeForceAbility);
+  if (!e) return null;
+  const useCha = mod(c, "cha") > mod(c, "wis");
+  return { mod: useCha ? mod(c, "cha") : mod(c, "wis"), label: `${useCha ? "Charisma" : "Wisdom"} (${e.name})` };
 }

@@ -13,7 +13,7 @@ import { monkRetainsUnarmoredBenefits } from "../classFeatureLogic";
 import { infusedWeaponBonus } from "../infuseItem";
 import { modWeaponBonus } from "../modifications";
 import { archetypeWeaponDamageBonus } from "../archetypeEffects";
-import { activeEffectWeaponDice } from "../activeEffects";
+import { activeEffectWeaponNotes } from "../activeEffects";
 import { WEAPON_LOOKUP, isFinesseOrRangedWeapon, isMeleeWeapon, toHitAbilityInfo, weaponAmmoType, weaponDamageDisplay } from "../weaponLogic";
 import { formatModifier, proficiencyBonus } from "../utils";
 import { WEAPON_PROPERTY_DEFINITIONS } from "../data/legend";
@@ -121,7 +121,7 @@ export default function WeaponsSection({
   const pb = proficiencyBonus(character.level);
   const isRaging = character.classAppliedName === "Berserker" && character.isRaging;
   const archetypeDamage = archetypeWeaponDamageBonus(character);
-  const effectDice = activeEffectWeaponDice(character);
+  const effectNotes = activeEffectWeaponNotes(character);
   const rageDamageBonus = BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
   const hasMartialArts = character.classAppliedName === "Monk" && monkRetainsUnarmoredBenefits(character);
   const martialArtsDie = MONK_MARTIAL_ARTS_DIE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1];
@@ -235,11 +235,17 @@ export default function WeaponsSection({
                         <span className="rage-damage-note">+{mods.damage} Modified</span>
                       </HoverInfo>
                     )}
-                    {effectDice.map((d) => (
-                      <HoverInfo key={d.label} title={d.label} lines={[`+${d.dice} to weapon attack damage while ${d.label} is active.`]}>
-                        <span className="rage-damage-note">+{d.dice} {d.label}</span>
-                      </HoverInfo>
-                    ))}
+                    {effectNotes
+                      .filter((n) =>
+                        n.appliesTo === "any" ||
+                        (n.appliesTo === "melee") === isMeleeWeapon(w.name)
+                      )
+                      .filter((n) => !n.strengthOnly || abilityLabel === "Strength")
+                      .map((n) => (
+                        <HoverInfo key={n.badge} title="Active Effect" lines={[n.detail]}>
+                          <span className="rage-damage-note">{n.badge}</span>
+                        </HoverInfo>
+                      ))}
                     {isRaging && abilityLabel === "Strength" && (
                       <HoverInfo
                         title="Rage Damage"

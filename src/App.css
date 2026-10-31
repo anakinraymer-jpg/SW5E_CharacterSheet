@@ -2632,3 +2632,12 @@
 
 /* New-version banner (service worker update) */
 .update-banner { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 1000; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--accent, #4fe0ff); background: var(--panel-bg, #0d1520); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4); }
+
+/* Concentration tracker (under the health bar and in Powers) */
+.concentration-bar { border: 1px solid var(--accent, #4fe0ff); border-radius: 8px; padding: 8px 12px; margin: 0 0 16px; }
+.concentration-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.concentration-name { font-weight: 600; }
+.concentration-row .btn { margin-left: auto; }
+.concentration-bar .chip-row { margin-top: 6px; }
+.concentration-hint { margin: 6px 0 0; font-size: 0.8rem; opacity: 0.7; }
+.conc-toggle { min-width: 32px; }

@@ -578,6 +578,8 @@ export interface Character {
   monkUnarmoredDefenseAbility: "wis" | "cha"; // Monk's Unarmored Defense: Wisdom or Charisma (player's choice)
   isRaging: boolean; // Berserker's Rage: toggles the advantage/resistance/damage buffs on and off
   activeEffects: string[]; // keys of stances/short buffs switched on (activeEffects.ts); cleared by any rest
+  concentratingOn: string; // power name being concentrated on ("" = none); cleared by rests and rage
+  concentrationSelf: boolean; // that power affects this character (Self-range powers always do)
   modRestChanges: { added: string[]; removed: string[] }; // Engineer modifications installed/removed since the last long rest (limited to Int mod)
   maneuverPhysicalAbility: "str" | "dex" | "con"; // Fighter/Scholar Combat/Academic Superiority: ability for Physical maneuvers
   maneuverMentalAbility: "int" | "wis" | "cha"; // Fighter/Scholar Combat/Academic Superiority: ability for Mental maneuvers
@@ -798,6 +800,8 @@ export function createBlankCharacter(): Character {
     isRaging: false,
     activeEffects: [],
     modRestChanges: { added: [], removed: [] },
+    concentratingOn: "",
+    concentrationSelf: true,
     maneuverPhysicalAbility: "str",
     maneuverMentalAbility: "int",
     armorNotes: "",

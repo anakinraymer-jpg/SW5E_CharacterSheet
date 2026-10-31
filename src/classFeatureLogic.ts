@@ -244,7 +244,7 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
   );
 
   if (kind === "short") {
-    return restCompanion({ ...character, classResources, combatFeatures, isRaging: false, activeEffects: [] }, "short");
+    return restCompanion({ ...character, classResources, combatFeatures, isRaging: false, activeEffects: [], concentratingOn: "" }, "short");
   }
 
   return restCompanion(
@@ -254,6 +254,7 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
       combatFeatures,
       isRaging: false,
       activeEffects: [],
+      concentratingOn: "",
       modRestChanges: { added: [], removed: [] },
       currentHp: effectiveMaxHp(character),
       tempHp: 0,

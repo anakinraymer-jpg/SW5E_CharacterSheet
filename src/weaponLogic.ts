@@ -4,6 +4,7 @@ import { MONK_WEAPON_NAMES } from "./data/classes";
 import { MONK_MARTIAL_ARTS_DIE_BY_LEVEL } from "./data/classFeatureChoices";
 import { allChosenSubChoiceOptions, monkRetainsUnarmoredBenefits } from "./classFeatureLogic";
 import { ABILITY_LABEL } from "./speciesLogic";
+import { meleeForceAbilitySubstitute } from "./activeEffects";
 import { abilityModifier, formatModifier } from "./utils";
 
 export const WEAPON_LOOKUP = new Map(WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), w]));
@@ -26,6 +27,15 @@ export function weaponAmmoType(property: string): string | null {
 // requirement) — both are class/state-aware, so they're computed here rather than stored on the
 // catalog entry itself, which is shared by every class. Shared by WeaponsSection and CombatSection.
 export function toHitAbilityInfo(character: Character, weaponName: string): { mod: number; label: string } {
+  const base = baseToHitAbility(character, weaponName);
+  // A stance letting melee attacks use Wisdom or Charisma (Way of the Rancor), when that's higher.
+  const entry = WEAPON_LOOKUP.get(weaponName.trim().toLowerCase());
+  const isRanged = entry ? /blaster/i.test(entry.type) : false;
+  const sub = isRanged ? null : meleeForceAbilitySubstitute(character);
+  return sub && sub.mod > base.mod ? sub : base;
+}
+
+function baseToHitAbility(character: Character, weaponName: string): { mod: number; label: string } {
   const strMod = abilityModifier(character.abilities.str);
   const dexMod = abilityModifier(character.abilities.dex);
   const entry = WEAPON_LOOKUP.get(weaponName.trim().toLowerCase());

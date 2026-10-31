@@ -11,7 +11,6 @@ import {
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import { archetypePassiveChips, archetypeResourceDef } from "../archetypeEffects";
 import { availableActiveEffects } from "../activeEffects";
-import type { ActiveEffect } from "../activeEffects";
 import HoverInfo from "./HoverInfo";import SectionHeader from "./SectionHeader";
 import NumberInput from "./NumberInput";
 
@@ -151,13 +150,23 @@ export default function ClassFeaturesSection({
 
   const toggles = availableActiveEffects(character);
   const activeKeys = character.activeEffects ?? [];
-  function usesFor(e: ActiveEffect): { key: string; current: number; max: number } | null {
-    const def = e.resourceKey ? resources.find((r) => r.key === e.resourceKey) : undefined;
+  function usesFor(resourceKey: string | undefined): { key: string; current: number; max: number } | null {
+    const def = resourceKey ? resources.find((r) => r.key === resourceKey) : undefined;
     if (!def) return null;
     const idx = Math.max(1, Math.min(20, character.level || 1)) - 1;
     const max = (def.maxByLevel[idx] ?? 0) + resourceMaxBonus(character, def.key);
     const current = character.classResources.find((r) => r.key === def.key)?.current ?? max;
     return { key: def.key, current, max };
+  }
+  const isBerserker = character.classAppliedName === "Berserker";
+  const rageUses = isBerserker ? usesFor("berserker-rages") : null;
+  function toggleRage() {
+    update("isRaging", !character.isRaging);
+    // You can't concentrate while raging.
+    if (!character.isRaging && character.concentratingOn) update("concentratingOn", "");
+    if (!character.isRaging && rageUses && rageUses.max < 99 && rageUses.current > 0) {
+      onUpdateResource(rageUses.key, rageUses.current - 1);
+    }
   }
   function toggleEffect(key: string, on: boolean, uses: { key: string; current: number } | null) {
     update("activeEffects", on ? activeKeys.filter((k) => k !== key) : [...activeKeys, key]);
@@ -175,6 +184,54 @@ export default function ClassFeaturesSection({
   if (!character.classTraitsText && !character.archetypeTraitsText && resources.length === 0) {
     return null;
   }
+
+  // Rage effects, shown under its toggle in the Stances box while raging.
+  const rageChips = (
+    <div className="chip-row">
+              <HoverInfo
+                title="Advantage on Strength"
+                lines={["Advantage on Strength checks and saving throws while raging."]}
+              >
+                <span className="info-chip">Advantage: Strength checks &amp; saves</span>
+              </HoverInfo>
+              <HoverInfo
+                title="Damage Resistance"
+                lines={["Resistance to kinetic and energy damage while raging."]}
+              >
+                <span className="info-chip">Resistance: Kinetic &amp; Energy</span>
+              </HoverInfo>
+              <HoverInfo
+                title="Rage Damage"
+                lines={[
+                  `+${BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1]} to melee damage rolls using Strength.`,
+                  "Shown automatically next to qualifying weapons in the Weapons & Ammunitions table.",
+                ]}
+              >
+                <span className="info-chip">
+                  {formatModifier(
+                    BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1]
+                  )}{" "}
+                  melee damage (Str)
+                </span>
+              </HoverInfo>
+              <HoverInfo title="Casting" lines={["You can't cast or concentrate on powers while raging."]}>
+                <span className="info-chip">No casting/concentration</span>
+              </HoverInfo>
+              {rageBuffOptions.map((o) => (
+                <HoverInfo key={o.name} title={o.name} lines={[o.rageBuffText!]}>
+                  <span className="info-chip">{o.rageBuffText}</span>
+                </HoverInfo>
+              ))}
+              {dewbackTypes.length > 0 && (
+                <HoverInfo
+                  title="Dewback's Instinct"
+                  lines={[`Resistance to ${dewbackTypes.join(", ")} damage while raging.`]}
+                >
+                  <span className="info-chip">Resistance: {dewbackTypes.join(", ")}</span>
+                </HoverInfo>
+              )}
+    </div>
+  );
 
   return (
     <section className="sheet-section class-features-section">
@@ -236,66 +293,8 @@ export default function ClassFeaturesSection({
         </div>
       )}
 
-      {full && character.classAppliedName === "Berserker" && (
-        <div className="species-traits-box">
-          <div className="species-traits-header">Rage</div>
-          <button
-            type="button"
-            className={`btn btn-small ${character.isRaging ? "btn-primary" : "btn-secondary"}`}
-            onClick={() => update("isRaging", !character.isRaging)}
-          >
-            {character.isRaging ? "Raging — Click to End" : "Start Raging"}
-          </button>
-          {character.isRaging && (
-            <div className="chip-row" style={{ marginTop: 8 }}>
-              <HoverInfo
-                title="Advantage on Strength"
-                lines={["Advantage on Strength checks and saving throws while raging."]}
-              >
-                <span className="info-chip">Advantage: Strength checks &amp; saves</span>
-              </HoverInfo>
-              <HoverInfo
-                title="Damage Resistance"
-                lines={["Resistance to kinetic and energy damage while raging."]}
-              >
-                <span className="info-chip">Resistance: Kinetic &amp; Energy</span>
-              </HoverInfo>
-              <HoverInfo
-                title="Rage Damage"
-                lines={[
-                  `+${BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1]} to melee damage rolls using Strength.`,
-                  "Shown automatically next to qualifying weapons in the Weapons & Ammunitions table.",
-                ]}
-              >
-                <span className="info-chip">
-                  {formatModifier(
-                    BERSERKER_RAGE_DAMAGE_BY_LEVEL[Math.max(1, Math.min(20, character.level || 1)) - 1]
-                  )}{" "}
-                  melee damage (Str)
-                </span>
-              </HoverInfo>
-              <HoverInfo title="Casting" lines={["You can't cast or concentrate on powers while raging."]}>
-                <span className="info-chip">No casting/concentration</span>
-              </HoverInfo>
-              {rageBuffOptions.map((o) => (
-                <HoverInfo key={o.name} title={o.name} lines={[o.rageBuffText!]}>
-                  <span className="info-chip">{o.rageBuffText}</span>
-                </HoverInfo>
-              ))}
-              {dewbackTypes.length > 0 && (
-                <HoverInfo
-                  title="Dewback's Instinct"
-                  lines={[`Resistance to ${dewbackTypes.join(", ")} damage while raging.`]}
-                >
-                  <span className="info-chip">Resistance: {dewbackTypes.join(", ")}</span>
-                </HoverInfo>
-              )}
-            </div>
-          )}
-        </div>
-      )}
 
-      {toggles.length > 0 && (
+      {(toggles.length > 0 || isBerserker) && (
         <div className="species-traits-box">
           <div className="species-traits-header">Stances &amp; Active Effects</div>
           {full && (
@@ -305,9 +304,30 @@ export default function ClassFeaturesSection({
             </p>
           )}
           <div className="active-effects-list">
+            {isBerserker && (
+              <div className={`active-effect${character.isRaging ? " is-on" : ""}`}>
+                <div className="active-effect-row">
+                  <button
+                    type="button"
+                    className={`btn btn-small ${character.isRaging ? "btn-primary" : "btn-secondary"}`}
+                    disabled={!character.isRaging && rageUses !== null && rageUses.current <= 0}
+                    onClick={toggleRage}
+                  >
+                    {character.isRaging ? "Rage — End" : "Rage"}
+                  </button>
+                  {rageUses && (
+                    <span className="rage-damage-note">
+                      {rageUses.max >= 99 ? "Unlimited" : `${rageUses.current}/${rageUses.max} rages`}
+                      {!character.isRaging && rageUses.current <= 0 ? " — none left" : ""}
+                    </span>
+                  )}
+                </div>
+                {character.isRaging && rageChips}
+              </div>
+            )}
             {toggles.map((e) => {
               const on = activeKeys.includes(e.key);
-              const uses = usesFor(e);
+              const uses = usesFor(e.resourceKey);
               const spent = !on && uses !== null && uses.current <= 0;
               return (
                 <div key={e.key} className={`active-effect${on ? " is-on" : ""}`}>

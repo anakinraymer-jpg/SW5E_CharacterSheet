@@ -14,6 +14,8 @@ import { ABILITY_LABEL } from "../speciesLogic";
 import { hasBenduAffinity } from "../classFeatureLogic";
 import { castingStats } from "../castingStats";
 import { effectiveTechPointMax, techPointPenaltySources } from "../modifications";
+import { isConcentrationPower } from "../activeEffects";
+import ConcentrationBar from "./ConcentrationBar";
 import HoverInfo from "./HoverInfo";
 import SectionHeader from "./SectionHeader";
 import NumberInput from "./NumberInput";
@@ -58,6 +60,18 @@ export default function PowersSection({
   const collapsed = !!collapsedSections["powers"];
   const [activeType, setActiveType] = useState<Power["type"]>("Force");
   const [pickerOpen, setPickerOpen] = useState(false);
+
+  // One concentration power at a time; picking another replaces it. Raging prevents it.
+  function toggleConcentration(name: string) {
+    if (character.concentratingOn === name) {
+      update("concentratingOn", "");
+      return;
+    }
+    if (character.isRaging && !confirm("You can't concentrate while raging. End your rage and concentrate?")) return;
+    if (character.isRaging) update("isRaging", false);
+    update("concentratingOn", name);
+    update("concentrationSelf", true);
+  }
 
   const { pb, specialistBonus, forceAbility, forceMod, forceAttack, forceDC, techMod, techAttack, techDC, techMods } =
     castingStats(character);
@@ -305,6 +319,8 @@ export default function PowersSection({
           : `Known — ${techTotal} power${techTotal === 1 ? "" : "s"}`}
       </div>
 
+      <ConcentrationBar character={character} update={update} />
+
       <div className="powers-list">
         {sortedPowers.map((power) => {
           const showHeader = power.level !== lastLevel;
@@ -340,6 +356,20 @@ export default function PowersSection({
                   />
                   P
                 </label>
+                {isConcentrationPower(power.name, power.type) && (
+                  <button
+                    type="button"
+                    className={`btn btn-small conc-toggle ${character.concentratingOn === power.name ? "btn-primary" : "btn-secondary"}`}
+                    title={character.concentratingOn === power.name ? "End concentration" : "Concentrate on this power"}
+                    aria-pressed={character.concentratingOn === power.name}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleConcentration(power.name);
+                    }}
+                  >
+                    C
+                  </button>
+                )}
                 <button
                   className="btn btn-danger btn-small"
                   title="Remove power"
