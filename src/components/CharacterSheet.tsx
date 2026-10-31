@@ -83,6 +83,12 @@ import { modDiscipline } from "../modifications";
 import CraftingSection from "./CraftingSection";
 import { craftingTools } from "../crafting";
 
+type FocusView = "all" | "combat" | "roleplay";
+const FOCUS_SECTIONS: Record<Exclude<FocusView, "all">, SectionId[]> = {
+  combat: ["abilities", "combat", "modifications", "powers", "feats", "classFeatures", "weapons", "companion"],
+  roleplay: ["abilities", "skills", "feats", "equipment", "crafting", "backstory", "traitsFeatures", "companion"],
+};
+
 type SimpleKey = SectionId | "identity" | "characterData" | "notes";
 import SpeciesChoiceDialog from "./SpeciesChoiceDialog";
 import BackgroundChoiceDialog from "./BackgroundChoiceDialog";
@@ -161,6 +167,23 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       return false;
     }
   });
+  // Focus view: show only combat-relevant or only roleplay-relevant sections (persisted per device).
+  const [focusView, setFocusView] = useState<FocusView>(() => {
+    try {
+      const v = localStorage.getItem("sw5e-focus-view");
+      return v === "combat" || v === "roleplay" ? v : "all";
+    } catch {
+      return "all";
+    }
+  });
+  function pickFocusView(next: FocusView) {
+    setFocusView(next);
+    try {
+      localStorage.setItem("sw5e-focus-view", next);
+    } catch {
+      // storage unavailable: the choice still works for this session
+    }
+  }
   // Which Simple-mode card is currently popped open for editing.
   const [openSimple, setOpenSimple] = useState<SimpleKey | null>(null);
   const [companionPickerOpen, setCompanionPickerOpen] = useState(false);
@@ -833,6 +856,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   // And Crafting: anyone proficient with a crafting tool.
   const hasCrafting = craftingTools(character).length > 0;
   const isShown = (id: SectionId) =>
+    (focusView === "all" || FOCUS_SECTIONS[focusView].includes(id)) &&
     (id !== "classFeatures" || hasClassFeaturesContent) &&
     (id !== "modifications" || hasModifications) &&
     (id !== "crafting" || hasCrafting);
@@ -1158,6 +1182,19 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           >
             Simple: {simpleMode ? "On" : "Off"}
           </button>
+          <div className="focus-toggle" role="group" aria-label="Focus view">
+            {(["all", "combat", "roleplay"] as FocusView[]).map((v) => (
+              <button
+                key={v}
+                type="button"
+                aria-pressed={focusView === v}
+                className={`btn ${focusView === v ? "btn-primary" : "btn-secondary"}`}
+                onClick={() => pickFocusView(v)}
+              >
+                {v === "all" ? "All" : v === "combat" ? "Combat" : "Roleplay"}
+              </button>
+            ))}
+          </div>
           {editLayout && (
             <button className="btn btn-secondary" onClick={handleResetLayout}>
               Reset Layout
@@ -1209,10 +1246,10 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           Long Rest
         </button>
       </div>
-      <ConcentrationBar character={character} update={update} />
+      {focusView !== "roleplay" && <ConcentrationBar character={character} update={update} />}
 
       <div className="sheet-stat-row">
-        {layout.statRow.map((id) => (
+        {(focusView === "roleplay" ? [] : layout.statRow).map((id) => (
           <SectionBlock
             key={id}
             id={id}

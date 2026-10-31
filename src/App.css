@@ -1147,7 +1147,6 @@
 
 .rest-buttons-main .btn {
   flex: 1;
-  max-width: 220px;
   padding: 10px 18px;
   font-size: 1rem;
 }
@@ -2641,3 +2640,8 @@
 .concentration-bar .chip-row { margin-top: 6px; }
 .concentration-hint { margin: 6px 0 0; font-size: 0.8rem; opacity: 0.7; }
 .conc-toggle { min-width: 32px; }
+
+.focus-toggle {
+  display: inline-flex;
+  gap: 4px;
+}
