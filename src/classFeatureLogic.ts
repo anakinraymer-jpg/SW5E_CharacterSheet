@@ -25,6 +25,7 @@ import { abilityModifier, armorCatalogMatch } from "./utils";
 import { revokeSkill } from "./grantOwnership";
 import { effectiveTechPointMax, modSpeedSources } from "./modifications";
 import { applicableArchetypeResources, archetypeResourceMaxBonus, hasArchetypeFeature } from "./archetypeEffects";
+import { activeEffectSpeedSources } from "./activeEffects";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 
@@ -182,6 +183,7 @@ export function activeSpeedBonusSources(character: Character): { label: string; 
     if (feat?.speedBonus) sources.push({ label: feat.name, amount: feat.speedBonus });
   }
   sources.push(...modSpeedSources(character));
+  sources.push(...activeEffectSpeedSources(character, sources.reduce((sum, s) => sum + s.amount, 0)));
   return sources;
 }
 
@@ -242,7 +244,7 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
   );
 
   if (kind === "short") {
-    return restCompanion({ ...character, classResources, combatFeatures, isRaging: false }, "short");
+    return restCompanion({ ...character, classResources, combatFeatures, isRaging: false, activeEffects: [] }, "short");
   }
 
   return restCompanion(
@@ -251,6 +253,7 @@ export function applyRest(character: Character, kind: "short" | "long"): Charact
       classResources,
       combatFeatures,
       isRaging: false,
+      activeEffects: [],
       currentHp: effectiveMaxHp(character),
       tempHp: 0,
       deathSaves: { successes: 0, failures: 0 },

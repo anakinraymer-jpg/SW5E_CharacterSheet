@@ -577,6 +577,7 @@ export interface Character {
   defense: number;
   monkUnarmoredDefenseAbility: "wis" | "cha"; // Monk's Unarmored Defense: Wisdom or Charisma (player's choice)
   isRaging: boolean; // Berserker's Rage: toggles the advantage/resistance/damage buffs on and off
+  activeEffects: string[]; // keys of stances/short buffs switched on (activeEffects.ts); cleared by any rest
   maneuverPhysicalAbility: "str" | "dex" | "con"; // Fighter/Scholar Combat/Academic Superiority: ability for Physical maneuvers
   maneuverMentalAbility: "int" | "wis" | "cha"; // Fighter/Scholar Combat/Academic Superiority: ability for Mental maneuvers
   armorNotes: string;
@@ -794,6 +795,7 @@ export function createBlankCharacter(): Character {
     defense: 10,
     monkUnarmoredDefenseAbility: "wis",
     isRaging: false,
+    activeEffects: [],
     maneuverPhysicalAbility: "str",
     maneuverMentalAbility: "int",
     armorNotes: "",

@@ -10,6 +10,8 @@ import {
 } from "../classFeatureLogic";
 import { abilityModifier, formatModifier, proficiencyBonus } from "../utils";
 import { archetypePassiveChips, archetypeResourceDef } from "../archetypeEffects";
+import { availableActiveEffects } from "../activeEffects";
+import type { ActiveEffect } from "../activeEffects";
 import HoverInfo from "./HoverInfo";import SectionHeader from "./SectionHeader";
 import NumberInput from "./NumberInput";
 
@@ -147,6 +149,21 @@ export default function ClassFeaturesSection({
 
   const archetypeChips = archetypePassiveChips(character);
 
+  const toggles = availableActiveEffects(character);
+  const activeKeys = character.activeEffects ?? [];
+  function usesFor(e: ActiveEffect): { key: string; current: number; max: number } | null {
+    const def = e.resourceKey ? resources.find((r) => r.key === e.resourceKey) : undefined;
+    if (!def) return null;
+    const idx = Math.max(1, Math.min(20, character.level || 1)) - 1;
+    const max = (def.maxByLevel[idx] ?? 0) + resourceMaxBonus(character, def.key);
+    const current = character.classResources.find((r) => r.key === def.key)?.current ?? max;
+    return { key: def.key, current, max };
+  }
+  function toggleEffect(key: string, on: boolean, uses: { key: string; current: number } | null) {
+    update("activeEffects", on ? activeKeys.filter((k) => k !== key) : [...activeKeys, key]);
+    if (!on && uses && uses.current > 0) onUpdateResource(uses.key, uses.current - 1);
+  }
+
   const hasManeuvers = subChoiceDefs.some((def) => def.key.endsWith("-maneuvers"));
   const canSwapManeuvers = hasManeuvers && chosenOptions.some((o) => o.allowsManeuverSwap);
   const pb = proficiencyBonus(character.level);
@@ -275,6 +292,55 @@ export default function ClassFeaturesSection({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {toggles.length > 0 && (
+        <div className="species-traits-box">
+          <div className="species-traits-header">Stances &amp; Active Effects</div>
+          {full && (
+            <p className="section-hint">
+              Switch one on when you use it. Its effects show below and bonuses (AC, speed, damage) are added to the
+              sheet. Uses are spent automatically; any rest ends them.
+            </p>
+          )}
+          <div className="active-effects-list">
+            {toggles.map((e) => {
+              const on = activeKeys.includes(e.key);
+              const uses = usesFor(e);
+              const spent = !on && uses !== null && uses.current <= 0;
+              return (
+                <div key={e.key} className={`active-effect${on ? " is-on" : ""}`}>
+                  <div className="active-effect-row">
+                    <button
+                      type="button"
+                      className={`btn btn-small ${on ? "btn-primary" : "btn-secondary"}`}
+                      disabled={spent}
+                      onClick={() => toggleEffect(e.key, on, uses)}
+                    >
+                      {on ? `${e.name} — End` : e.name}
+                    </button>
+                    <HoverInfo title={e.feature} lines={[e.source, e.text]}>
+                      <span className="rage-damage-note">
+                        {uses ? `${uses.current}/${uses.max} uses` : "details"}
+                        {spent ? " — none left" : ""}
+                      </span>
+                    </HoverInfo>
+                  </div>
+                  {on && (
+                    <div className="chip-row">
+                      {e.acBonus > 0 && <span className="info-chip">+{e.acBonus} AC (applied)</span>}
+                      {e.chips.map((chip) => (
+                        <HoverInfo key={chip.label} title={e.name} lines={[chip.detail]}>
+                          <span className="info-chip">{chip.label}</span>
+                        </HoverInfo>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

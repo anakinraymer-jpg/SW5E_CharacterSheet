@@ -15,6 +15,7 @@ import {
   armorAbilitySubstitute,
   bestNaturalArmor,
 } from "../archetypeEffects";
+import { activeEffectAcBonuses, activeEffectExtraSpeeds, activeEffects } from "../activeEffects";
 import HoverInfo from "./HoverInfo";
 import NumberInput from "./NumberInput";
 
@@ -32,10 +33,15 @@ export function DefenseBox({ character }: Props) {
   );
   const armorAbility = armorAbilitySubstitute(character);
   const computed = computeDefense(character.equipment, dexMod, unarmoredDefense, naturalArmor, armorInfusion(character), armorAbility);
-  const acBonuses = archetypeAcBonuses(character, computed);
+  const effects = activeEffects(character);
+  const acBonuses = [...archetypeAcBonuses(character, computed), ...activeEffectAcBonuses(character)];
   const total = computed.total + acBonuses.reduce((sum, b) => sum + b.amount, 0);
   const infusedName = character.equipment.find((i) => i.id === character.infusedItemId)?.name;
-  const situational = [...modDefenseNotes(character), ...archetypeDefenseNotes(character)];
+  // A situational note whose stance/buff is switched on is already counted above.
+  const situational = [
+    ...modDefenseNotes(character),
+    ...archetypeDefenseNotes(character).filter((n) => !effects.some((e) => e.acBonus > 0 && n.startsWith(`${e.feature}:`))),
+  ];
 
   const lines = [
     computed.naturalArmorApplied && naturalArmor
@@ -122,7 +128,7 @@ export function ProficiencyBonusBox({ character }: Props) {
 export function SpeedBaseBox({ character, update }: Props) {
   const sources = activeSpeedBonusSources(character);
   const bonus = sources.reduce((sum, s) => sum + s.amount, 0);
-  const otherSpeeds = archetypeExtraSpeeds(character);
+  const otherSpeeds = [...archetypeExtraSpeeds(character), ...activeEffectExtraSpeeds(character)];
   return (
     <section className="sheet-section stat-box-section">
       <div className="field">
