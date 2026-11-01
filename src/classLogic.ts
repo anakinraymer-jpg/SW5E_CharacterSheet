@@ -17,6 +17,7 @@ import { resolveEquipmentParts } from "./equipmentLogic";
 import { effectiveMaxHp, forcePointsAbilityBonus, monkSubstituteAbility } from "./classFeatureLogic";
 import { abilityModifier } from "./utils";
 import { revokeSkill, saveGrantedByOther } from "./grantOwnership";
+import { removeFeat } from "./featLogic";
 import { archetypeSavingThrows } from "./archetypeEffects";
 
 export interface UnarmoredDefenseBonus {
@@ -723,17 +724,47 @@ export function applyAsi(character: Character, level: number, abilities: Ability
   };
 }
 
+// Takes the feat that was just added (last in `feats`) in place of the ASI at `level`.
+export function markAsiFeat(character: Character, level: number): Character {
+  const feat = character.feats[character.feats.length - 1];
+  if (!feat) return character;
+  return {
+    ...character,
+    asiChoices: { ...character.asiChoices, [level]: [] },
+    asiFeatIds: { ...(character.asiFeatIds ?? {}), [level]: feat.id },
+  };
+}
+
+// If this feat was taken instead of an ASI, frees that ASI so it can be chosen again.
+export function releaseAsiFeat(character: Character, featId: string): Character {
+  const entry = Object.entries(character.asiFeatIds ?? {}).find(([, id]) => id === featId);
+  if (!entry) return character;
+  const level = Number(entry[0]);
+  const asiChoices = { ...character.asiChoices };
+  const asiFeatIds = { ...character.asiFeatIds };
+  delete asiChoices[level];
+  delete asiFeatIds[level];
+  return { ...character, asiChoices, asiFeatIds };
+}
+
 export function revertAsisAboveLevel(character: Character, newLevel: number): Character {
   const toRevert = Object.keys(character.asiChoices)
     .map(Number)
     .filter((lvl) => lvl > newLevel);
   if (toRevert.length === 0) return character;
 
-  const bonus = { ...character.classAbilityBonus };
-  const scores = { ...character.abilities };
-  const asiChoices = { ...character.asiChoices };
+  // Feats taken instead of an ASI go first (removeFeat undoes their own bonuses).
+  let result = character;
   for (const lvl of toRevert) {
-    const abilities = asiChoices[lvl];
+    const featId = character.asiFeatIds?.[lvl];
+    if (featId) result = releaseAsiFeat(removeFeat(result, featId), featId);
+  }
+
+  const bonus = { ...result.classAbilityBonus };
+  const scores = { ...result.abilities };
+  const asiChoices = { ...result.asiChoices };
+  for (const lvl of toRevert) {
+    const abilities = asiChoices[lvl] ?? [];
     const amount = abilities.length === 1 ? 2 : 1;
     for (const a of abilities) {
       bonus[a] -= amount;
@@ -741,7 +772,7 @@ export function revertAsisAboveLevel(character: Character, newLevel: number): Ch
     }
     delete asiChoices[lvl];
   }
-  return { ...character, abilities: scores, classAbilityBonus: bonus, asiChoices };
+  return { ...result, abilities: scores, classAbilityBonus: bonus, asiChoices };
 }
 
 export function emptyClassAbilityBonus() {

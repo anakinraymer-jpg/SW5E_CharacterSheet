@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { AbilityKey } from "../types";
+import { FEATS_CATALOG } from "../data/feats";
 import { ABILITY_LABEL } from "../speciesLogic";
 import Modal from "./Modal";
 
@@ -8,19 +9,27 @@ interface Props {
   className: string;
   onCancel: () => void;
   onConfirm: (abilities: AbilityKey[]) => void;
+  onFeat: (featName: string) => void;
+  takenFeats: string[];
 }
+
+const FEAT_NAMES = [...new Set(FEATS_CATALOG.map((f) => f.name))].sort();
 
 const ABILITY_KEYS: AbilityKey[] = ["str", "dex", "con", "int", "wis", "cha"];
 
-export default function AbilityImprovementDialog({ level, className, onCancel, onConfirm }: Props) {
-  const [mode, setMode] = useState<"two" | "one-one">("two");
+export default function AbilityImprovementDialog({ level, className, onCancel, onConfirm, onFeat, takenFeats }: Props) {
+  const [mode, setMode] = useState<"two" | "one-one" | "feat">("two");
+  const [feat, setFeat] = useState("");
   const [single, setSingle] = useState("");
   const [pair, setPair] = useState(["", ""]);
 
-  const isComplete = mode === "two" ? !!single : pair[0] && pair[1] && pair[0] !== pair[1];
+  const isComplete =
+    mode === "feat" ? !!feat : mode === "two" ? !!single : pair[0] && pair[1] && pair[0] !== pair[1];
 
   function handleConfirm() {
-    if (mode === "two") {
+    if (mode === "feat") {
+      onFeat(feat);
+    } else if (mode === "two") {
       onConfirm([single as AbilityKey]);
     } else {
       onConfirm(pair as AbilityKey[]);
@@ -43,7 +52,7 @@ export default function AbilityImprovementDialog({ level, className, onCancel, o
       }
     >
       <p className="section-hint">
-        Increase one ability score by 2, or two ability scores by 1 each. Can't exceed 20 this way.
+        Increase one ability score by 2, or two ability scores by 1 each (can't exceed 20 this way), or take a feat instead.
       </p>
       <div className="choice-group">
         <div className="choice-selects" style={{ marginBottom: 6 }}>
@@ -55,8 +64,23 @@ export default function AbilityImprovementDialog({ level, className, onCancel, o
             <input type="radio" checked={mode === "one-one"} onChange={() => setMode("one-one")} />
             Two abilities +1
           </label>
+          <label className="feature-used-toggle">
+            <input type="radio" checked={mode === "feat"} onChange={() => setMode("feat")} />
+            Take a feat instead
+          </label>
         </div>
-        {mode === "two" ? (
+        {mode === "feat" ? (
+          <div className="choice-selects">
+            <select value={feat} onChange={(e) => setFeat(e.target.value)}>
+              <option value="">Choose a feat…</option>
+              {FEAT_NAMES.filter((n) => !takenFeats.includes(n)).map((n) => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : mode === "two" ? (
           <div className="choice-selects">
             <select value={single} onChange={(e) => setSingle(e.target.value)}>
               <option value="">Choose…</option>

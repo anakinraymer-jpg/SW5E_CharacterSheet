@@ -538,6 +538,7 @@ export interface Character {
   classGrantedProficiencies: string[];
   classAbilityBonus: AbilityScores;
   asiChoices: Record<number, AbilityKey[]>;
+  asiFeatIds?: Record<number, string>; // ASI level -> id of the CharacterFeat taken instead (that level's asiChoices entry is then []); absent on older saves
   classCapstoneChoice: (AbilityKey | null)[]; // player's pick for each choice-slot of the class's abilityScoreIncrease feature (if any), index-aligned; fixed (single-option) slots auto-fill
   classCapstoneBonus: AbilityScores; // currently-applied bonus from that feature, tracked for clean revert/relevel
   classTraitsText: string;

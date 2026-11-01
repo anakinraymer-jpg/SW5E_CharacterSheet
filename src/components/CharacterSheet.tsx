@@ -34,6 +34,8 @@ import {
   applyArchetypeCapstoneChoice,
   applyArchetypeFeatureChoice,
   applyAsi,
+  markAsiFeat,
+  releaseAsiFeat,
   applyClass,
   applyClassCapstoneChoice,
   classNeedsChoices,
@@ -153,6 +155,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [pendingClassCapstoneFeature, setPendingClassCapstoneFeature] = useState<ClassFeature | null>(null);
   const [pendingArchetypeCapstoneFeature, setPendingArchetypeCapstoneFeature] = useState<ClassFeature | null>(null);
   const [pendingFeat, setPendingFeat] = useState<FeatEntry | null>(null);
+  // ASI level whose feat is being configured in the feat dialog (cancelling returns to the ASI dialog).
+  const [asiFeatLevel, setAsiFeatLevel] = useState<number | null>(null);
   const [pendingArchetypeClass, setPendingArchetypeClass] = useState<ClassEntry | null>(null);
   const [pendingSubChoiceDef, setPendingSubChoiceDef] = useState<{ def: ClassSubChoiceDef; needed: number } | null>(
     null
@@ -461,6 +465,21 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     setPendingAsi(null);
   }
 
+  function handleAsiFeat(name: string) {
+    if (!pendingAsi) return;
+    const match = FEATS_CATALOG.find((f) => f.name === name);
+    if (!match) return;
+    const level = pendingAsi.level;
+    if (featNeedsChoices(match)) {
+      setAsiFeatLevel(level);
+      setPendingFeat(match);
+    } else {
+      setCharacter((prev) => markAsiFeat(addFeat(prev, match, { abilityChoice: "", choiceSelections: [] }), level));
+      offerCompanionFor(match.name);
+      setPendingAsi(null);
+    }
+  }
+
   function handleClassCapstoneConfirm(picks: (AbilityKey | null)[]) {
     const classEntry = CLASSES_CATALOG.find((c) => c.name === character.classAppliedName);
     if (!classEntry) return;
@@ -548,19 +567,28 @@ export default function CharacterSheet({ initial, onBack }: Props) {
       setPendingBackground(null);
       setPendingBackgroundSelections(null);
     }
-    setCharacter((prev) => addFeat(prev, pendingFeat, selections));
+    const asiLevel = asiFeatLevel;
+    setCharacter((prev) => {
+      const next = addFeat(prev, pendingFeat, selections);
+      return asiLevel === null ? next : markAsiFeat(next, asiLevel);
+    });
     offerCompanionFor(pendingFeat.name);
     setPendingFeat(null);
+    if (asiLevel !== null) {
+      setAsiFeatLevel(null);
+      setPendingAsi(null);
+    }
   }
 
   function handleFeatCancel() {
     setPendingFeat(null);
+    setAsiFeatLevel(null);
     // Back to the background dialog (still open underneath with its picks).
     setPendingBackgroundSelections(null);
   }
 
   function handleRemoveFeat(id: string) {
-    setCharacter((prev) => removeFeat(prev, id));
+    setCharacter((prev) => releaseAsiFeat(removeFeat(prev, id), id));
   }
 
   const currentClassArchetypes: ArchetypeEntry[] = ARCHETYPES_CATALOG.filter(
@@ -1399,12 +1427,14 @@ export default function CharacterSheet({ initial, onBack }: Props) {
         />
       )}
 
-      {pendingAsi && (
+      {pendingAsi && asiFeatLevel === null && (
         <AbilityImprovementDialog
           level={pendingAsi.level}
           className={pendingAsi.className}
           onCancel={() => setPendingAsi(null)}
           onConfirm={handleAsiConfirm}
+          onFeat={handleAsiFeat}
+          takenFeats={character.feats.map((f) => f.name)}
         />
       )}
 
