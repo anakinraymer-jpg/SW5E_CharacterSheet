@@ -6,8 +6,27 @@ import { allChosenSubChoiceOptions, monkRetainsUnarmoredBenefits } from "./class
 import { ABILITY_LABEL } from "./speciesLogic";
 import { meleeForceAbilitySubstitute } from "./activeEffects";
 import { abilityModifier, formatModifier } from "./utils";
+import { armorEntryFor, customArmor, weaponEntryFor } from "./customItems";
 
 export const WEAPON_LOOKUP = new Map(WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), w]));
+// Refreshes the custom weapon/armor lookups from the open character's custom item rows.
+const registeredCustomWeapons = new Set<string>();
+export function syncCustomRegistry(c: Character): void {
+  for (const key of registeredCustomWeapons) WEAPON_LOOKUP.delete(key);
+  registeredCustomWeapons.clear();
+  customArmor.clear();
+  for (const w of c.weapons) {
+    const key = w.name.trim().toLowerCase();
+    if (w.custom?.kind !== "weapon" || !key || WEAPON_LOOKUP.has(key)) continue;
+    WEAPON_LOOKUP.set(key, weaponEntryFor(w.custom, w.name));
+    registeredCustomWeapons.add(key);
+  }
+  for (const e of c.equipment) {
+    const entry = e.custom ? armorEntryFor(e.custom, e.name) : null;
+    if (entry) customArmor.set(e.name.trim().toLowerCase(), entry);
+  }
+}
+
 const MONK_WEAPON_NAME_SET = new Set(MONK_WEAPON_NAMES.map((n) => n.toLowerCase()));
 
 // The only two ammo tokens the weapon catalog's property text actually encodes (e.g. "Power cell

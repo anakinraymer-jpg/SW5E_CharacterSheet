@@ -99,6 +99,11 @@ import AbilityImprovementDialog from "./AbilityImprovementDialog";
 import CapstoneAbilityDialog from "./CapstoneAbilityDialog";
 import ClassFeaturesSection from "./ClassFeaturesSection";
 import FeatsSection from "./FeatsSection";
+import CustomItemDialog from "./CustomItemDialog";
+import { customAbilityTotals } from "../customItems";
+import { syncCustomRegistry } from "../weaponLogic";
+import type { CustomItem } from "../types";
+import { emptyAbilities0 } from "../types";
 import FeatChoiceDialog from "./FeatChoiceDialog";
 import ArchetypeChoiceDialog from "./ArchetypeChoiceDialog";
 import ArchetypeFeatureChoiceDialog from "./ArchetypeFeatureChoiceDialog";
@@ -156,6 +161,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   const [pendingArchetypeCapstoneFeature, setPendingArchetypeCapstoneFeature] = useState<ClassFeature | null>(null);
   const [pendingFeat, setPendingFeat] = useState<FeatEntry | null>(null);
   // ASI level whose feat is being configured in the feat dialog (cancelling returns to the ASI dialog).
+  const [customItemsOpen, setCustomItemsOpen] = useState(false);
   const [asiFeatLevel, setAsiFeatLevel] = useState<number | null>(null);
   const [pendingArchetypeClass, setPendingArchetypeClass] = useState<ClassEntry | null>(null);
   const [pendingSubChoiceDef, setPendingSubChoiceDef] = useState<{ def: ClassSubChoiceDef; needed: number } | null>(
@@ -227,6 +233,22 @@ export default function CharacterSheet({ initial, onBack }: Props) {
   useEffect(() => {
     saveCollapsedSections(collapsedSections);
   }, [collapsedSections]);
+
+  // Custom armor/weapons are looked up by name; refresh that registry before anything renders from it.
+  syncCustomRegistry(character);
+
+  // Equipped custom items add to ability scores; keep `abilities` in step with whatever is equipped now.
+  useEffect(() => {
+    setCharacter((prev) => {
+      const want = customAbilityTotals(prev);
+      const had = prev.itemAbilityBonus ?? emptyAbilities0();
+      const keys = Object.keys(want) as (keyof typeof want)[];
+      if (keys.every((k) => want[k] === had[k])) return prev;
+      const abilities = { ...prev.abilities };
+      for (const k of keys) abilities[k] += want[k] - had[k];
+      return { ...prev, abilities, itemAbilityBonus: want };
+    });
+  }, [character.equipment, character.weapons]);
 
   const hasBendu = hasBenduAffinity(character);
 
@@ -681,6 +703,22 @@ export default function CharacterSheet({ initial, onBack }: Props) {
     }));
   }
 
+  function handleAddCustomItem(item: CustomItem) {
+    const custom = { ...item, abilityBonus: { ...item.abilityBonus } };
+    if (custom.kind === "weapon") {
+      addWeapon({
+        name: custom.name,
+        damage: custom.damage ?? "",
+        range: custom.range ?? "",
+        weight: custom.weight,
+        custom,
+      });
+    } else {
+      addItem({ name: custom.name, weight: custom.weight, notes: custom.notes, custom });
+    }
+    setCustomItemsOpen(false);
+  }
+
   function addWeapon(patch: Partial<Weapon> = {}) {
     const newWeapon: Weapon = {
       id: crypto.randomUUID(),
@@ -959,6 +997,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             collapsedSections={sectionCollapsed}
             onToggleSection={toggleSection}
             onAmmoNeeded={handleAmmoNeeded}
+            onOpenCustomItems={() => setCustomItemsOpen(true)}
           />
         );
       case "powers":
@@ -1003,6 +1042,7 @@ export default function CharacterSheet({ initial, onBack }: Props) {
             addItem={addItem}
             updateItem={updateItem}
             removeItem={removeItem}
+            onOpenCustomItems={() => setCustomItemsOpen(true)}
             addValuable={addValuable}
             updateValuable={updateValuable}
             removeValuable={removeValuable}
@@ -1426,6 +1466,8 @@ export default function CharacterSheet({ initial, onBack }: Props) {
           onConfirm={handleClassConfirm}
         />
       )}
+
+      {customItemsOpen && <CustomItemDialog onClose={() => setCustomItemsOpen(false)} onAdd={handleAddCustomItem} />}
 
       {pendingAsi && asiFeatLevel === null && (
         <AbilityImprovementDialog

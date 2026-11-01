@@ -26,6 +26,7 @@ import { revokeSkill } from "./grantOwnership";
 import { effectiveTechPointMax, modSpeedSources } from "./modifications";
 import { applicableArchetypeResources, archetypeResourceMaxBonus, hasArchetypeFeature } from "./archetypeEffects";
 import { activeEffectSpeedSources } from "./activeEffects";
+import { customSpeedSources } from "./customItems";
 
 const FEATS_BY_NAME = new Map(FEATS_CATALOG.map((f) => [f.name, f]));
 
@@ -183,6 +184,7 @@ export function activeSpeedBonusSources(character: Character): { label: string; 
     if (feat?.speedBonus) sources.push({ label: feat.name, amount: feat.speedBonus });
   }
   sources.push(...modSpeedSources(character));
+  sources.push(...customSpeedSources(character));
   sources.push(...activeEffectSpeedSources(character, sources.reduce((sum, s) => sum + s.amount, 0)));
   return sources;
 }

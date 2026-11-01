@@ -89,6 +89,7 @@ interface Props {
   collapsedSections: Record<string, boolean>;
   onToggleSection: (id: string) => void;
   onAmmoNeeded: (ammoName: string) => void;
+  onOpenCustomItems: () => void;
 }
 
 const REFRESH_OPTIONS: RefreshType[] = ["At Will", "Short Rest", "Long Rest"];
@@ -104,6 +105,7 @@ export default function WeaponsSection({
   updateCombatFeature,
   removeCombatFeature,
   onAmmoNeeded,
+  onOpenCustomItems,
   collapsedSections,
   onToggleSection,
 }: Props) {
@@ -357,6 +359,9 @@ export default function WeaponsSection({
       </div>
       <button className="btn btn-secondary" onClick={() => setPickerOpen(true)}>
         + Add Weapon
+      </button>{" "}
+      <button className="btn btn-secondary" onClick={onOpenCustomItems}>
+        + Custom Weapon
       </button>
       {pickerOpen && (
         <PickerDialog

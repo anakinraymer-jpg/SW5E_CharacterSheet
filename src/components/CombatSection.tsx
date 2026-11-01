@@ -3,6 +3,7 @@ import { SKILL_ABILITY } from "../types";
 import type { ArmorCatalogEntry } from "../data/armor";
 import { abilityModifier, armorCatalogMatch, formatModifier, passivePerception, proficiencyBonus } from "../utils";
 import { activeHpBonusSources, activeTravelPaceMultiplier, effectiveMaxHp, extraAttackInfo } from "../classFeatureLogic";
+import { customItemSummary } from "../customItems";
 import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { hasFeat } from "../featLogic";
 import { INFUSE_ITEM_TEXT, canInfuseWeapon, infuseItemBonus, infusedWeaponBonus } from "../infuseItem";
@@ -64,6 +65,10 @@ export default function CombatSection({
     .filter(
       (x): x is { item: EquipmentItem; catalog: ArmorCatalogEntry } => Boolean(x.catalog)
     );
+  // Custom gear (not armor) that gives bonuses while worn also needs an Equipped box.
+  const wornCustomGear = character.equipment.filter(
+    (i) => i.custom && i.custom.kind === "gear" && (i.custom.acBonus || i.custom.speedBonus || Object.values(i.custom.abilityBonus ?? {}).some(Boolean))
+  );
 
   const infuseBonus = infuseItemBonus(character);
   // A discipline's modified item is already enhanced, so it can't be infused.
@@ -329,11 +334,28 @@ export default function CombatSection({
               </label>
             ))}
           </div>
-        ) : (
+        ) : wornCustomGear.length === 0 ? (
           <p className="section-hint">
             No armor or shields in your Equipment inventory yet. Add one there and it'll show up
             here to equip.
           </p>
+        ) : null}
+        {wornCustomGear.length > 0 && (
+          <div className="armor-equip-list">
+            {wornCustomGear.map((item) => (
+              <label key={item.id} className="armor-equip-row">
+                <input
+                  type="checkbox"
+                  checked={item.equipped}
+                  onChange={(e) => updateItem(item.id, { equipped: e.target.checked })}
+                />
+                <span className="armor-equip-text">
+                  <span className="armor-equip-name">{item.name}</span>
+                  <span className="armor-equip-meta">{item.custom ? customItemSummary(item.custom) : ""}</span>
+                </span>
+              </label>
+            ))}
+          </div>
         )}
         <textarea
           id="armor-notes"

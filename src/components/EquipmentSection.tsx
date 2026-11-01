@@ -41,6 +41,7 @@ interface Props {
   character: Character;
   update: <K extends keyof Character>(key: K, value: Character[K]) => void;
   addItem: (patch?: Partial<EquipmentItem>) => void;
+  onOpenCustomItems: () => void;
   updateItem: (id: string, patch: Partial<EquipmentItem>) => void;
   removeItem: (id: string) => void;
   addValuable: () => void;
@@ -56,6 +57,7 @@ export default function EquipmentSection({
   character,
   update,
   addItem,
+  onOpenCustomItems,
   updateItem,
   removeItem,
   addValuable,
@@ -220,6 +222,9 @@ export default function EquipmentSection({
 
       <button className="btn btn-secondary" onClick={() => setPickerOpen(true)}>
         + Add Item
+      </button>{" "}
+      <button className="btn btn-secondary" onClick={onOpenCustomItems}>
+        + Custom Item
       </button>
       {pickerOpen && (
         <PickerDialog

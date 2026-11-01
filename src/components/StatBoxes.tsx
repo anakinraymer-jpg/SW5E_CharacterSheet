@@ -17,6 +17,7 @@ import {
 } from "../archetypeEffects";
 import { activeEffectAcBonuses, activeEffectExtraSpeeds, activeEffectNaturalArmor, activeEffects } from "../activeEffects";
 import HoverInfo from "./HoverInfo";
+import { customAcBonuses } from "../customItems";
 import NumberInput from "./NumberInput";
 
 interface Props {
@@ -34,7 +35,7 @@ export function DefenseBox({ character }: Props) {
   const armorAbility = armorAbilitySubstitute(character);
   const computed = computeDefense(character.equipment, dexMod, unarmoredDefense, naturalArmor, armorInfusion(character), armorAbility);
   const effects = activeEffects(character);
-  const acBonuses = [...archetypeAcBonuses(character, computed), ...activeEffectAcBonuses(character)];
+  const acBonuses = [...archetypeAcBonuses(character, computed), ...activeEffectAcBonuses(character), ...customAcBonuses(character)];
   const total = computed.total + acBonuses.reduce((sum, b) => sum + b.amount, 0);
   const infusedName = character.equipment.find((i) => i.id === character.infusedItemId)?.name;
   // A situational note whose stance/buff is switched on is already counted above.
@@ -60,7 +61,7 @@ export function DefenseBox({ character }: Props) {
     ...(computed.naturalArmorApplied && computed.armor ? [`(overrides ${computed.armor.name}'s own AC)`] : []),
     ...computed.shields.map((s) => `${s.name}: ${s.ac}`),
     ...(computed.infusionBonus ? [`Infuse Item (${infusedName}): +${computed.infusionBonus}`] : []),
-    ...acBonuses.map((b) => `${b.label}: +${b.amount}`),
+    ...acBonuses.map((b) => `${b.label}: ${b.amount > 0 ? "+" : ""}${b.amount}`),
     ...(situational.length ? ["Situational (not included above):", ...situational] : []),
   ];
   return (

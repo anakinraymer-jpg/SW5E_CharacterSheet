@@ -1,3 +1,4 @@
+import { customArmor } from "./customItems";
 import type { EquipmentItem, SpeciesNaturalArmor } from "./types";
 import { ARMOR_CATALOG, type ArmorCatalogEntry } from "./data/armor";
 
@@ -62,7 +63,7 @@ export function armorClassFromFormula(ac: string, dexModifier: number): number {
 
 export function armorCatalogMatch(itemName: string): ArmorCatalogEntry | undefined {
   const name = itemName.trim().toLowerCase();
-  return ARMOR_CATALOG.find((a) => a.name.toLowerCase() === name);
+  return ARMOR_CATALOG.find((a) => a.name.toLowerCase() === name) ?? customArmor.get(name);
 }
 
 export interface UnarmoredDefenseInput {

@@ -373,6 +373,31 @@ export interface CraftingState {
   projects: CraftingProject[];
 }
 
+export type CustomItemKind = "weapon" | "armor" | "shield" | "gear";
+
+// A homebrew item (see customItems.ts). Bonuses count only while the item is equipped, except a
+// weapon's own attack/damage bonus.
+export interface CustomItem {
+  id: string;
+  name: string;
+  kind: CustomItemKind;
+  weight: number;
+  notes: string;
+  weaponStyle?: "melee" | "ranged";
+  damage?: string;
+  range?: string;
+  property?: string;
+  attackBonus?: number;
+  damageBonus?: number;
+  armorType?: "Light" | "Medium" | "Heavy";
+  baseAc?: number; // armor's base AC, or a shield's AC bonus
+  dexMode?: "none" | "full" | "max";
+  dexMax?: number;
+  acBonus?: number;
+  speedBonus?: number;
+  abilityBonus?: Partial<Record<AbilityKey, number>>;
+}
+
 export interface EquipmentItem {
   id: string;
   name: string;
@@ -381,6 +406,7 @@ export interface EquipmentItem {
   notes: string;
   location: ItemLocation;
   equipped: boolean;
+  custom?: CustomItem; // set for items added from the Custom Items library
 }
 
 export interface Weapon {
@@ -393,6 +419,7 @@ export interface Weapon {
   ammoCount: number;
   ammoType: string;
   equipped: boolean; // shown (with computed stats) in Combat's Equipped Weapons block
+  custom?: CustomItem; // set for weapons added from the Custom Items library
 }
 
 export type RefreshType = "Short Rest" | "Long Rest" | "At Will";
@@ -538,6 +565,7 @@ export interface Character {
   classGrantedProficiencies: string[];
   classAbilityBonus: AbilityScores;
   asiChoices: Record<number, AbilityKey[]>;
+  itemAbilityBonus?: AbilityScores; // ability points currently added to `abilities` by equipped custom items (reconciled in CharacterSheet)
   asiFeatIds?: Record<number, string>; // ASI level -> id of the CharacterFeat taken instead (that level's asiChoices entry is then []); absent on older saves
   classCapstoneChoice: (AbilityKey | null)[]; // player's pick for each choice-slot of the class's abilityScoreIncrease feature (if any), index-aligned; fixed (single-option) slots auto-fill
   classCapstoneBonus: AbilityScores; // currently-applied bonus from that feature, tracked for clean revert/relevel

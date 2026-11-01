@@ -2,6 +2,7 @@ import type { Character, ClassSubChoiceDef, ClassSubChoiceOption, EquipmentItem,
 import { CLASS_SUB_CHOICES, ENGINEER_MOD_SLOTS_BY_LEVEL } from "./data/classFeatureChoices";
 import { WEAPON_CATALOG } from "./data/weapons";
 import { abilityModifier, armorCatalogMatch, proficiencyBonus } from "./utils";
+import { customWeaponBonus } from "./customItems";
 
 // Own lookup rather than weaponLogic's, which imports classFeatureLogic (and that imports this file).
 const WEAPON_LOOKUP = new Map(WEAPON_CATALOG.map((w) => [w.name.toLowerCase(), w]));
@@ -291,7 +292,8 @@ export function modWeaponBonus(c: Character, w: Weapon): { attack: number; damag
       lines.push(`${mod.option.name}: +${effect.amount} damage`);
     }
   }
-  return { attack, damage, lines };
+  const own = customWeaponBonus(w);
+  return { attack: attack + own.attack, damage: damage + own.damage, lines: [...lines, ...own.lines] };
 }
 
 // Situational AC bonuses (not added to the Defense number) for the Defense box.
