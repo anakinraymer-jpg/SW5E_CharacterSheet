@@ -2,9 +2,9 @@
 // that list) and emits this as dist/sw.js. Installing saves the whole app in one cache; a new
 // deploy gives a new version that waits until the page asks it to take over (the "Update
 // available" banner), so an open sheet never mixes old and new files.
-const VERSION = "97b189143993";
+const VERSION = "5c840cee31fb";
 const CACHE = `sw5e-app-${VERSION}`;
-const FILES = ["assets/CharacterSheet-88AEGJYJ.js","assets/enhancedItems-B8ESRYYc.js","assets/index-B1oD412c.js","assets/index-GxUSQiYC.css","favicon.svg"];
+const FILES = ["assets/CharacterSheet-DKPLBii7.js","assets/enhancedItems-B8ESRYYc.js","assets/index-DzfS_xsM.js","assets/index-GxUSQiYC.css","favicon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(["./", ...FILES])));
