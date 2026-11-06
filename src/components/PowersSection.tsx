@@ -1,3 +1,4 @@
+import { grantedItemPowers } from "../customItems";
 import { useState } from "react";
 import type { Character, Power, PowerAlignment } from "../types";
 import { FORCE_POWERS, TECH_POWERS } from "../data/powers";
@@ -73,8 +74,9 @@ export default function PowersSection({
     update("concentrationSelf", true);
   }
 
-  const { pb, specialistBonus, forceAbility, forceMod, forceAttack, forceDC, techMod, techAttack, techDC, techMods } =
+  const { pb, specialistBonus, forceAbility, forceMod, forceAttack, forceDC, techMod, techAttack, techDC, techMods, itemLines } =
     castingStats(character);
+  const itemPowers = grantedItemPowers(character);
   const techPenalty = techPointPenaltySources(character);
   const techMaxEffective = effectiveTechPointMax(character);
   const isCastingSpecialist = specialistBonus > 0;
@@ -86,18 +88,21 @@ export default function PowersSection({
     `Proficiency Bonus: ${formatModifier(pb)}`,
     `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`,
     ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
+    ...itemLines.forceAttack,
   ];
   const forceDCLines = [
     `Base: 8`,
     `Proficiency Bonus: ${formatModifier(pb)}`,
     `${forceAbilityLabel} modifier: ${formatModifier(forceMod)}`,
     ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
+    ...itemLines.forceDc,
   ];
   const techAttackLines = [
     `Proficiency Bonus: ${formatModifier(pb)}`,
     `Intelligence modifier: ${formatModifier(techMod)}`,
     ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
     ...techMods.lines.attack,
+    ...itemLines.techAttack,
   ];
   const techDCLines = [
     `Base: 8`,
@@ -105,6 +110,7 @@ export default function PowersSection({
     `Intelligence modifier: ${formatModifier(techMod)}`,
     ...(isCastingSpecialist ? [`Casting Specialist: ${formatModifier(specialistBonus)}`] : []),
     ...techMods.lines.dc,
+    ...itemLines.techDc,
   ];
 
   const techCounts = countByAlignment(character.powers, "Tech");
@@ -153,6 +159,24 @@ export default function PowersSection({
       <SectionHeader title="Force & Tech Powers" collapsed={collapsed} onToggle={() => onToggleSection("powers")} />
       {!collapsed && (
       <>
+      {itemPowers.length > 0 && (
+        <div className="field field-wide">
+          <label>Granted by equipped items</label>
+          <div className="chip-row">
+            {itemPowers.map((p) => (
+              <HoverInfo
+                key={p.name}
+                title={p.name}
+                lines={[`${p.type} power from ${p.from}`, ...powerInfoLines({ name: p.name, type: p.type, description: "" })]}
+              >
+                <span className="info-chip">
+                  {p.name} <small>({p.type})</small>
+                </span>
+              </HoverInfo>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="power-type-toggle">
         <button
           type="button"

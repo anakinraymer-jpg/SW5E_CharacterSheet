@@ -3,7 +3,7 @@ import { SKILL_ABILITY } from "../types";
 import type { ArmorCatalogEntry } from "../data/armor";
 import { abilityModifier, armorCatalogMatch, formatModifier, passivePerception, proficiencyBonus } from "../utils";
 import { activeHpBonusSources, activeTravelPaceMultiplier, effectiveMaxHp, extraAttackInfo } from "../classFeatureLogic";
-import { customItemSummary } from "../customItems";
+import { customItemSummary, hasEquipEffects } from "../customItems";
 import { toHitAbilityInfo, weaponDamageDisplay } from "../weaponLogic";
 import { hasFeat } from "../featLogic";
 import { INFUSE_ITEM_TEXT, canInfuseWeapon, infuseItemBonus, infusedWeaponBonus } from "../infuseItem";
@@ -67,7 +67,7 @@ export default function CombatSection({
     );
   // Custom gear (not armor) that gives bonuses while worn also needs an Equipped box.
   const wornCustomGear = character.equipment.filter(
-    (i) => i.custom && i.custom.kind === "gear" && (i.custom.acBonus || i.custom.speedBonus || Object.values(i.custom.abilityBonus ?? {}).some(Boolean))
+    (i) => i.custom && i.custom.kind === "gear" && hasEquipEffects(i.custom)
   );
 
   const infuseBonus = infuseItemBonus(character);

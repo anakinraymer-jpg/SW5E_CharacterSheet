@@ -377,6 +377,17 @@ export type CustomItemKind = "weapon" | "armor" | "shield" | "gear";
 
 // A homebrew item (see customItems.ts). Bonuses count only while the item is equipped, except a
 // weapon's own attack/damage bonus.
+// An ability an item grants: passive ones are always on while it is equipped, activated ones get a
+// toggle in Class Features' Stances box. The numbers are optional.
+export interface CustomItemAbility {
+  id: string;
+  name: string;
+  text: string;
+  active: boolean;
+  acBonus?: number;
+  speedBonus?: number;
+}
+
 export interface CustomItem {
   id: string;
   name: string;
@@ -396,6 +407,12 @@ export interface CustomItem {
   acBonus?: number;
   speedBonus?: number;
   abilityBonus?: Partial<Record<AbilityKey, number>>;
+  forceDcBonus?: number;
+  forceAttackBonus?: number;
+  techDcBonus?: number;
+  techAttackBonus?: number;
+  powers?: { name: string; type: "Force" | "Tech" }[]; // powers usable while the item is equipped
+  abilities?: CustomItemAbility[];
 }
 
 export interface EquipmentItem {

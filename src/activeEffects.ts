@@ -11,6 +11,7 @@ import { ARCHETYPES_CATALOG_EC } from "./data/archetypeDetailsEC";
 import { CLASSES_CATALOG } from "./data/classes";
 import { allChosenSubChoiceOptions } from "./classFeatureLogic";
 import { abilityModifier, formatModifier, proficiencyBonus } from "./utils";
+import { equippedCustom, grantedItemPowers } from "./customItems";
 
 const ARCHETYPES_CATALOG: ArchetypeEntry[] = [...ARCHETYPES_CATALOG_PHB, ...ARCHETYPES_CATALOG_EC];
 
@@ -267,9 +268,28 @@ export function availableActiveEffects(c: Character): ActiveEffect[] {
     if (m) sources.push({ name: `Manifest: ${o.name}`, source: o.name, text: `Bonus action: ${m[1]}` });
   }
   const effects = sources.map((s) => toEffect(c, s));
+  // Activated abilities of equipped custom items, with the numbers entered in the item builder.
+  for (const item of equippedCustom(c)) {
+    for (const ab of (item.abilities ?? []).filter((x) => x.active)) {
+      effects.push({
+        ...toEffect(
+          c,
+          { name: ab.name, source: item.name, text: ab.text },
+          {
+            ac: () => ab.acBonus ?? 0,
+            speed: ab.speedBonus ?? 0,
+            chips: () => (ab.text ? [ab.text.length > 60 ? `${ab.text.slice(0, 57)}...` : ab.text] : []),
+          }
+        ),
+        key: `item-${item.id}-${ab.id}`,
+      });
+    }
+  }
+  // Powers an equipped item grants can be buffs too (e.g. Battle Precognition).
+  const itemPowers = grantedItemPowers(c).map((p) => ({ name: p.name, type: p.type }));
   // Known self-buff powers that aren't concentration (Battle Precognition, Saber Ward); concentration
   // powers go through the concentration tracker instead.
-  for (const p of c.powers ?? []) {
+  for (const p of [...(c.powers ?? []), ...itemPowers]) {
     const buff = POWER_BUFFS[p.name];
     const found = buff && findPowerEntry(p.name, p.type);
     if (!found || found.entry.concentration) continue;

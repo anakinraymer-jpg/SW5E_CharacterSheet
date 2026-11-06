@@ -1,3 +1,4 @@
+import { passiveItemAbilities } from "../customItems";
 import type { AbilityKey, Character } from "../types";
 import { BERSERKER_RAGE_DAMAGE_BY_LEVEL } from "../data/classFeatureChoices";
 import { CLASSES_CATALOG } from "../data/classes";
@@ -181,7 +182,8 @@ export default function ClassFeaturesSection({
   const physicalManeuverDC = 8 + pb + physicalManeuverMod;
   const mentalManeuverDC = 8 + pb + mentalManeuverMod;
 
-  if (!character.classTraitsText && !character.archetypeTraitsText && resources.length === 0) {
+  const itemPassives = passiveItemAbilities(character);
+  if (!character.classTraitsText && !character.archetypeTraitsText && resources.length === 0 && toggles.length === 0 && itemPassives.length === 0) {
     return null;
   }
 
@@ -360,6 +362,19 @@ export default function ClassFeaturesSection({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {itemPassives.length > 0 && (
+        <div className="species-traits-box">
+          <div className="species-traits-header">Item Abilities (passive)</div>
+          <div className="chip-row">
+            {itemPassives.map(({ item, ability }) => (
+              <HoverInfo key={`${item.id}-${ability.id}`} title={ability.name} lines={[item.name, ability.text]}>
+                <span className="info-chip">{ability.name}</span>
+              </HoverInfo>
+            ))}
           </div>
         </div>
       )}
